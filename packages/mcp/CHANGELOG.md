@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 1.0.0-beta.32
+
+### Patch Changes
+
+- 78a9d3f: update mcp
+
 ## 1.0.0-beta.31
 
 ### Patch Changes
