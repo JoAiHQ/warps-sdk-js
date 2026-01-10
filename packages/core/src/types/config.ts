@@ -33,9 +33,9 @@ export type WarpWalletDetails = {
 }
 
 export type WarpUser = {
-  id?: string
-  name?: string
-  email?: string
+  id?: string | null
+  name?: string | null
+  email?: string | null
   wallets?: WarpUserWallets
 }
 
