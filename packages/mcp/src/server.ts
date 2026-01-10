@@ -1,6 +1,6 @@
+import { Warp } from '@joai/warps'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-compat.js'
-import { Warp } from '@joai/warps'
 import { z } from 'zod'
 import { convertMcpArgsToWarpInputs } from './helpers/execution'
 import { interpolatePromptWithArgs } from './helpers/prompts'
@@ -43,10 +43,9 @@ export const createMcpServerFromWarps = (
   config: WarpMcpServerConfig,
   warps: Warp[],
   capabilities: WarpMcpCapabilities[],
-  executor?: WarpMcpExecutor
+  executor: WarpMcpExecutor
 ): McpServer => {
   const server = new McpServer({ name: config.name, version: config.version || '1.0.0' })
-  const defaultExecutor = config.executor || executor
 
   for (let i = 0; i < capabilities.length; i++) {
     const { tool, resource, prompt } = capabilities[i]
@@ -63,12 +62,9 @@ export const createMcpServerFromWarps = (
         tool.name,
         toolDefinition as Parameters<typeof server.registerTool>[1],
         async (args: McpToolArgs): Promise<McpToolResult> => {
-          if (defaultExecutor) {
-            const inputs = convertMcpArgsToWarpInputs(warp, args || {})
-            const result = await defaultExecutor(warp, inputs)
-            return result
-          }
-          return { content: [{ type: 'text' as const, text: `Tool ${tool.name} executed successfully` }] }
+          const inputs = convertMcpArgsToWarpInputs(warp, args || {})
+          const result = await executor(warp, inputs)
+          return result
         }
       )
     }
