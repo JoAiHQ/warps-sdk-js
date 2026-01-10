@@ -5,7 +5,6 @@ import {
   WarpClientConfig,
   WarpCollectAction,
   WarpContractAction,
-  WarpLogger,
   WarpMcpAction,
   WarpQueryAction,
   WarpText,
@@ -121,11 +120,6 @@ export const convertActionToTool = (
   const name = deriveToolNameFromWarp(warp)
   const inputsToUse = primaryActionInputs || action.inputs || []
   const inputSchema = buildZodInputSchema(inputsToUse, config)
-
-  WarpLogger.info(
-    `[MCP] convertActionToTool - tool: ${name}, inputsToUse: ${inputsToUse.length}, inputSchema keys:`,
-    inputSchema ? Object.keys(inputSchema) : 'undefined'
-  )
 
   const tool: WarpMcpTool = {
     name,
