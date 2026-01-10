@@ -80,7 +80,11 @@ export class GaupaWalletProvider implements WalletProvider {
   async generate(): Promise<WarpWalletDetails> {
     if (!this.config.user?.email) throw new Error('GaupaWalletProvider: Email is required to generate a wallet')
     try {
-      const remoteWallet = await this.client.createAgenticWallet({ email: this.config.user.email, name: this.config.user.name })
+      const remoteWallet = await this.client.createAgenticWallet({
+        email: this.config.user.email,
+        name: this.config.user?.name || undefined,
+      })
+
       if (!remoteWallet.success) throw new Error('Gaupa API did not return a valid wallet')
       const address = this.getWalletForChainOrFail(remoteWallet.wallet)
       if (!address) throw new Error('Gaupa API did not return a valid wallet')
