@@ -107,7 +107,6 @@ export const buildZodInputSchema = (inputs: WarpActionInput[], config: WarpClien
     shape[key] = buildZodSchemaFromInput(input, config)
   }
 
-  WarpLogger.info('[MCP] buildZodInputSchema - inputs:', inputs.length, 'shape keys:', Object.keys(shape))
   return Object.keys(shape).length > 0 ? shape : undefined
 }
 
@@ -135,8 +134,6 @@ export const convertActionToTool = (
     meta: buildToolMeta(warp, resource, config),
   }
 
-  WarpLogger.info(`[MCP] convertActionToTool - tool: ${name}, meta:`, JSON.stringify(tool.meta, null, 2))
-
   return tool
 }
 
@@ -159,8 +156,6 @@ export const convertMcpActionToTool = (
     inputSchema,
     meta: buildToolMeta(warp, resource, config),
   }
-
-  WarpLogger.info(`[MCP] convertMcpActionToTool - tool: ${name}, meta:`, JSON.stringify(tool.meta, null, 2))
 
   return tool
 }
