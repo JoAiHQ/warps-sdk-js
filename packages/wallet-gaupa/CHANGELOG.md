@@ -1,5 +1,11 @@
 # @joai/warps-wallet-gaupa
 
+## 1.0.0-beta.14
+
+### Patch Changes
+
+- 3842b17: fix gaupa err
+
 ## 1.0.0-beta.13
 
 ### Patch Changes
