@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.200
+
+### Patch Changes
+
+- ecc89cc: update warp user fields to nullable
+
 ## 3.0.0-beta.199
 
 ### Patch Changes
