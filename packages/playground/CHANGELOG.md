@@ -1,5 +1,12 @@
 # @warps/playground
 
+## 1.0.0-beta.182
+
+### Patch Changes
+
+- Updated dependencies [0200834]
+  - @joai/warps-mcp@1.0.0-beta.34
+
 ## 1.0.0-beta.181
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 1.0.0-beta.34
+
+### Patch Changes
+
+- 0200834: add tool result structured content field
+
 ## 1.0.0-beta.33
 
 ### Patch Changes
