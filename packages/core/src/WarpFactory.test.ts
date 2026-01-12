@@ -3,6 +3,7 @@ import { getNextInfo } from './helpers'
 import { createMockAdapter, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
 import { TransformRunner, WarpAction, WarpChainInfo, WarpClientConfig, WarpContractAction, WarpMcpAction } from './types'
 import { WarpFactory } from './WarpFactory'
+import { WarpInterpolator } from './WarpInterpolator'
 
 const testConfig: WarpClientConfig = {
   env: 'devnet',
@@ -226,6 +227,23 @@ describe('WarpFactory', () => {
     const result = await factory.getResolvedInputs('multiversx', action, ['string:ignored', 'address:ignored'])
     expect(result[0].value).toBe('string:bar')
     expect(result[1].value).toBe('address:erd1testwallet')
+  })
+
+  it('getResolvedInputs interpolates globals in input values', async () => {
+    const config = createMockConfig()
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'transfer',
+      label: 'Test',
+      address: 'erd1dest',
+      value: '0',
+      inputs: [{ name: 'wallet', type: 'address', source: 'field' } as any],
+    }
+
+    const result = await factory.getResolvedInputs('multiversx', action, ['address:{{USER_WALLET}}'], interpolator)
+    expect(result[0].value).toBe('address:erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
   })
 
   it('getModifiedInputs applies scale modifier', async () => {

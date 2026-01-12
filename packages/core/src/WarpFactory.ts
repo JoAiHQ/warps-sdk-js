@@ -165,10 +165,11 @@ export class WarpFactory {
     chain: WarpChainName,
     action: WarpAction,
     inputArgs: string[],
-    interpolator?: WarpInterpolator
+    interpolator: WarpInterpolator
   ): Promise<ResolvedInput[]> {
     const argInputs = action.inputs || []
-    const preprocessed = await Promise.all(inputArgs.map((arg) => this.preprocessInput(chain, arg)))
+    const interpolatedArgs = inputArgs.map((arg) => interpolator.applyInputs(arg, [], this.serializer))
+    const preprocessed = await Promise.all(interpolatedArgs.map((arg) => this.preprocessInput(chain, arg)))
 
     const toValueByType = (input: WarpActionInput, index: number) => {
       if (input.source === 'query') {
