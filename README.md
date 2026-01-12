@@ -1,7 +1,7 @@
 # 🧰 Warp Protocol SDK for Typescript
 
 [![npm (scoped)](https://img.shields.io/npm/v/@joai/warps?style=for-the-badge)](https://www.npmjs.com/package/@joai/warps)
-[![](https://img.shields.io/twitter/follow/JoAiAgents?color=%23555555&label=Follow%20JoAiHQ&logo=twitter&style=for-the-badge)](https://x.com/JoAiHQ)
+[![](https://img.shields.io/twitter/follow/JoAiAgents?color=%23555555&label=Follow%20JoAiHQ&logo=twitter&style=for-the-badge)](https://x.com/JoAiAgents)
 
 Warps are executable actions that enable cross-chain transactions, smart contract interactions, blockchain operations, off-chain API calls, and AI tool integrations through a standardized JSON format. This SDK provides TypeScript tools to create, execute, and manage Warps across multiple blockchain networks.
 
