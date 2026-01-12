@@ -248,6 +248,32 @@ describe('WarpFactory', () => {
     expect(result[0].value).toBe('address:erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
   })
 
+  it('getResolvedInputs interpolates USER_WALLET from wallet details', async () => {
+    const config = createMockConfig({
+      user: {
+        wallets: {
+          multiversx: {
+            provider: 'gaupa',
+            address: 'erd1walletdetails',
+          },
+        },
+      },
+    })
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'transfer',
+      label: 'Test',
+      address: 'erd1dest',
+      value: '0',
+      inputs: [{ name: 'wallet', type: 'address', source: 'field' } as any],
+    }
+
+    const result = await factory.getResolvedInputs('multiversx', action, ['address:{{USER_WALLET}}'], interpolator)
+    expect(result[0].value).toBe('address:erd1walletdetails')
+  })
+
   it('getModifiedInputs applies scale modifier', async () => {
     const factory = new WarpFactory(config, [createMockAdapter()])
     const inputs = [{ input: { name: 'amount', type: 'biguint', modifier: 'scale:2' }, value: 'biguint:5' }]

@@ -844,6 +844,38 @@ describe('WarpInterpolator chain-specific placeholders', () => {
     expect((result.actions[0] as WarpTransferAction).address).toBe('erd1multiversx')
   })
 
+  it('interpolates USER_WALLET from wallet details', async () => {
+    const config = createMockConfig({
+      user: {
+        wallets: {
+          multiversx: {
+            provider: 'gaupa',
+            address: 'erd1multiversx',
+          },
+        },
+      },
+    })
+    const adapter = createMockAdapterForChain('multiversx')
+    const adapters = [adapter]
+
+    const warp = {
+      ...createMockWarp(),
+      actions: [
+        {
+          type: 'transfer' as const,
+          label: 'Transfer',
+          address: '{{USER_WALLET}}',
+          value: '0',
+          inputs: [],
+        } as WarpTransferAction,
+      ],
+    }
+
+    const interpolator = new WarpInterpolator(config, adapter, adapters)
+    const result = await interpolator.apply(warp)
+    expect((result.actions[0] as WarpTransferAction).address).toBe('erd1multiversx')
+  })
+
   it('interpolates USER_WALLET with chain argument', async () => {
     const config = createMockConfig({
       user: {

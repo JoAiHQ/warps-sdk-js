@@ -1,4 +1,5 @@
 import { InterpolationBag, WarpIdentifierType } from './types'
+import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
 export enum WarpChainName {
   Multiversx = 'multiversx',
@@ -41,7 +42,7 @@ export const WarpConstants = {
   Globals: {
     UserWallet: {
       Placeholder: 'USER_WALLET',
-      Accessor: (bag: InterpolationBag) => bag.config.user?.wallets?.[bag.adapter.chainInfo.name],
+      Accessor: (bag: InterpolationBag) => getWarpWalletAddressFromConfig(bag.config, bag.adapter.chainInfo.name),
     },
     UserWalletPublicKey: {
       Placeholder: 'USER_WALLET_PUBLICKEY',
