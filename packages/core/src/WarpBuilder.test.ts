@@ -2,8 +2,18 @@ import { createMockConfig } from './test-utils/mockConfig'
 import { WarpBuilder } from './WarpBuilder'
 
 const Config = createMockConfig()
+const originalFetch = global.fetch
 
 describe('WarpBuilder', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({ type: 'object' }),
+    } as any)
+  })
+  afterEach(() => {
+    global.fetch = originalFetch
+  })
+
   it('creates a warp', async () => {
     const warp = await new WarpBuilder(Config)
       .setName('testname')

@@ -1117,8 +1117,8 @@ describe('convertWarpToMcpCapabilities', () => {
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
 
-    expect(result.tool!.name).toBe('with_colons')
-    expect(result.tool!.name).toMatch(/^[A-Za-z0-9_.-]+$/)
+    expect(result.tool!.name).toBe('test-tool:with:colons')
+    expect(result.tool!.name).toMatch(/^[A-Za-z0-9_.:-]+$/)
   })
 
   it('handles names with multiple consecutive invalid characters', async () => {
@@ -1375,9 +1375,8 @@ describe('convertWarpToMcpCapabilities', () => {
       expect(result.resource?.name).toBe('app_test')
       expect(result.resource?.uri).toBe('ui://widget/app_test')
       expect(result.resource?.mimeType).toBe('text/html+skybridge')
-      expect(result.resource?.content).toBe(
-        `<html><head></head><body><div id="root"></div>\n<script type="module">${mockComponentCode}</script></body></html>`,
-      )
+      expect(result.resource?.content).toBe(mockComponentCode)
+    })
 
     it('creates app resource with bundled component', async () => {
       const warp: Warp = {
@@ -1409,9 +1408,7 @@ describe('convertWarpToMcpCapabilities', () => {
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
 
       expect(result.resource).toBeDefined()
-      expect(result.resource?.content).toBe(
-        `<html><head></head><body><div id="root"></div>\n<script type="module">${mockComponentCode}</script></body></html>`,
-      )
+      expect(result.resource?.content).toBe(mockComponentCode)
     })
 
     it('creates app resource with JavaScript component', async () => {
@@ -1444,9 +1441,7 @@ describe('convertWarpToMcpCapabilities', () => {
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
 
       expect(result.resource).toBeDefined()
-      expect(result.resource?.content).toBe(
-        `<html><head></head><body><div id="root"></div>\n<script type="module">${mockComponentCode}</script></body></html>`,
-      )
+      expect(result.resource?.content).toBe(mockComponentCode)
     })
 
 

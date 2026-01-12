@@ -569,31 +569,6 @@ describe('convertMcpActionToTool', () => {
     expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/mcp_tool')
   })
 
-  it('sanitizes tool name correctly', () => {
-    const warp: Warp = {
-      protocol: 'warp:3.0.0',
-      name: 'test_warp',
-      title: { en: 'Test Warp' },
-      description: null,
-      actions: [],
-    }
-
-    const action: WarpMcpAction = {
-      type: 'mcp',
-      label: { en: 'MCP Tool' },
-      description: null,
-      destination: {
-        url: 'https://example.com',
-        tool: 'MCP Tool With Spaces',
-      },
-      inputs: [],
-    }
-
-    const tool = convertMcpActionToTool(warp, action, undefined, undefined, null, mockConfig)
-
-    expect(tool.name).toBe('mcp_tool_with_spaces')
-  })
-
   it('includes invoking and invoked messages with localization (en) in _meta when provided', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',

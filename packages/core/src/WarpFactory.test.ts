@@ -213,7 +213,9 @@ describe('WarpFactory', () => {
   })
 
   it('getResolvedInputs resolves query and user wallet', async () => {
-    const factory = new WarpFactory(config, [createMockAdapter()])
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
     const action: WarpAction = {
       type: 'transfer',
       label: 'Test',
@@ -224,7 +226,7 @@ describe('WarpFactory', () => {
         { name: 'wallet', type: 'address', source: WarpConstants.Source.UserWallet } as any,
       ],
     }
-    const result = await factory.getResolvedInputs('multiversx', action, ['string:ignored', 'address:ignored'])
+    const result = await factory.getResolvedInputs('multiversx', action, ['string:ignored', 'address:ignored'], interpolator)
     expect(result[0].value).toBe('string:bar')
     expect(result[1].value).toBe('address:erd1testwallet')
   })
