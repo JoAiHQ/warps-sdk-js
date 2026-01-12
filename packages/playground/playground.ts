@@ -20,13 +20,24 @@ const __dirname = path.dirname(__filename)
 const dotenv = await import('dotenv')
 dotenv.config({ path: path.join(__dirname, '.env') })
 
-const Chain: WarpChainName = WarpChainName.Multiversx
-const WarpToTest = 'transfer.json'
-const WarpInputs: string[] = [
+const parseInputs = (value: string | undefined, fallback: string[]) => {
+  if (!value) return fallback
+  try {
+    const parsed = JSON.parse(value)
+    if (Array.isArray(parsed)) return parsed.map((item) => String(item))
+  } catch {
+    return fallback
+  }
+  return fallback
+}
+
+const Chain: WarpChainName = (process.env.PLAYGROUND_CHAIN as WarpChainName) || WarpChainName.Multiversx
+const WarpToTest = process.env.PLAYGROUND_WARP || 'transfer.json'
+const WarpInputs: string[] = parseInputs(process.env.PLAYGROUND_INPUTS, [
   'string:multiversx',
   'address:erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
   'asset:EGLD|0.000001',
-]
+])
 const warpsDir = path.join(__dirname, 'warps')
 
 // Shared Coinbase provider factory (reuse across EVM chains)

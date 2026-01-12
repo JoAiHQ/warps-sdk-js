@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0-beta.25
+
+### Patch Changes
+
+- 15f69fa: upgrade deps
+- Updated dependencies [c8b0a9b]
+  - @joai/warps@3.0.0-beta.201
+
 ## 1.0.0-beta.24
 
 ### Patch Changes

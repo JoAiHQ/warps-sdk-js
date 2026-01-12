@@ -1,0 +1,42 @@
+{
+  "protocol": "warp:3.0.0",
+  "chain": "solana",
+  "name": "Liquid Stake SOL (Jito)",
+  "title": "Liquid Stake SOL via Jito Stake Pool",
+  "description": "Deposit SOL into the Jito stake pool on Solana devnet and receive JitoSOL pool tokens.",
+  "actions": [
+    {
+      "type": "contract",
+      "label": "Deposit SOL",
+      "address": "DPoo15wWDqpPJJtS2MUZ49aRxqz5ZaaJCJP4z8bLuib",
+      "func": "depositSol",
+      "abi": "{\"instructions\":{\"depositSol\":{\"discriminator\":[14],\"args\":[{\"name\":\"lamports_in\",\"type\":\"u64\"}]}}}",
+      "accounts": [
+        { "address": "JitoY5pcAxWX6iyP2QdFwTznGb8A99PRCUCVVxB46WZ", "writable": true, "signer": false },
+        { "address": "8HPpFV5PFqGmDumjRTFw9BhsjrZYjJBDuHX2p6H5nBmd", "writable": false, "signer": false },
+        { "address": "Dsd1zgN4XtxC6239vNznTNb6akTLNQeSBKoJqYjNps5e", "writable": true, "signer": false },
+        { "address": "{{USER_WALLET}}", "writable": true, "signer": true },
+        { "address": "{{USER_ATA:J1tos8mqbhdGcF3pgj4PCKyVjzWSURcpLZU7pPGHxSYi}}", "writable": true, "signer": false },
+        { "address": "77MybzFEM9WbZLsGtoiX2WACJ4K5JbxU9HBKUVapb5KN", "writable": true, "signer": false },
+        { "address": "77MybzFEM9WbZLsGtoiX2WACJ4K5JbxU9HBKUVapb5KN", "writable": true, "signer": false },
+        { "address": "J1tos8mqbhdGcF3pgj4PCKyVjzWSURcpLZU7pPGHxSYi", "writable": true, "signer": false },
+        { "address": "11111111111111111111111111111111", "writable": false, "signer": false },
+        { "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "writable": false, "signer": false }
+      ],
+      "inputs": [
+        {
+          "name": "Amount (Lamports)",
+          "description": "Amount of SOL to deposit, in lamports (9 decimals).",
+          "type": "biguint",
+          "position": "arg:0",
+          "source": "field",
+          "required": true,
+          "min": 1
+        }
+      ]
+    }
+  ],
+  "messages": {
+    "success": "Liquid stake deposit submitted successfully."
+  }
+}

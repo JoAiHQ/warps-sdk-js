@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.201
+
+### Patch Changes
+
+- c8b0a9b: add warp input globals interpolations
+
 ## 3.0.0-beta.200
 
 ### Patch Changes
