@@ -9,7 +9,7 @@ export type WarpMcpServerConfig = {
 export type JsonSchema = Record<string, unknown>
 export type ToolInputSchema = Record<string, z.ZodTypeAny> | JsonSchema | undefined
 export type ToolOutputSchema = JsonSchema | undefined
-export type ToolMeta = Record<string, string | boolean>
+export type ToolMeta = Record<string, string | number | boolean | null>
 export type ResourceMeta = Record<string, unknown>
 
 export type WarpMcpTool = {
@@ -48,6 +48,10 @@ export type WarpMcpCapabilities = {
   prompt?: WarpMcpPrompt | null
 }
 
-export type McpToolArgs = Record<string, unknown>
-export type McpToolResult = { structuredContent?: any; content: Array<{ type: 'text'; text: string }> }
-export type WarpMcpExecutor = (warp: Warp, inputs: string[]) => Promise<McpToolResult>
+export type WarpMcpToolArgs = Record<string, unknown>
+export type WarpMcpToolResult = {
+  structuredContent?: any
+  content: Array<{ type: 'text'; text: string }>
+}
+
+export type WarpMcpExecutor = (warp: Warp, inputs: string[]) => Promise<WarpMcpToolResult>

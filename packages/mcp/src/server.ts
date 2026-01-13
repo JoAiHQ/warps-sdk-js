@@ -5,13 +5,13 @@ import { z } from 'zod'
 import { convertMcpArgsToWarpInputs } from './helpers/execution'
 import { interpolatePromptWithArgs } from './helpers/prompts'
 import {
-  McpToolArgs,
-  McpToolResult,
   ToolInputSchema,
   WarpMcpCapabilities,
   WarpMcpExecutor,
   WarpMcpPrompt,
   WarpMcpServerConfig,
+  WarpMcpToolArgs,
+  WarpMcpToolResult,
 } from './types'
 
 const processInputSchema = (inputSchema: ToolInputSchema): z.ZodTypeAny | Record<string, z.ZodTypeAny> | undefined => {
@@ -61,7 +61,7 @@ export const createMcpServerFromWarps = (
       server.registerTool(
         tool.name,
         toolDefinition as Parameters<typeof server.registerTool>[1],
-        async (args: McpToolArgs): Promise<McpToolResult> => {
+        async (args: WarpMcpToolArgs): Promise<WarpMcpToolResult> => {
           const inputs = convertMcpArgsToWarpInputs(warp, args || {})
           const result = await executor(warp, inputs)
           return result
