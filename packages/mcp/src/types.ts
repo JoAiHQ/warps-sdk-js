@@ -52,6 +52,7 @@ export type WarpMcpToolArgs = Record<string, unknown>
 export type WarpMcpToolResult = {
   structuredContent?: any
   content: Array<{ type: 'text'; text: string }>
+  _meta?: ToolMeta
 }
 
 export type WarpMcpExecutor = (warp: Warp, inputs: string[]) => Promise<WarpMcpToolResult>
