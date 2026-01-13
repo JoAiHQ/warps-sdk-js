@@ -1,5 +1,12 @@
 # @joai/warps-mcp
 
+## 1.0.0-beta.35
+
+### Patch Changes
+
+- 39e840c: add mcp tool result meta field
+- a8c2010: add mcp types warp prefixes
+
 ## 1.0.0-beta.34
 
 ### Patch Changes
