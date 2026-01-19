@@ -2,25 +2,25 @@ import { findWarpAdapterForChain, getWarpInfoFromIdentifier } from './helpers'
 import { resolveWarpText } from './helpers/i18n'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
-import {
-  AdapterWarpDataLoader,
-  AdapterWarpExplorer,
-  AdapterWarpOutput,
-  AdapterWarpRegistry,
-  AdapterWarpSerializer,
-  AdapterWarpWallet,
-  ChainAdapter,
-  ChainAdapterFactory,
-  Warp,
-  WarpActionExecutionResult,
-  WarpAdapterGenericRemoteTransaction,
-  WarpAdapterGenericTransaction,
-  WarpCacheConfig,
-  WarpChainAction,
-  WarpChainInfo,
-  WarpClientConfig,
-} from './types'
 import { WarpChainName } from './constants'
+import {
+    AdapterWarpDataLoader,
+    AdapterWarpExplorer,
+    AdapterWarpOutput,
+    AdapterWarpRegistry,
+    AdapterWarpSerializer,
+    AdapterWarpWallet,
+    ChainAdapter,
+    ChainAdapterFactory,
+    Warp,
+    WarpActionExecutionResult,
+    WarpAdapterGenericRemoteTransaction,
+    WarpAdapterGenericTransaction,
+    WarpCacheConfig,
+    WarpChainAction,
+    WarpChainInfo,
+    WarpClientConfig,
+} from './types'
 import { WarpText } from './types/i18n'
 import { ExecutionHandlers, WarpExecutor } from './WarpExecutor'
 import { WarpFactory } from './WarpFactory'
@@ -114,7 +114,6 @@ export class WarpClient {
   async signMessage(chain: WarpChainName, message: string): Promise<string> {
     const walletAddress = getWarpWalletAddressFromConfig(this.config, chain)
     if (!walletAddress) throw new Error(`No wallet configured for chain ${chain}`)
-
     const adapter = findWarpAdapterForChain(chain, this.chains)
     return adapter.wallet.signMessage(message)
   }

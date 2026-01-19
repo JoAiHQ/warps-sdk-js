@@ -5,13 +5,13 @@ import { z } from 'zod'
 import { convertMcpArgsToWarpInputs } from './helpers/execution'
 import { interpolatePromptWithArgs } from './helpers/prompts'
 import {
-  ToolInputSchema,
-  WarpMcpCapabilities,
-  WarpMcpExecutor,
-  WarpMcpPrompt,
-  WarpMcpServerConfig,
-  WarpMcpToolArgs,
-  WarpMcpToolResult,
+    ToolInputSchema,
+    WarpMcpCapabilities,
+    WarpMcpExecutor,
+    WarpMcpPrompt,
+    WarpMcpServerConfig,
+    WarpMcpToolArgs,
+    WarpMcpToolResult,
 } from './types'
 
 const processInputSchema = (inputSchema: ToolInputSchema): z.ZodTypeAny | Record<string, z.ZodTypeAny> | undefined => {
