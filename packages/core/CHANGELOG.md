@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.203
+
+### Patch Changes
+
+- b7c77a6: add default chain config
+
 ## 3.0.0-beta.202
 
 ### Patch Changes
