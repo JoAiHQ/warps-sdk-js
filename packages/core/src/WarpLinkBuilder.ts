@@ -15,7 +15,7 @@ export class WarpLinkBuilder {
 
   isValid(url: string): boolean {
     if (!url.startsWith(WarpConstants.HttpProtocolPrefix)) return false
-    const idResult = extractIdentifierInfoFromUrl(url)
+    const idResult = extractIdentifierInfoFromUrl(url, this.config.defaultChain)
     return !!idResult
   }
 
@@ -33,7 +33,7 @@ export class WarpLinkBuilder {
   }
 
   buildFromPrefixedIdentifier(identifier: string): string | null {
-    const identifierResult = getWarpInfoFromIdentifier(identifier)
+    const identifierResult = getWarpInfoFromIdentifier(identifier, this.config.defaultChain)
     if (!identifierResult) return null
     const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
     if (!adapter) return null

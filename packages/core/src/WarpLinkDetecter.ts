@@ -38,7 +38,7 @@ export class WarpLinkDetecter {
 
   isValid(url: string): boolean {
     if (!url.startsWith(WarpConstants.HttpProtocolPrefix)) return false
-    const idResult = extractIdentifierInfoFromUrl(url)
+    const idResult = extractIdentifierInfoFromUrl(url, this.config.defaultChain)
     return !!idResult
   }
 
@@ -59,8 +59,8 @@ export class WarpLinkDetecter {
     const emptyResult: DetectionResult = { match: false, url: urlOrId, warp: null, chain: null, registryInfo: null, brand: null }
 
     const identifierResult = urlOrId.startsWith(WarpConstants.HttpProtocolPrefix)
-      ? extractIdentifierInfoFromUrl(urlOrId)
-      : getWarpInfoFromIdentifier(urlOrId)
+      ? extractIdentifierInfoFromUrl(urlOrId, this.config.defaultChain)
+      : getWarpInfoFromIdentifier(urlOrId, this.config.defaultChain)
 
     if (!identifierResult) {
       return emptyResult

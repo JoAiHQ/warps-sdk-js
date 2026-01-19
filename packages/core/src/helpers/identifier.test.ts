@@ -1,3 +1,4 @@
+import { WarpChainName } from '../constants'
 import {
   cleanWarpIdentifier,
   createWarpIdentifier,
@@ -485,6 +486,47 @@ describe('getWarpInfoFromIdentifier', () => {
       identifierBase: alias,
     })
   })
+
+  it('uses defaultChain from options if provided for unprefixed alias', () => {
+    const result = getWarpInfoFromIdentifier('mywarp', WarpChainName.Sui)
+    expect(result).toEqual({
+      chain: 'sui',
+      type: 'alias',
+      identifier: 'mywarp',
+      identifierBase: 'mywarp',
+    })
+  })
+
+  it('uses defaultChain from options if provided for type:identifier format', () => {
+    const result = getWarpInfoFromIdentifier('alias:mywarp', WarpChainName.Ethereum)
+    expect(result).toEqual({
+      chain: 'ethereum',
+      type: 'alias',
+      identifier: 'mywarp',
+      identifierBase: 'mywarp',
+    })
+  })
+
+  it('uses defaultChain from options if provided for 64-char hash', () => {
+    const hash = 'a'.repeat(64)
+    const result = getWarpInfoFromIdentifier(hash, WarpChainName.Base)
+    expect(result).toEqual({
+      chain: 'base',
+      type: 'hash',
+      identifier: hash,
+      identifierBase: hash,
+    })
+  })
+
+  it('ignores defaultChain if chain is explicitly provided in identifier', () => {
+    const result = getWarpInfoFromIdentifier('sui:mywarp', WarpChainName.Multiversx)
+    expect(result).toEqual({
+      chain: 'sui',
+      type: 'alias',
+      identifier: 'mywarp',
+      identifierBase: 'mywarp',
+    })
+  })
 })
 
 describe('extractIdentifierInfoFromUrl', () => {
@@ -536,6 +578,16 @@ describe('extractIdentifierInfoFromUrl', () => {
   it('parses encoded chain prefix with colon separator', () => {
     const url = 'https://example.com/?warp=' + encodeURIComponent('sui:alias:mywarp')
     expect(extractIdentifierInfoFromUrl(url)).toEqual({
+      chain: 'sui',
+      type: 'alias',
+      identifier: 'mywarp',
+      identifierBase: 'mywarp',
+    })
+  })
+
+  it('uses defaultChain from options if provided', () => {
+    const url = 'https://example.com/?warp=mywarp'
+    expect(extractIdentifierInfoFromUrl(url, WarpChainName.Sui)).toEqual({
       chain: 'sui',
       type: 'alias',
       identifier: 'mywarp',

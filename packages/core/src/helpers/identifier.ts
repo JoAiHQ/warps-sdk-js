@@ -21,8 +21,10 @@ export const createWarpIdentifier = (chain: WarpChainName, type: WarpIdentifierT
 }
 
 export const getWarpInfoFromIdentifier = (
-  prefixedIdentifier: string
+  prefixedIdentifier: string,
+  defaultChain?: WarpChainName
 ): { chain: WarpChainName; type: WarpIdentifierType; identifier: string; identifierBase: string } | null => {
+  const chainToUse = defaultChain || WarpConstants.IdentifierChainDefault
   const decoded = decodeURIComponent(prefixedIdentifier).trim()
   const identifierWithoutAliasMarker = cleanWarpIdentifier(decoded)
   const base = identifierWithoutAliasMarker.split('?')[0]
@@ -31,7 +33,7 @@ export const getWarpInfoFromIdentifier = (
   // Handle 64-character hex hash (no separator)
   if (base.length === 64 && /^[a-fA-F0-9]+$/.test(base)) {
     return {
-      chain: WarpConstants.IdentifierChainDefault,
+      chain: chainToUse,
       type: WarpConstants.IdentifierType.Hash,
       identifier: identifierWithoutAliasMarker,
       identifierBase: base,
@@ -67,7 +69,7 @@ export const getWarpInfoFromIdentifier = (
         ? identifier + identifierWithoutAliasMarker.substring(identifierWithoutAliasMarker.indexOf('?'))
         : identifier
       return {
-        chain: WarpConstants.IdentifierChainDefault,
+        chain: chainToUse,
         type: type as WarpIdentifierType,
         identifier: identifierWithQuery,
         identifierBase: identifier,
@@ -97,7 +99,7 @@ export const getWarpInfoFromIdentifier = (
 
   // Fallback: treat as alias
   return {
-    chain: WarpConstants.IdentifierChainDefault,
+    chain: chainToUse,
     type: WarpConstants.IdentifierType.Alias,
     identifier: identifierWithoutAliasMarker,
     identifierBase: base,
@@ -105,7 +107,8 @@ export const getWarpInfoFromIdentifier = (
 }
 
 export const extractIdentifierInfoFromUrl = (
-  url: string
+  url: string,
+  defaultChain?: WarpChainName
 ): { chain: WarpChainName; type: WarpIdentifierType; identifier: string; identifierBase: string } | null => {
   const urlObj = new URL(url)
   const searchParamValue = urlObj.searchParams.get(WarpConstants.IdentifierParamName)
@@ -120,7 +123,7 @@ export const extractIdentifierInfoFromUrl = (
   }
 
   const decodedParam = decodeURIComponent(value)
-  return getWarpInfoFromIdentifier(decodedParam)
+  return getWarpInfoFromIdentifier(decodedParam, defaultChain)
 }
 
 const isHash = (identifier: string, chainPrefix?: string): boolean => {

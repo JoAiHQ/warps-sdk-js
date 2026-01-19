@@ -105,7 +105,7 @@ export class WarpClient {
   }
 
   async createFromTransactionHash(hash: string, cache?: WarpCacheConfig): Promise<Warp | null> {
-    const identifierInfo = getWarpInfoFromIdentifier(hash)
+    const identifierInfo = getWarpInfoFromIdentifier(hash, this.config.defaultChain)
     if (!identifierInfo) throw new Error('WarpClient: createFromTransactionHash - invalid hash')
     const adapter = findWarpAdapterForChain(identifierInfo.chain, this.chains)
     return adapter.builder().createFromTransactionHash(hash, cache)

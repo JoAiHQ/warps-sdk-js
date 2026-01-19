@@ -78,7 +78,7 @@ export const getNextInfo = (
 
 const buildNextUrl = (adapters: ChainAdapter[], identifier: string, config: WarpClientConfig): string => {
   const [rawId, queryString] = identifier.split('?')
-  const info = getWarpInfoFromIdentifier(rawId) || {
+  const info = getWarpInfoFromIdentifier(rawId, config.defaultChain) || {
     chain: WarpConstants.IdentifierChainDefault,
     type: 'alias',
     identifier: rawId,
