@@ -53,7 +53,7 @@ export type Warp = {
 export type WarpMeta = {
   chain: WarpChainName
   identifier: string
-  query: string | null
+  query: Record<string, string> | null
   hash: string
   creator: string
   createdAt: string

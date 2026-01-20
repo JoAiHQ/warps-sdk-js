@@ -85,7 +85,10 @@ describe('WarpExecutor', () => {
         meta: {
           chain: 'multiversx' as const,
           identifier: 'hash:abc123',
-          query: 'provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww&chain=multiversx',
+          query: {
+            provider: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+            chain: 'multiversx',
+          },
           hash: 'abc123',
           creator: 'erd1creator',
           createdAt: '2024-01-01T00:00:00Z',
@@ -131,7 +134,9 @@ describe('WarpExecutor', () => {
         meta: {
           chain: 'multiversx' as const,
           identifier: 'hash:abc123',
-          query: 'provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+          query: {
+            provider: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+          },
           hash: 'abc123',
           creator: 'erd1creator',
           createdAt: '2024-01-01T00:00:00Z',

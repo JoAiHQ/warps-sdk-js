@@ -7,7 +7,6 @@ import {
   getWarpActionByIndex,
   getWarpPrimaryAction,
   isWarpActionAutoExecute,
-  parseWarpQueryStringToObject,
   replacePlaceholdersInWhenExpression,
 } from './helpers'
 import { extractPromptOutput } from './helpers/output'
@@ -83,7 +82,7 @@ export class WarpExecutor {
     let immediateExecutions: WarpActionExecutionResult[] = []
     let resolvedInputs: string[] = []
 
-    const warpQueries = parseWarpQueryStringToObject(warp.meta?.query ?? null)
+    const warpQueries = warp.meta?.query ?? {}
     const mergedQueries = { ...warpQueries, ...meta.queries }
     const mergedMeta = { ...meta, queries: mergedQueries }
 

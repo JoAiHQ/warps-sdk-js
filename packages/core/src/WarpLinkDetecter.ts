@@ -6,6 +6,7 @@ import {
     extractQueryStringFromUrl,
     findWarpAdapterForChain,
     getWarpInfoFromIdentifier,
+    parseWarpQueryStringToObject,
 } from './helpers'
 import { ChainAdapter, Warp, WarpBrand, WarpCacheConfig, WarpClientConfig, WarpRegistryInfo } from './types'
 import { WarpInterpolator } from './WarpInterpolator'
@@ -94,7 +95,7 @@ export class WarpLinkDetecter {
 
       if (warp && warp.meta) {
         modifyWarpMetaIdentifier(warp, adapter.chainInfo.name, registryInfo, identifierResult.identifier)
-        warp.meta.query = queryString
+        warp.meta.query = queryString ? parseWarpQueryStringToObject(queryString) : null
       }
 
       if (!warp) {

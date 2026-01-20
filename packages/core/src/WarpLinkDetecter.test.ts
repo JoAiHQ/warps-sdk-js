@@ -234,7 +234,7 @@ describe('WarpLinkDetecter', () => {
     const result = await link.detect(`${hash64}?queryA=valueA&queryB=valueB`)
 
     expect(mockBuilder.createFromTransactionHash).toHaveBeenCalledWith(hash64, undefined)
-    expect(result.warp?.meta?.query).toBe('queryA=valueA&queryB=valueB')
+    expect(result.warp?.meta?.query).toEqual({ queryA: 'valueA', queryB: 'valueB' })
   })
 
   it('extracts query string from hash identifier format with query params', async () => {
@@ -244,7 +244,7 @@ describe('WarpLinkDetecter', () => {
     const result = await link.detect('hash:abc123?queryA=valueA&queryB=valueB')
 
     expect(mockBuilder.createFromTransactionHash).toHaveBeenCalledWith('abc123', undefined)
-    expect(result.warp?.meta?.query).toBe('queryA=valueA&queryB=valueB')
+    expect(result.warp?.meta?.query).toEqual({ queryA: 'valueA', queryB: 'valueB' })
   })
 
   it('extracts query string from URL with additional query params', async () => {
@@ -254,7 +254,7 @@ describe('WarpLinkDetecter', () => {
     const result = await link.detect('https://anyclient.com?warp=hash:123&param1=value1&param2=value2')
 
     expect(mockBuilder.createFromTransactionHash).toHaveBeenCalledWith('123', undefined)
-    expect(result.warp?.meta?.query).toBe('param1=value1&param2=value2')
+    expect(result.warp?.meta?.query).toEqual({ param1: 'value1', param2: 'value2' })
   })
 
   it('sets query to null when no query string exists', async () => {
