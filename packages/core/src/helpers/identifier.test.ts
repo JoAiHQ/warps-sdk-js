@@ -7,6 +7,7 @@ import {
   extractQueryStringFromUrl,
   getWarpInfoFromIdentifier,
   isEqualWarpIdentifier,
+  parseWarpQueryStringToObject,
 } from './identifier'
 
 describe('cleanWarpIdentifier', () => {
@@ -688,5 +689,52 @@ describe('extractQueryStringFromIdentifier', () => {
   it('handles query string at the start of identifier', () => {
     const identifier = '?param=value'
     expect(extractQueryStringFromIdentifier(identifier)).toBe('param=value')
+  })
+})
+
+describe('parseWarpQueryStringToObject', () => {
+  it('parses query string to object', () => {
+    const queryString = 'provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww'
+    expect(parseWarpQueryStringToObject(queryString)).toEqual({
+      provider: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+    })
+  })
+
+  it('handles query string with multiple parameters', () => {
+    const queryString = 'param1=value1&param2=value2'
+    expect(parseWarpQueryStringToObject(queryString)).toEqual({
+      param1: 'value1',
+      param2: 'value2',
+    })
+  })
+
+  it('handles query string starting with ?', () => {
+    const queryString = '?provider=test'
+    expect(parseWarpQueryStringToObject(queryString)).toEqual({
+      provider: 'test',
+    })
+  })
+
+  it('handles URL encoded values', () => {
+    const queryString = 'param=value%20with%20spaces'
+    expect(parseWarpQueryStringToObject(queryString)).toEqual({
+      param: 'value with spaces',
+    })
+  })
+
+  it('handles empty query string', () => {
+    expect(parseWarpQueryStringToObject('')).toEqual({})
+  })
+
+  it('handles null query string', () => {
+    expect(parseWarpQueryStringToObject(null)).toEqual({})
+  })
+
+  it('handles empty parameter values', () => {
+    const queryString = 'empty=&filled=value'
+    expect(parseWarpQueryStringToObject(queryString)).toEqual({
+      empty: '',
+      filled: 'value',
+    })
   })
 })

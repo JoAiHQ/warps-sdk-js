@@ -172,3 +172,15 @@ export const extractQueryStringFromIdentifier = (identifier: string): string | n
   const queryString = identifier.substring(queryIndex + 1)
   return queryString.length > 0 ? queryString : null
 }
+
+export const parseWarpQueryStringToObject = (queryString: string | null): Record<string, string> => {
+  if (!queryString) return {}
+  const cleanQuery = queryString.startsWith('?') ? queryString.slice(1) : queryString
+  if (!cleanQuery) return {}
+  const params = new URLSearchParams(cleanQuery)
+  const result: Record<string, string> = {}
+  params.forEach((value, key) => {
+    result[key] = value
+  })
+  return result
+}
