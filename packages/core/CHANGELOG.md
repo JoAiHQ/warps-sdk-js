@@ -1,5 +1,12 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.205
+
+### Patch Changes
+
+- 6cbd2f2: add warp query parsing helper
+- 17100a4: add execute auto-handling for meta queries
+
 ## 3.0.0-beta.204
 
 ### Patch Changes
