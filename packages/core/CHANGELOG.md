@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.204
+
+### Patch Changes
+
+- 67f44af: add input query value fallbacks
+
 ## 3.0.0-beta.203
 
 ### Patch Changes

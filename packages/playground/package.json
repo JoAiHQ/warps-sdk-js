@@ -1,6 +1,6 @@
 {
   "name": "@warps/playground",
-  "version": "1.0.0-beta.186",
+  "version": "1.0.0-beta.187",
   "description": "Playground for testing Warps SDK",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "play": "ts-node playground.ts"
   },
   "dependencies": {
-    "@joai/warps": "3.0.0-beta.203",
+    "@joai/warps": "3.0.0-beta.204",
     "@joai/warps-adapter-evm": "1.0.0-beta.74",
     "@joai/warps-adapter-fastset": "1.0.0-beta.58",
     "@joai/warps-mcp": "1.0.0-beta.35",
