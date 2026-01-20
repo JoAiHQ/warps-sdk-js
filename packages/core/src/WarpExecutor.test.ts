@@ -73,6 +73,94 @@ describe('WarpExecutor', () => {
       expect(result.chain).toBeDefined()
       expect(result.chain.name).toBe('multiversx') // Should fall back to default chain
     })
+
+    it('automatically merges queries from warp.meta.query with provided queries', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: 'test data' }),
+      })
+
+      const warpWithMetaQuery = {
+        ...warp,
+        meta: {
+          chain: 'multiversx' as const,
+          identifier: 'hash:abc123',
+          query: 'provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww&chain=multiversx',
+          hash: 'abc123',
+          creator: 'erd1creator',
+          createdAt: '2024-01-01T00:00:00Z',
+        },
+        vars: {
+          PROVIDER: 'query:provider',
+          CHAIN: 'query:chain',
+        },
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Collect with Query',
+            destination: {
+              url: 'https://api.example.com/collect?provider={{PROVIDER}}&chain={{CHAIN}}',
+              method: 'GET' as const,
+            },
+            inputs: [],
+          } as WarpCollectAction,
+        ],
+      }
+
+      const providedQueries = { chain: 'sui' }
+      const result = await executor.execute(warpWithMetaQuery, [], { queries: providedQueries })
+
+      expect(result).toBeDefined()
+      expect(mockFetch).toHaveBeenCalled()
+      const fetchCall = mockFetch.mock.calls[0]
+      const url = fetchCall[0] as string
+      // Provider from meta.query should be used
+      expect(url).toContain('provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww')
+      // Chain from provided queries should override meta.query
+      expect(url).toContain('chain=sui')
+    })
+
+    it('uses queries from warp.meta.query when no queries are provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: 'test data' }),
+      })
+
+      const warpWithMetaQuery = {
+        ...warp,
+        meta: {
+          chain: 'multiversx' as const,
+          identifier: 'hash:abc123',
+          query: 'provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+          hash: 'abc123',
+          creator: 'erd1creator',
+          createdAt: '2024-01-01T00:00:00Z',
+        },
+        vars: {
+          PROVIDER: 'query:provider',
+        },
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Collect with Query',
+            destination: {
+              url: 'https://api.example.com/collect?provider={{PROVIDER}}',
+              method: 'GET' as const,
+            },
+            inputs: [],
+          } as WarpCollectAction,
+        ],
+      }
+
+      const result = await executor.execute(warpWithMetaQuery, [])
+
+      expect(result).toBeDefined()
+      expect(mockFetch).toHaveBeenCalled()
+      const fetchCall = mockFetch.mock.calls[0]
+      const url = fetchCall[0] as string
+      // Provider from meta.query should be automatically used
+      expect(url).toContain('provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww')
+    })
   })
 
   describe('collect actions', () => {

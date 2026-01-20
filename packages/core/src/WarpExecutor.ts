@@ -7,6 +7,7 @@ import {
   getWarpActionByIndex,
   getWarpPrimaryAction,
   isWarpActionAutoExecute,
+  parseWarpQueryStringToObject,
   replacePlaceholdersInWhenExpression,
 } from './helpers'
 import { extractPromptOutput } from './helpers/output'
@@ -82,12 +83,16 @@ export class WarpExecutor {
     let immediateExecutions: WarpActionExecutionResult[] = []
     let resolvedInputs: string[] = []
 
+    const warpQueries = parseWarpQueryStringToObject(warp.meta?.query ?? null)
+    const mergedQueries = { ...warpQueries, ...meta.queries }
+    const mergedMeta = { ...meta, queries: mergedQueries }
+
     const { action: primaryAction, index: primaryIndex } = getWarpPrimaryAction(warp)
 
     for (let index = 1; index <= warp.actions.length; index++) {
       const action = getWarpActionByIndex(warp, index)
       if (!isWarpActionAutoExecute(action, warp)) continue
-      const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, meta)
+      const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, mergedMeta)
       if (tx) txs.push(tx)
       if (chain) chainInfo = chain
       if (immediateExecution) immediateExecutions.push(immediateExecution)
