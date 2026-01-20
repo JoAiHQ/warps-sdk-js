@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.206
+
+### Patch Changes
+
+- 755115e: update meta query format
+
 ## 3.0.0-beta.205
 
 ### Patch Changes
