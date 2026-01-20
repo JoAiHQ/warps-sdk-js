@@ -68,7 +68,7 @@ export class WarpFactory {
 
     const { action: primaryAction, index: primaryIndex } = getWarpPrimaryAction(preparedWarp)
     const primaryTypedInputs = this.getStringTypedInputs(primaryAction, inputs)
-    const primaryResolved = await this.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator)
+    const primaryResolved = await this.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator, meta.queries)
     const primaryResolvedInputs = await this.getModifiedInputs(primaryResolved)
 
     let resolvedInputs: ResolvedInput[] = []
@@ -79,7 +79,7 @@ export class WarpFactory {
       modifiedInputs = primaryResolvedInputs
     } else if (this.requiresPayloadInputs(preparedAction)) {
       // Actions with payload: positions need their own inputs resolved
-      resolvedInputs = await this.resolveActionInputs(chain.name, preparedAction, inputs, interpolator)
+      resolvedInputs = await this.resolveActionInputs(chain.name, preparedAction, inputs, interpolator, meta.queries)
       modifiedInputs = await this.getModifiedInputs(resolvedInputs)
     }
 
@@ -165,7 +165,8 @@ export class WarpFactory {
     chain: WarpChainName,
     action: WarpAction,
     inputArgs: string[],
-    interpolator: WarpInterpolator
+    interpolator: WarpInterpolator,
+    queries?: Record<string, any>
   ): Promise<ResolvedInput[]> {
     const argInputs = action.inputs || []
     const interpolatedArgs = inputArgs.map((arg) => interpolator.applyInputs(arg, [], this.serializer))
@@ -184,8 +185,11 @@ export class WarpFactory {
       }
 
       if (preprocessed[index]) return preprocessed[index]
-      const queryValue = this.url.searchParams.get(input.as || input.name)
-      return queryValue ? this.serializer.nativeToString(input.type, queryValue) : null
+      const inputKey = input.as || input.name
+      const queryValueFromMeta = queries?.[inputKey]
+      const queryValueFromUrl = this.url.searchParams.get(inputKey)
+      const queryValue = queryValueFromMeta || queryValueFromUrl
+      return queryValue ? this.serializer.nativeToString(input.type, String(queryValue)) : null
     }
 
     return argInputs.map((input: WarpActionInput, index: number) => {
@@ -211,10 +215,11 @@ export class WarpFactory {
     chainName: WarpChainName,
     action: WarpAction,
     inputs: string[],
-    interpolator: WarpInterpolator
+    interpolator: WarpInterpolator,
+    queries?: Record<string, any>
   ): Promise<ResolvedInput[]> {
     const actionTypedInputs = this.getStringTypedInputs(action, inputs)
-    return await this.getResolvedInputs(chainName, action, actionTypedInputs, interpolator)
+    return await this.getResolvedInputs(chainName, action, actionTypedInputs, interpolator, queries)
   }
 
   public async getModifiedInputs(inputs: ResolvedInput[]): Promise<ResolvedInput[]> {

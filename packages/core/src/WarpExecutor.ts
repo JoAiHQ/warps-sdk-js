@@ -603,13 +603,13 @@ export class WarpExecutor {
 
       const { action: primaryAction } = getWarpPrimaryAction(preparedWarp)
       const primaryTypedInputs = this.factory.getStringTypedInputs(primaryAction, inputs)
-      const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator)
+      const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator, meta.queries)
       const primaryResolvedInputs = await this.factory.getModifiedInputs(primaryResolved)
 
       let resolvedInputs: ResolvedInput[] = primaryResolvedInputs
       if (action.inputs && action.inputs.length > 0) {
         const actionTypedInputs = this.factory.getStringTypedInputs(action, inputs)
-        const actionResolved = await this.factory.getResolvedInputs(chain.name, action, actionTypedInputs, interpolator)
+        const actionResolved = await this.factory.getResolvedInputs(chain.name, action, actionTypedInputs, interpolator, meta.queries)
         resolvedInputs = await this.factory.getModifiedInputs(actionResolved)
       }
 
@@ -681,7 +681,7 @@ export class WarpExecutor {
     const interpolator = new WarpInterpolator(this.config, adapter, this.adapters)
     const { action: primaryAction } = getWarpPrimaryAction(warp)
     const primaryTypedInputs = this.factory.getStringTypedInputs(primaryAction, inputs)
-    const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator)
+    const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator, meta.queries)
     const primaryResolvedInputs = await this.factory.getModifiedInputs(primaryResolved)
 
     let actionResolvedInputs: ResolvedInput[]
@@ -692,7 +692,8 @@ export class WarpExecutor {
         chain.name,
         action,
         this.factory.getStringTypedInputs(action, inputs),
-        interpolator
+        interpolator,
+        meta.queries
       )
       actionResolvedInputs = await this.factory.getModifiedInputs(actionResolved)
     }

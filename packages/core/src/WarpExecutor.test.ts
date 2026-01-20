@@ -166,6 +166,53 @@ describe('WarpExecutor', () => {
       // Provider from meta.query should be automatically used
       expect(url).toContain('provider=erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww')
     })
+
+    it('resolves field inputs from queries in warp.meta.query and uses them for interpolation', async () => {
+      const providerAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww'
+      const contractWarp = {
+        ...warp,
+        chain: 'multiversx',
+        meta: {
+          chain: 'multiversx' as const,
+          identifier: '@multiversx:multiversx-staking-claim',
+          query: {
+            PROVIDER: providerAddress,
+          },
+          hash: 'abc123',
+          creator: 'erd1creator',
+          createdAt: '2024-01-01T00:00:00Z',
+        },
+        actions: [
+          {
+            type: 'contract' as const,
+            label: 'Claim now',
+            address: '{{PROVIDER}}',
+            func: 'claimRewards',
+            args: [],
+            gasLimit: 10000000,
+            inputs: [
+              {
+                name: 'Provider',
+                as: 'PROVIDER',
+                type: 'address',
+                source: 'field' as const,
+                required: true,
+              },
+            ],
+          },
+        ],
+      }
+
+      const executable = await executor['factory'].createExecutable(contractWarp, 1, [], { queries: { PROVIDER: providerAddress } })
+      
+      // Verify the input was resolved from queries
+      const providerInput = executable.resolvedInputs.find((ri) => ri.input.as === 'PROVIDER')
+      expect(providerInput).toBeDefined()
+      expect(providerInput?.value).toBe(`address:${providerAddress}`)
+      
+      // Verify the destination was interpolated from the resolved input
+      expect(executable.destination).toBe(providerAddress)
+    })
   })
 
   describe('collect actions', () => {
