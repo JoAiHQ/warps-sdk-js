@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0-beta.207
+
+### Patch Changes
+
+- dedea75: fix meta query input resolution
+
 ## 3.0.0-beta.206
 
 ### Patch Changes
