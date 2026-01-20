@@ -172,21 +172,20 @@ export class WarpFactory {
     const preprocessed = await Promise.all(interpolatedArgs.map((arg) => this.preprocessInput(chain, arg)))
 
     const toValueByType = (input: WarpActionInput, index: number) => {
-      if (input.source === 'query') {
-        const value = this.url.searchParams.get(input.name)
-        if (!value) return null
-        return this.serializer.nativeToString(input.type, value)
-      } else if (input.source === WarpConstants.Source.UserWallet) {
+      if (input.source === WarpConstants.Source.UserWallet) {
         const wallet = getWarpWalletAddressFromConfig(this.config, chain)
-        if (!wallet) return null
-        return this.serializer.nativeToString('address', wallet)
-      } else if (input.source === 'hidden') {
+        return wallet ? this.serializer.nativeToString('address', wallet) : null
+      }
+
+      if (input.source === 'hidden') {
         if (input.default === undefined) return null
         const defaultValue = interpolator ? interpolator.applyInputs(String(input.default), [], this.serializer) : String(input.default)
         return this.serializer.nativeToString(input.type, defaultValue)
-      } else {
-        return preprocessed[index] || null
       }
+
+      if (preprocessed[index]) return preprocessed[index]
+      const queryValue = this.url.searchParams.get(input.as || input.name)
+      return queryValue ? this.serializer.nativeToString(input.type, queryValue) : null
     }
 
     return argInputs.map((input: WarpActionInput, index: number) => {

@@ -128,7 +128,7 @@ describe('WarpExecutor', () => {
         ],
       }
       // Provide valid receiver input for the collect action
-      const inputs = ['address:erd1receiver', 'biguint:100', 'asset:MYTOKEN|100', 'queryParam:foo']
+      const inputs = ['address:erd1receiver', 'biguint:100', 'asset:MYTOKEN|100', 'string:foo']
       const result = await executor.execute(collectWarp, inputs)
       expect(result).toBeDefined()
       expect(handlers.onExecuted).toHaveBeenCalled()

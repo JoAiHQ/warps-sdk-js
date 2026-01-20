@@ -227,8 +227,52 @@ describe('WarpFactory', () => {
       ],
     }
     const result = await factory.getResolvedInputs('multiversx', action, ['string:ignored', 'address:ignored'], interpolator)
-    expect(result[0].value).toBe('string:bar')
+    expect(result[0].value).toBe('string:ignored')
     expect(result[1].value).toBe('address:erd1testwallet')
+  })
+
+  it('getResolvedInputs falls back to query params when no input args provided', async () => {
+    const configWithQuery = createMockConfig({
+      user: { wallets: { multiversx: 'erd1testwallet' } },
+      currentUrl: 'https://example.com?RECIPIENT=erd1recipient&amount=100',
+    })
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(configWithQuery, [adapter])
+    const interpolator = new WarpInterpolator(configWithQuery, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'transfer',
+      label: 'Test',
+      address: 'erd1dest',
+      value: '0',
+      inputs: [
+        { name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' } as any,
+        { name: 'amount', type: 'string', source: 'field' } as any,
+      ],
+    }
+    const result = await factory.getResolvedInputs('multiversx', action, [], interpolator)
+    expect(result[0].value).toBe('address:erd1recipient')
+    expect(result[1].value).toBe('string:100')
+  })
+
+  it('getResolvedInputs uses input args over query params when provided', async () => {
+    const configWithQuery = createMockConfig({
+      user: { wallets: { multiversx: 'erd1testwallet' } },
+      currentUrl: 'https://example.com?RECIPIENT=erd1fromquery',
+    })
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(configWithQuery, [adapter])
+    const interpolator = new WarpInterpolator(configWithQuery, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'transfer',
+      label: 'Test',
+      address: 'erd1dest',
+      value: '0',
+      inputs: [
+        { name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' } as any,
+      ],
+    }
+    const result = await factory.getResolvedInputs('multiversx', action, ['address:erd1fromargs'], interpolator)
+    expect(result[0].value).toBe('address:erd1fromargs')
   })
 
   it('getResolvedInputs interpolates globals in input values', async () => {
