@@ -1,4 +1,3 @@
-import { Address, NetworkEntrypoint, Transaction } from '@multiversx/sdk-core'
 import {
   AdapterWarpWallet,
   CacheTtl,
@@ -11,6 +10,7 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
+import { Address, NetworkEntrypoint, Transaction } from '@multiversx/sdk-core'
 import { getMultiversxEntrypoint } from './helpers/general'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
 import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
@@ -126,6 +126,7 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     const wallet = this.config.user?.wallets?.[this.chain.name]
     if (!wallet) return null
     if (typeof wallet === 'string') return new ReadOnlyWalletProvider(this.config, this.chain)
+    if (!wallet.provider) return new ReadOnlyWalletProvider(this.config, this.chain)
     return this.createProviderForOperation(wallet.provider)
   }
 

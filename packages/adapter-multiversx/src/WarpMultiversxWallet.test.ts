@@ -230,7 +230,9 @@ describe('WarpMultiversxWallet', () => {
     })
 
     it('should create wallet with provider even when wallet is read-only', async () => {
-      const result = await readOnlyWallet.importFromMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art')
+      const result = await readOnlyWallet.importFromMnemonic(
+        'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art'
+      )
       expect(result).toBeDefined()
       expect(result.address).toBeDefined()
       expect(result.provider).toBe('mnemonic')
@@ -253,6 +255,52 @@ describe('WarpMultiversxWallet', () => {
         const words = result.mnemonic.split(' ')
         expect(words.length).toBe(24)
       }
+    })
+  })
+
+  describe('wallet object with null or undefined provider', () => {
+    const chainInfo = {
+      name: 'multiversx',
+      displayName: 'MultiversX',
+      chainId: 'D',
+      blockTime: 6000,
+      addressHrp: 'erd',
+      defaultApiUrl: 'https://api.multiversx.com',
+      logoUrl: 'https://example.com/multiversx-logo.png',
+      nativeToken: {
+        chain: 'multiversx',
+        identifier: 'EGLD',
+        name: 'MultiversX',
+        symbol: 'EGLD',
+        decimals: 18,
+        logoUrl: 'https://example.com/egld-logo.png',
+      },
+    }
+
+    it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
+      const config = {
+        env: 'devnet',
+        cache: { type: 'memory' },
+        user: {
+          wallets: {
+            multiversx: { address: 'erd1test123456789012345678901234567890123456789012345678901234567890', provider: null },
+          } as any,
+        },
+      }
+      expect(() => new WarpMultiversxWallet(config, chainInfo)).not.toThrow('Unsupported wallet provider')
+    })
+
+    it('should use ReadOnlyWalletProvider when provider is undefined', () => {
+      const config = {
+        env: 'devnet',
+        cache: { type: 'memory' },
+        user: {
+          wallets: {
+            multiversx: { address: 'erd1test999', provider: undefined },
+          } as any,
+        },
+      }
+      expect(() => new WarpMultiversxWallet(config, chainInfo)).not.toThrow('Unsupported wallet provider')
     })
   })
 })
