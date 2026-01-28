@@ -1,6 +1,8 @@
 import { Warp, WarpClientConfig, WarpLogger } from '@joai/warps'
 import type { WarpMcpResource } from '../types'
 
+const RESOURCE_MIME_TYPE = 'text/html;profile=mcp-app' as const
+
 const loadComponent = async (componentPath: string): Promise<string> => {
   if (componentPath.startsWith('http://') || componentPath.startsWith('https://')) {
     const res = await fetch(componentPath)
@@ -19,8 +21,8 @@ export const createAppResource = async (warp: Warp, componentPath: string, confi
     return {
       name: warp.name,
       uri: `ui://widget/${warp.meta.identifier}`,
-      description: `ChatGPT app for ${warp.name}`,
-      mimeType: 'text/html+skybridge',
+      description: `MCP app for ${warp.name}`,
+      mimeType: RESOURCE_MIME_TYPE,
       content: htmlContent,
     }
   } catch (error) {

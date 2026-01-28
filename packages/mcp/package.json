@@ -37,6 +37,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.0.1",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "zod": "^4.3.5"
   },

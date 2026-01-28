@@ -9,8 +9,33 @@ export type WarpMcpServerConfig = {
 export type JsonSchema = Record<string, unknown>
 export type ToolInputSchema = Record<string, z.ZodTypeAny> | JsonSchema | undefined
 export type ToolOutputSchema = JsonSchema | undefined
-export type ToolMeta = Record<string, string | number | boolean | null>
-export type ResourceMeta = Record<string, unknown>
+
+export type WarpAppUiMeta = {
+  resourceUri?: string
+  visibility?: string[]
+}
+
+export type WarpAppResourceUiMeta = {
+  csp?: {
+    resourceDomains?: string[]
+    connectDomains?: string[]
+    frameDomains?: string[]
+    baseUriDomains?: string[]
+  }
+  permissions?: ('camera' | 'microphone' | 'geolocation' | 'clipboard')[]
+  domain?: string
+  prefersBorder?: boolean
+}
+
+export type ToolMeta = {
+  ui?: WarpAppUiMeta
+  [key: string]: string | number | boolean | null | WarpAppUiMeta | undefined
+}
+
+export type ResourceMeta = {
+  ui?: WarpAppResourceUiMeta
+  [key: string]: unknown
+}
 
 export type WarpMcpTool = {
   name: string

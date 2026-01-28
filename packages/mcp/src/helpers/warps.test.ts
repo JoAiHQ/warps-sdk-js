@@ -1374,7 +1374,7 @@ describe('convertWarpToMcpCapabilities', () => {
       expect(result.resource).toBeDefined()
       expect(result.resource?.name).toBe('app_test')
       expect(result.resource?.uri).toBe('ui://widget/app_test')
-      expect(result.resource?.mimeType).toBe('text/html+skybridge')
+      expect(result.resource?.mimeType).toBe('text/html;profile=mcp-app')
       expect(result.resource?.content).toBe(mockComponentCode)
     })
 

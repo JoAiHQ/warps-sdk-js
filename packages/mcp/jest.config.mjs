@@ -13,6 +13,9 @@ export default {
       },
     ],
   },
+  transformIgnorePatterns: [
+    'node_modules',
+  ],
   testMatch: ['**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 }

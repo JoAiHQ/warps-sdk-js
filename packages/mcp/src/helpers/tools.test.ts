@@ -275,7 +275,7 @@ describe('convertActionToTool', () => {
     expect(tool.description).toBe('Test description')
     expect(tool.inputSchema).toBeUndefined()
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
   })
 
   it('includes output template URI in _meta when provided', () => {
@@ -301,11 +301,11 @@ describe('convertActionToTool', () => {
     const tool = convertActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/test_warp' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/test_warp')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/test_warp')
   })
 
-  it('includes invoking and invoked messages with localization (en) in _meta when provided', () => {
+  it('includes output template URI in _meta with resource when messages are provided', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -332,13 +332,11 @@ describe('convertActionToTool', () => {
     const tool = convertActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/test_warp' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/test_warp')
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Processing transfer')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBe('Transfer completed')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/test_warp')
   })
 
-  it('includes invoking and invoked messages with localization (de) in _meta when provided', () => {
+  it('includes output template URI in _meta with resource when messages are provided (de)', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -365,13 +363,11 @@ describe('convertActionToTool', () => {
     const tool = convertActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/test_warp' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/test_warp')
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Übertragung wird verarbeitet')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBe('Übertragung abgeschlossen')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/test_warp')
   })
 
-  it('handles string format messages (non-localized)', () => {
+  it('includes only visibility in _meta when no resource is provided', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -398,9 +394,7 @@ describe('convertActionToTool', () => {
     const tool = convertActionToTool(warp, action, undefined, undefined, null, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Starting')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBe('Done')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
   })
 
   it('sanitizes warp name correctly', () => {
@@ -565,11 +559,11 @@ describe('convertMcpActionToTool', () => {
     const tool = convertMcpActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/mcp_tool' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/mcp_tool')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/mcp_tool')
   })
 
-  it('includes invoking and invoked messages with localization (en) in _meta when provided', () => {
+  it('includes output template URI in _meta with resource when messages are provided (en)', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -577,7 +571,7 @@ describe('convertMcpActionToTool', () => {
       description: null,
       actions: [],
       messages: {
-        invoking: { en: 'Displaying the board' },
+        invoking: { en: 'Displaying board' },
         invoked: { en: 'Displayed the board' },
       },
     }
@@ -596,13 +590,11 @@ describe('convertMcpActionToTool', () => {
     const tool = convertMcpActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/mcp_tool' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/mcp_tool')
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Displaying the board')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBe('Displayed the board')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/mcp_tool')
   })
 
-  it('includes invoking and invoked messages with localization (de) in _meta when provided', () => {
+  it('includes output template URI in _meta with resource when messages are provided (de)', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -629,13 +621,11 @@ describe('convertMcpActionToTool', () => {
     const tool = convertMcpActionToTool(warp, action, undefined, undefined, { uri: 'ui://widget/mcp_tool' }, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/outputTemplate']).toBe('ui://widget/mcp_tool')
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Board wird angezeigt')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBe('Board wurde angezeigt')
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
+    expect(tool.meta?.ui?.resourceUri).toBe('ui://widget/mcp_tool')
   })
 
-  it('handles partial messages with localization (only invoking)', () => {
+  it('includes only visibility in _meta when no resource is provided', () => {
     const warp: Warp = {
       protocol: 'warp:3.0.0',
       name: 'test_warp',
@@ -661,8 +651,6 @@ describe('convertMcpActionToTool', () => {
     const tool = convertMcpActionToTool(warp, action, undefined, undefined, null, mockConfig)
 
     expect(tool.meta).toBeDefined()
-    expect(tool.meta!['openai/widgetAccessible']).toBe(true)
-    expect(tool.meta!['openai/toolInvocation/invoking']).toBe('Starting process')
-    expect(tool.meta!['openai/toolInvocation/invoked']).toBeUndefined()
+    expect(tool.meta?.ui?.visibility).toEqual(['model', 'app'])
   })
 })

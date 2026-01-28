@@ -155,22 +155,23 @@ export const convertMcpActionToTool = (
 }
 
 const buildToolMeta = (warp: Warp, resource: WarpMcpResource | null, config: WarpClientConfig): WarpMcpTool['meta'] => {
-  const meta: NonNullable<WarpMcpTool['meta']> = {
-    'openai/widgetAccessible': true,
+  const uiMeta: NonNullable<WarpMcpTool['meta']>['ui'] = {
+    visibility: ['model', 'app'],
   }
 
   if (resource) {
-    meta['openai/outputTemplate'] = resource.uri
+    uiMeta.resourceUri = resource.uri
   }
 
-  if (warp.messages) {
-    const invoking = extractTextOrUndefined(warp.messages.invoking, config)
-    const invoked = extractTextOrUndefined(warp.messages.invoked, config)
-    if (invoking) meta['openai/toolInvocation/invoking'] = invoking
-    if (invoked) meta['openai/toolInvocation/invoked'] = invoked
-  }
+  // TODO: Once MCP Apps support: https://modelcontextprotocol.github.io/ext-apps/api/documents/Migrate_OpenAI_App.html#tool-metadata
+  //   if (warp.messages) {
+  //     const invoking = extractTextOrUndefined(warp.messages.invoking, config)
+  //     const invoked = extractTextOrUndefined(warp.messages.invoked, config)
+  //     if (invoking) uiMeta['openai/toolInvocation/invoking'] = invoking
+  //     if (invoked) uiMeta['openai/toolInvocation/invoked'] = invoked
+  //   }
 
-  return meta
+  return { ui: uiMeta }
 }
 
 const deriveToolNameFromWarp = (warp: Warp): string => {

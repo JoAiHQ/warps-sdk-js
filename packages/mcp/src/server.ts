@@ -1,6 +1,7 @@
 import { Warp } from '@joai/warps'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-compat.js'
+import { registerAppTool, registerAppResource } from '@modelcontextprotocol/ext-apps/server'
 import { z } from 'zod'
 import { convertMcpArgsToWarpInputs } from './helpers/execution'
 import { interpolatePromptWithArgs } from './helpers/prompts'
@@ -58,32 +59,62 @@ export const createMcpServerFromWarps = (
         inputSchema,
         ...(tool.meta && { _meta: tool.meta }),
       }
-      server.registerTool(
-        tool.name,
-        toolDefinition as Parameters<typeof server.registerTool>[1],
-        async (args: WarpMcpToolArgs): Promise<WarpMcpToolResult> => {
-          const inputs = convertMcpArgsToWarpInputs(warp, args || {})
-          const result = await executor(warp, inputs)
-          return result
-        }
-      )
+
+      const toolHandler = async (args: WarpMcpToolArgs): Promise<WarpMcpToolResult> => {
+        const inputs = convertMcpArgsToWarpInputs(warp, args || {})
+        const result = await executor(warp, inputs)
+        return result
+      }
+
+      if (tool.meta?.ui?.resourceUri) {
+        registerAppTool(
+          server,
+          tool.name,
+          toolDefinition as Parameters<typeof registerAppTool>[2],
+          toolHandler
+        )
+      } else {
+        server.registerTool(
+          tool.name,
+          toolDefinition as Parameters<typeof server.registerTool>[1],
+          toolHandler
+        )
+      }
     }
 
     if (resource) {
-      server.registerResource(
-        resource.name || resource.uri,
-        resource.uri,
-        { description: resource.description, mimeType: resource.mimeType },
-        async () => {
-          const content: { uri: string; text: string; mimeType?: string; _meta?: Record<string, unknown> } = {
-            uri: resource.uri,
-            text: resource.content || '',
-            mimeType: resource.mimeType,
+      if (resource.mimeType?.includes('profile=mcp-app')) {
+        registerAppResource(
+          server,
+          resource.name || resource.uri,
+          resource.uri,
+          { description: resource.description },
+          async () => {
+            const content: { uri: string; text: string; mimeType?: string; _meta?: Record<string, unknown> } = {
+              uri: resource.uri,
+              text: resource.content || '',
+              mimeType: resource.mimeType,
+            }
+            if (resource.meta) content._meta = resource.meta as Record<string, unknown>
+            return { contents: [content] }
           }
-          if (resource.meta) content._meta = resource.meta as Record<string, unknown>
-          return { contents: [content] }
-        }
-      )
+        )
+      } else {
+        server.registerResource(
+          resource.name || resource.uri,
+          resource.uri,
+          { description: resource.description, mimeType: resource.mimeType },
+          async () => {
+            const content: { uri: string; text: string; mimeType?: string; _meta?: Record<string, unknown> } = {
+              uri: resource.uri,
+              text: resource.content || '',
+              mimeType: resource.mimeType,
+            }
+            if (resource.meta) content._meta = resource.meta as Record<string, unknown>
+            return { contents: [content] }
+          }
+        )
+      }
     }
 
     if (prompt) {

@@ -59,8 +59,8 @@ console.log('Hello World');
     expect(result).toBeDefined()
     expect(result!.name).toBe('test_app')
     expect(result!.uri).toBe('ui://widget/test_app')
-    expect(result!.mimeType).toBe('text/html+skybridge')
-    expect(result!.description).toBe('ChatGPT app for test_app')
+    expect(result!.mimeType).toBe('text/html;profile=mcp-app')
+    expect(result!.description).toBe('MCP app for test_app')
     expect(result!.content).toBe(mockHtmlContent)
   })
 
