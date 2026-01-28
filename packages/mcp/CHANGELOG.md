@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 1.0.0-beta.36
+
+### Minor Changes
+
+- 431c050: migrate to mcp apps
+
 ## 1.0.0-beta.35
 
 ### Patch Changes
