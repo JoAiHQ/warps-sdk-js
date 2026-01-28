@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-multiversx",
-  "version": "1.0.0-beta.100",
+  "version": "1.0.0-beta.101",
   "description": "",
   "type": "module",
   "types": "./dist/index.d.ts",

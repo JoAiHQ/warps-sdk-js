@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.0.0-beta.101
+
+### Patch Changes
+
+- 9982ae8: fix mvx wallet undefined provider handling
+
 ## 1.0.0-beta.100
 
 ### Patch Changes
