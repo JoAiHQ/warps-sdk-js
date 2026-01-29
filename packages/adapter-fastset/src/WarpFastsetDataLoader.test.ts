@@ -1,4 +1,4 @@
-import { WarpChainEnv, WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { WarpChainEnv, WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { WarpFastsetDataLoader } from './WarpFastsetDataLoader'
 
 describe('WarpFastsetDataLoader', () => {
@@ -8,7 +8,7 @@ describe('WarpFastsetDataLoader', () => {
   }
 
   const mockChainInfo: WarpChainInfo = {
-    name: 'fastset',
+    name: WarpChainName.Fastset,
     displayName: 'FastSet',
     chainId: 'fastset',
     blockTime: 1000,
@@ -16,7 +16,7 @@ describe('WarpFastsetDataLoader', () => {
     defaultApiUrl: 'https://rpc.fastset.xyz',
     logoUrl: 'https://example.com/fastset-logo.png',
     nativeToken: {
-      chain: 'fastset',
+      chain: WarpChainName.Fastset,
       identifier: 'SET',
       name: 'SET',
       symbol: 'SET',

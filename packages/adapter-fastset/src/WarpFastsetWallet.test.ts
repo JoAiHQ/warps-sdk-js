@@ -1,4 +1,4 @@
-import { getWarpWalletPrivateKeyFromConfig } from '@joai/warps'
+import { getWarpWalletPrivateKeyFromConfig, WarpChainInfo, WarpChainName } from '@joai/warps'
 import { Transaction } from './sdk'
 import { WarpFastsetWallet } from './WarpFastsetWallet'
 
@@ -66,14 +66,15 @@ describe('WarpFastsetWallet', () => {
       wallets: {
         fastset: {
           provider: 'privateKey' as const,
+          address: '',
           privateKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
         },
       },
     },
   }
 
-  const mockChain = {
-    name: 'fastset',
+  const mockChain: WarpChainInfo = {
+    name: WarpChainName.Fastset,
     displayName: 'FastSet',
     chainId: 'testnet',
     blockTime: 1000,
@@ -81,7 +82,7 @@ describe('WarpFastsetWallet', () => {
     defaultApiUrl: 'https://test.fastset.xyz',
     logoUrl: 'https://test.fastset.xyz/logo.svg',
     nativeToken: {
-      chain: 'fastset',
+      chain: WarpChainName.Fastset,
       identifier: 'SET',
       name: 'SET',
       symbol: 'SET',
@@ -130,6 +131,7 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
+              address: '',
               mnemonic:
                 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
@@ -155,6 +157,7 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
+              address: '',
               mnemonic:
                 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
@@ -179,6 +182,7 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
+              address: '',
               mnemonic:
                 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
@@ -376,6 +380,7 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
+              address: '',
               mnemonic:
                 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },

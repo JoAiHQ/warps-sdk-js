@@ -1,3 +1,4 @@
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpFastsetOutput } from './WarpFastsetOutput'
 
 describe('WarpFastsetOutput', () => {
@@ -18,8 +19,8 @@ describe('WarpFastsetOutput', () => {
         },
       },
     }
-    const mockChain = {
-      name: 'fastset',
+    const mockChain: WarpChainInfo = {
+      name: WarpChainName.Fastset,
       displayName: 'Fastset',
       chainId: '1',
       blockTime: 1000,
@@ -27,7 +28,7 @@ describe('WarpFastsetOutput', () => {
       defaultApiUrl: 'https://api.fastset.com',
       logoUrl: 'https://example.com/fs-chain.svg',
       nativeToken: {
-        chain: 'fastset',
+        chain: WarpChainName.Fastset,
         identifier: 'FS',
         name: 'Fastset Token',
         symbol: 'FS',

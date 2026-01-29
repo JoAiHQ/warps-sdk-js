@@ -4,7 +4,7 @@ import { FastsetJsonRpcResponse, TokenInfoResponse, TransactionCertificate } fro
   return Number(this)
 }
 
-export interface TransactionData {
+interface TransactionData {
   sender: number[] | Uint8Array
   recipient: any
   nonce: number
@@ -13,20 +13,7 @@ export interface TransactionData {
   signature?: string
 }
 
-export interface AccountInfoResponse {
-  sender: number[]
-  balance: string
-  next_nonce: number
-  pending_confirmation?: any
-  requested_certificate?: any
-  requested_validated_transaction?: any
-  requested_received_transfers: any[]
-  token_balance: Array<[number[], string]>
-  requested_claim_by_id?: any
-  requested_claims: any[]
-}
-
-export interface AccountInfoResponse {
+interface AccountInfoResponse {
   sender: number[]
   balance: string
   next_nonce: number
