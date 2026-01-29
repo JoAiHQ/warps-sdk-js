@@ -1,6 +1,7 @@
+import { CdpClient } from '@coinbase/cdp-sdk'
+import type { WarpChainInfo } from '@joai/warps'
 import { CoinbaseWalletProvider } from './CoinbaseWalletProvider'
 import { CoinbaseProviderConfig } from './types'
-import { CdpClient } from '@coinbase/cdp-sdk'
 
 jest.mock('@coinbase/cdp-sdk')
 
@@ -11,17 +12,25 @@ describe('CoinbaseWalletProvider', () => {
   const mockPublicKey = '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
 
   let config: any
-  let chain: any
+  let chain: WarpChainInfo
   let coinbaseConfig: CoinbaseProviderConfig
   let provider: CoinbaseWalletProvider
-  let mockClient: jest.Mocked<CdpClient>
+  let mockClient: any
+
+  const baseChain = (name: string, defaultApiUrl: string, addressHrp: string): WarpChainInfo =>
+    ({
+      name,
+      displayName: name,
+      chainId: '1',
+      blockTime: 12,
+      addressHrp,
+      defaultApiUrl,
+      logoUrl: '',
+      nativeToken: { chain: name, identifier: '', name: '', symbol: '', decimals: 18, logoUrl: '' },
+    }) as WarpChainInfo
 
   beforeEach(() => {
-    chain = {
-      name: 'ethereum',
-      defaultApiUrl: 'https://rpc.sepolia.org',
-      addressHrp: '0x',
-    }
+    chain = baseChain('ethereum', 'https://rpc.sepolia.org', '0x')
     config = {
       env: 'testnet',
       user: {
@@ -63,8 +72,7 @@ describe('CoinbaseWalletProvider', () => {
         importAccount: jest.fn(),
       },
     } as any
-
-    ;(CdpClient as jest.MockedFunction<typeof CdpClient>).mockReturnValue(mockClient)
+    ;(CdpClient as any).mockReturnValue(mockClient)
 
     provider = new CoinbaseWalletProvider(config, chain, coinbaseConfig)
   })
@@ -176,9 +184,7 @@ describe('CoinbaseWalletProvider', () => {
       }
       mockClient.evm.getAccount.mockResolvedValue(mockAccountWithSignMethod)
 
-      await expect(provider.signTransaction({})).rejects.toThrow(
-        'CoinbaseWalletProvider: Failed to sign transaction'
-      )
+      await expect(provider.signTransaction({})).rejects.toThrow('CoinbaseWalletProvider: Failed to sign transaction')
     })
 
     it('should fix invalid fee relationship where maxPriorityFeePerGas > maxFeePerGas', async () => {
@@ -323,9 +329,7 @@ describe('CoinbaseWalletProvider', () => {
       })
       mockClient.evm.signMessage.mockResolvedValue({})
 
-      await expect(provider.signMessage('test')).rejects.toThrow(
-        'Coinbase API did not return signed message'
-      )
+      await expect(provider.signMessage('test')).rejects.toThrow('Coinbase API did not return signed message')
     })
 
     it('should throw error on API failure', async () => {
@@ -334,9 +338,7 @@ describe('CoinbaseWalletProvider', () => {
       })
       mockClient.evm.signMessage.mockRejectedValue(new Error('API error'))
 
-      await expect(provider.signMessage('test')).rejects.toThrow(
-        'CoinbaseWalletProvider: Failed to sign message'
-      )
+      await expect(provider.signMessage('test')).rejects.toThrow('CoinbaseWalletProvider: Failed to sign message')
     })
   })
 
@@ -372,11 +374,7 @@ describe('CoinbaseWalletProvider', () => {
     })
 
     it('should import Solana account from private key', async () => {
-      const solanaChain = {
-        name: 'solana',
-        defaultApiUrl: 'https://api.mainnet-beta.solana.com',
-        addressHrp: '',
-      }
+      const solanaChain = baseChain('solana', 'https://api.mainnet-beta.solana.com', '')
       const solanaConfig = {
         ...config,
         user: {
@@ -436,11 +434,7 @@ describe('CoinbaseWalletProvider', () => {
     })
 
     it('should export Solana account private key', async () => {
-      const solanaChain = {
-        name: 'solana',
-        defaultApiUrl: 'https://api.mainnet-beta.solana.com',
-        addressHrp: '',
-      }
+      const solanaChain = baseChain('solana', 'https://api.mainnet-beta.solana.com', '')
       const solanaConfig = {
         ...config,
         user: {
@@ -477,9 +471,7 @@ describe('CoinbaseWalletProvider', () => {
       }
       const providerWithoutAddress = new CoinbaseWalletProvider(configWithoutAddress, chain, coinbaseConfig)
 
-      await expect(providerWithoutAddress.export()).rejects.toThrow(
-        'CoinbaseWalletProvider: Wallet address not found in config'
-      )
+      await expect(providerWithoutAddress.export()).rejects.toThrow('CoinbaseWalletProvider: Wallet address not found in config')
     })
 
     it('should throw error on API failure', async () => {
@@ -504,13 +496,10 @@ describe('CoinbaseWalletProvider', () => {
       expect(config.user?.wallets?.[chain.name]).toEqual(result)
     })
 
-
     it('should throw error on API failure', async () => {
       mockClient.evm.createAccount.mockRejectedValue(new Error('API error'))
 
-      await expect(provider.generate()).rejects.toThrow(
-        'CoinbaseWalletProvider: Failed to generate account'
-      )
+      await expect(provider.generate()).rejects.toThrow('CoinbaseWalletProvider: Failed to generate account')
     })
   })
 })
