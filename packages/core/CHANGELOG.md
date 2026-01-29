@@ -1,5 +1,265 @@
 # @vleap/warp-sdk-core
 
+## 3.0.0
+
+### Major Changes
+
+- 1608055: migrate to joai org
+- 8d57441: re-arch multi-package + adapters
+- 694c989: prepend warp prefix to vars + types
+- d647f6a: update collect exec body
+
+### Minor Changes
+
+- 6dc80d4: add structs and complex type fixes
+- 6aaf181: add custom collector payloads
+- 1f9aa05: add user multi-wallet
+- 4a5076c: further rearch
+- c721f10: add wallet manager
+- f842245: update protocol version
+- d54c656: add prompts default output
+- 042a162: update warp identifiers
+- 9518f3f: further rearch
+- cc79e6b: further rearch
+- fc92560: update transformations
+- ea6a310: add input transform modifier
+- 7062a92: add input-based results
+- 67223b1: update registry configs
+- 5321a6b: further rearch
+- 6f02004: add prompt action outputs
+- 924b053: further rearch
+- ea04086: add action conditionals
+- b8988d5: add custom provider configs
+- bf84508: update asset encoding
+- 13b6127: update assets
+- caf0979: update custom types + add type aliases
+- 90d2716: add query to warp meta
+- 29b84b6: add data loader get-action
+- 430edc0: add automatic input typing
+- ad9af2a: add primary input references
+- b6fbfef: update executor
+- 5c50caf: add alert types
+- 62f31d0: add asset object positions + nested primary references
+- c680090: add native token info to chain info
+- dfaea22: add request signing
+- c4287f5: add index to client
+- a0c17ea: upgrade deps
+- 40e8470: rearch + adapters
+- 02ce817: add custom types
+- 455faa2: update builds
+- ae4d46e: rearch + adapters
+- 785b1cd: add input interpolation
+- 795b560: update provider configs
+- 19db0e8: fix tests + move to esm
+- c51a381: add brand i18
+- 6a4249c: add wallet public key method
+- 0016189: add cache static strategy
+- fd56907: add dynamic env injection to executor
+- a6d698b: upgrade deps
+- 52a0958: add evm somnia network
+- e546232: add hidden input sources
+- 90f1a05: add wallet providers
+- d48e19b: update input preprocessing
+- 66cd2fd: expand registry multi-chain
+- 9b46d12: add local chain infos
+- 627badf: add further struct support
+- 73c3a6e: add adapter data loaders
+- 3bd42a7: add multi-action exec
+- 12ea059: update result evaluations
+- aa0d529: add warp prompts
+- 4d143d7: add data loader get-asset
+- 5d02aa5: add near adapter
+- 59047d1: update i18n
+- d919b6e: add vars query description support
+- e97ec34: add x402 + update wallet management
+- 06ad967: update builds
+- 7299456: add asset type
+- f371878: add registry chain management
+- 496987c: add mcp
+- 0d22c03: update codec
+- 0476e7e: add input defaults
+- 3e86317: add wallet import + export
+- 657d125: add transformations
+- 53f5231: rename results to output
+- 57685fc: add cache file strategy
+- 98a47e1: update client executor impl
+- 1a32114: add chain explorers
+- f0fccb0: update exec results
+- 588aaf3: update adapter data loaders
+- 65baae4: add chain position
+- d005120: update exec results
+- 38bb15f: add localized messages
+
+### Patch Changes
+
+- e145b00: update types
+- 1565180: update primary action selection
+- e13b84e: expose resolved inputs
+- 1ee3790: add logging
+- 6016b18: upgrade deps
+- 62a9872: add client execute from url support
+- 2422598: update crypto signing
+- b674296: expose client config
+- 5b50409: upgrade deps
+- bf64bcf: localize warp options
+- c390d84: update wallets
+- d3a902d: update warp theme config
+- 3d5fb6c: add chain-specific wallet globals
+- ecc89cc: update warp user fields to nullable
+- 01e5545: update primary action func
+- d14ce36: fix client create inscription fn
+- 15c79ad: update execution
+- 790aa8e: add factory to client
+- 0956fc2: update asset codec
+- 74eaaca: update codec
+- ac6195b: update brand meta
+- 2f7e079: update action determination
+- ece9c33: fix warp detector resolved chain
+- cff4951: upgrade deps
+- 0a7a600: add logging
+- 52413c2: update caching
+- 8396ad3: add err msg to collect executor
+- 1e09810: add collect response to results
+- e35c4ae: update logging
+- 67b18b2: update client detection
+- c919e13: add custom destinations
+- ed0d334: add brand logo helper
+- 4aab0b2: update transforms
+- 47a02a1: add name to chain configs
+- af8225c: update assets
+- 29942ac: add warp brand prefixes
+- 1fa32fc: fix chain position from inputs
+- 24d7d13: update caching
+- 77980a4: update exec error handling
+- 8113897: remove value serialization for collect responses
+- 51471f3: fix input result resolving for contract actions
+- 4731910: update opt dest
+- 36f2e89: update detecter
+- b6a76d9: add client registry init
+- dca45d6: further rearch
+- ba2711c: further wallet updates
+- a08385f: fix circ dep
+- e354f53: update dependencies
+- 8c61537: add further integer types
+- f67aea4: update wallet gen to async
+- 68b361c: update remote warp detection
+- 836d6a8: update custom types
+- f372b98: add warp primary actions
+- a7696aa: add client exec support via object
+- 685f80f: update i18n
+- a37cb66: fix warp from url exec
+- 40e26de: add warp exec error handler
+- 0e291f6: add warp releated field"
+- 755115e: update meta query format
+- e1fdbfb: add missing alert export
+- 6a6fa41: add action link interceptor
+- d791a5c: add change
+- 9953e4b: update mcp
+- b7c77a6: add default chain config
+- 18bac26: update globals user wallet interpolation
+- 050ec48: update caching
+- ffb78b9: expose client data loader
+- 3dbc599: add chain to warp meta
+- 35c63e0: add i18n
+- 1460f4e: add env helper
+- df20c26: add executor immediate result
+- fe5ae46: update chain asset logo to be nullable
+- dedea75: fix meta query input resolution
+- 0378c4e: update collect exec payloads
+- 68ef882: update warp builder
+- 4e09d48: improve complex struct serialization
+- b7bd1d6: upgrade deps
+- 517e93c: add client adapters accessor
+- 3ad6ca0: further rearch
+- b22adbf: update user wallets type
+- 552fe5e: improve external wallet provider support
+- 451e003: add missing imports
+- 1957541: update detection for hashes
+- e69c5b9: update u64 util
+- 51ab733: add warp user
+- 440b74e: update chain infos
+- f2a9fa4: update utils
+- 08f2815: update types
+- bcce744: update executable transfers type
+- 4af1b7d: add executor immediate result
+- 7885ddd: further rearch
+- 986eb76: update i18n
+- 53cdfdd: refactor chain determination
+- 0d85c51: further rearch
+- 67f44af: add input query value fallbacks
+- b6277da: add vibe esdt to known tokens
+- fcea985: update chain names
+- 0d9bbc7: add warp chain name enum
+- d9bb08c: fix executor
+- 68aadaf: add exec meta queries
+- 0cf15c7: update execution
+- cf418e1: fix input handling
+- d639fab: update static cache strategy
+- eff7bda: fix factory
+- b66881b: add readonly wallets
+- 92e516d: resolve inputs for results
+- dd226b9: add generic tx to warp executions
+- 735334a: add action link exec
+- 1f7ba22: update solana - wip
+- 522ea70: fix auth signing
+- f243b65: update alias marker handling
+- 1e420bd: add evm chain names constant
+- f9628d4: add env secret type + helper
+- 9f77831: add action to alert type
+- 970fc74: update vm dependencies
+- 7a96317: fix asset serialization
+- f1781da: add registry native token
+- 88f92f7: rearch wallet helpers
+- d1393e9: update collect http
+- c8b0a9b: add warp input globals interpolations
+- f6ee4e7: update native esdt handling
+- 0a56c3f: fix import
+- 9f92c0d: add destination to exec results
+- d139b82: add further explorer endpoints
+- 8a3c7c5: update chain prefixs
+- 3f391a6: fix registry upgrade signature
+- 472039c: update io evaluations
+- 9a4d7b7: further wallet updates
+- 8e3d840: add registry config accessor
+- cef7d58: fix crypto usage errors
+- 6b15123: update primariy action + auto rules
+- c3b3728: add resolved inputs to exec results
+- 8739a1f: update client create from tx hash
+- 27a5e55: fix multi-env caching
+- 073d9d9: add alert helper
+- c113bf6: fix registry chain set args
+- 7c563e5: fix util asset encoding
+- fa98f00: update wallets
+- 91f4117: add warp uis"
+- c2c95c7: add alert label
+- 14b21c0: add warp languages const
+- 2c038bf: add fallback adapters
+- 4eed1a3: add chain to detection result
+- 1de97fd: update warp builders
+- 4ce5b8c: add chain + token logo themes
+- 92c2d54: add further chain asset info
+- ca86180: add identifier utilities
+- d71157b: add brand themed logos
+- 396f7bb: update gas limits
+- 93fbd3d: upate env var interpolation
+- 80d0af8: update identifier util
+- 54bed31: add input helper function
+- 4f0d6a7: further message localization updates
+- bd2031e: extend warp builder
+- 822d380: add exec handler async-sync
+- 6cbd2f2: add warp query parsing helper
+- 9b2716f: update unhandled collect output
+- 7173aa3: add wallet pub key global
+- 3cbdf74: further wallet updates
+- df98dcd: remove obsolete registry arg
+- eb57e0d: add chain logos
+- ace8d3e: set client chains property to public
+- 3926ed6: update executor
+- df7ab42: update exec handlers to optional
+- 17100a4: add execute auto-handling for meta queries
+- 71bcf40: add results to client
+- 1613364: update cache local storage serialization
+
 ## 3.0.0-beta.207
 
 ### Patch Changes

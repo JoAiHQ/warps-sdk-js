@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-near",
-  "version": "1.0.0-beta.20",
+  "version": "1.0.0",
   "description": "NEAR adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@scure/bip39": "^2.0.1",
-    "@joai/warps": "^3.0.0-beta.198",
+    "@joai/warps": "^3.0.0",
     "bs58": "^6.0.0",
     "near-api-js": "^6.5.1"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-fastset",
-  "version": "1.0.0-beta.59",
+  "version": "1.0.0",
   "description": "Fastset adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -40,7 +40,7 @@
     "@noble/ed25519": "^3.0.0",
     "@noble/hashes": "^2.0.1",
     "@scure/bip39": "^2.0.1",
-    "@joai/warps": "^3.0.0-beta.198",
+    "@joai/warps": "^3.0.0",
     "bech32": "^2.0.0",
     "buffer": "^6.0.3"
   }
