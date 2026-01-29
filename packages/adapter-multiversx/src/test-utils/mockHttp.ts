@@ -75,7 +75,7 @@ export const setupHttpMock = () => {
   }
 
   let mockFetch: jest.Mock
-  global.fetch = mockFetch = jest.fn()
+  ;(global as any).fetch = mockFetch = jest.fn()
 
   const mockAxios = {
     default: {
@@ -160,8 +160,8 @@ export const createErrorMock = (error: Error) => {
 
   const originalFetch = global.fetch
   const mockFetch = jest.fn()
-  global.fetch = mockFetch
-  mockFetch.mockImplementation(mockImplementation)
+  ;(global as any).fetch = mockFetch
+  mockFetch.mockImplementation(mockImplementation as any)
   mockFetch.mockRejectedValue(error)
 
   const mockAxios = {

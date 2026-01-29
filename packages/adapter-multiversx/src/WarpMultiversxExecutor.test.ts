@@ -5,7 +5,11 @@ import { MultiversxAdapter } from './chains'
 
 const testConfig: WarpConfig = {
   env: 'devnet' as WarpChainEnv,
-  user: { wallets: { multiversx: { provider: 'privateKey', address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8', privateKey: 'test' } } },
+  user: {
+    wallets: {
+      multiversx: { provider: 'privateKey', address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8', privateKey: 'test' },
+    },
+  },
   currentUrl: 'https://example.com',
 }
 
@@ -34,6 +38,7 @@ describe('WarpMultiversxExecutor', () => {
     }
     const warp = { actions: [action] } as any as Warp
     const executable = {
+      adapter: testAdapterFactory(testConfig),
       warp,
       chain: testChainInfo,
       action: 1,
@@ -70,6 +75,7 @@ describe('WarpMultiversxExecutor', () => {
     }
     const warp = { actions: [action] } as any as Warp
     const executable = {
+      adapter: testAdapterFactory(testConfig),
       warp,
       chain: testChainInfo,
       action: 1,
@@ -106,6 +112,7 @@ describe('WarpMultiversxExecutor', () => {
     }
     const warp = { actions: [action] } as any as Warp
     const executable = {
+      adapter: testAdapterFactory(testConfig),
       warp,
       chain: testChainInfo,
       action: 1,

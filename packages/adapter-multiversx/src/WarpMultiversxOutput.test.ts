@@ -1,14 +1,15 @@
 // Tests for the MultiversxOutput class. All tests focus on the MultiversxOutput class directly.
-import { SmartContractResult, TransactionEvent, TransactionLogs, TransactionOnNetwork, TypedValue } from '@multiversx/sdk-core/out'
 import {
   extractCollectOutput,
   Warp,
   WarpChainInfo,
+  WarpChainName,
   WarpClientConfig,
   WarpContractAction,
   WarpSerializer,
   WarpTypeRegistry,
 } from '@joai/warps'
+import { SmartContractResult, TransactionEvent, TransactionLogs, TransactionOnNetwork, TypedValue } from '@multiversx/sdk-core/out'
 import { promises as fs, PathLike } from 'fs'
 import fetchMock from 'jest-fetch-mock'
 import path from 'path'
@@ -20,7 +21,7 @@ const testConfig: WarpClientConfig = {
   env: 'devnet',
   user: {
     wallets: {
-      MULTIVERSX: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+      multiversx: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
     },
   },
   currentUrl: 'https://example.com',
@@ -39,14 +40,15 @@ const testConfig: WarpClientConfig = {
 }
 
 const mockChainInfo: WarpChainInfo = {
-  name: 'multiversx',
+  name: WarpChainName.Multiversx,
   displayName: 'MultiversX',
   chainId: '1',
   blockTime: 6000,
   addressHrp: 'erd',
   defaultApiUrl: 'https://devnet-api.multiversx.com',
+  logoUrl: 'https://example.com/multiversx-logo.png',
   nativeToken: {
-    chain: 'multiversx',
+    chain: WarpChainName.Multiversx,
     identifier: 'EGLD',
     name: 'MultiversX',
     symbol: 'EGLD',
@@ -407,19 +409,19 @@ describe('Result Helpers', () => {
         nonce: 7n,
         smartContractResults: [
           new SmartContractResult({
-            data: Buffer.from('@6f6b@10'),
+            data: new Uint8Array(Buffer.from('@6f6b@10')),
             logs: new TransactionLogs({
               events: [
                 new TransactionEvent({
                   identifier: 'registeredWithToken',
                   topics: [
-                    Buffer.from('cmVnaXN0ZXJlZFdpdGhUb2tlbg==', 'base64'),
-                    Buffer.from('AAAAAAAAAAAFAPWuOkANricr0lRon9WkT4jj8pSeV4c=', 'base64'),
-                    Buffer.from('QUJDLTEyMzQ1Ng==', 'base64'),
-                    Buffer.from('REVGLTEyMzQ1Ng==', 'base64'),
-                    Buffer.from('MTIwOTYwMA==', 'base64'),
+                    new Uint8Array(Buffer.from('cmVnaXN0ZXJlZFdpdGhUb2tlbg==', 'base64')),
+                    new Uint8Array(Buffer.from('AAAAAAAAAAAFAPWuOkANricr0lRon9WkT4jj8pSeV4c=', 'base64')),
+                    new Uint8Array(Buffer.from('QUJDLTEyMzQ1Ng==', 'base64')),
+                    new Uint8Array(Buffer.from('REVGLTEyMzQ1Ng==', 'base64')),
+                    new Uint8Array(Buffer.from('MTIwOTYwMA==', 'base64')),
                   ],
-                  additionalData: [Buffer.from('AAAAAAAAA9sAAAA=', 'base64')],
+                  additionalData: [new Uint8Array(Buffer.from('AAAAAAAAA9sAAAA=', 'base64'))],
                 }),
               ],
             }),
@@ -450,7 +452,7 @@ describe('Result Helpers', () => {
         nonce: 7n,
         smartContractResults: [
           new SmartContractResult({
-            data: Buffer.from('@6f6b@16'),
+            data: new Uint8Array(Buffer.from('@6f6b@16')),
           }),
         ],
       })
@@ -563,7 +565,7 @@ describe('Result Helpers', () => {
           status: 'success',
           warp: warpArg,
           action: actionIndex,
-          user: testConfig.user?.wallets?.MULTIVERSX || null,
+          user: testConfig.user?.wallets?.multiversx || null,
           txHash: '',
           next: null,
           values: { string: [], native: [], mapped: {} },
@@ -581,7 +583,7 @@ describe('Result Helpers', () => {
           status: 'success',
           warp,
           action: 1,
-          user: testConfig.user?.wallets?.MULTIVERSX || null,
+          user: testConfig.user?.wallets?.multiversx || null,
           txHash: '',
           next: null,
           values: { string: [], native: [], mapped: {} },
@@ -599,7 +601,7 @@ describe('Result Helpers', () => {
       })
 
       // Patch: evaluate transforms directly if missing
-      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer(), testConfig)
+      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer() as any, testConfig)
 
       // The result should be from the entry action (1)
       expect(result.status).toBe('success')
@@ -692,7 +694,7 @@ describe('Result Helpers', () => {
           status: 'success',
           warp: warpArg,
           action: actionIndex,
-          user: testConfig.user?.wallets?.MULTIVERSX || null,
+          user: testConfig.user?.wallets?.multiversx || null,
           txHash: '',
           next: null,
           values: { string: [], native: [], mapped: {} },
@@ -710,7 +712,7 @@ describe('Result Helpers', () => {
           status: 'success',
           warp,
           action: 1,
-          user: testConfig.user?.wallets?.MULTIVERSX || null,
+          user: testConfig.user?.wallets?.multiversx || null,
           txHash: '',
           next: null,
           values: { string: [], native: [], mapped: {} },
@@ -728,7 +730,7 @@ describe('Result Helpers', () => {
       })
 
       // Patch: evaluate transforms directly if missing
-      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer(), testConfig)
+      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer() as any, testConfig)
 
       // The result should be from the entry action (1)
       expect(result.status).toBe('success')

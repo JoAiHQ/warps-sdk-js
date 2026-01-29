@@ -1,4 +1,4 @@
-import { WarpChainEnv, WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { WarpChainEnv, WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { WarpMultiversxDataLoader } from './WarpMultiversxDataLoader'
 import { getMultiversxEntrypoint } from './helpers/general'
 
@@ -11,14 +11,15 @@ describe('WarpMultiversxDataLoader', () => {
   }
 
   const mockChainInfo: WarpChainInfo = {
-    name: 'multiversx',
+    name: WarpChainName.Multiversx,
     displayName: 'MultiversX',
     chainId: 'D',
     blockTime: 6000,
     addressHrp: 'erd',
     defaultApiUrl: 'https://devnet-api.multiversx.com',
+    logoUrl: 'https://example.com/egld-logo.png',
     nativeToken: {
-      chain: 'multiversx',
+      chain: WarpChainName.Multiversx,
       identifier: 'EGLD',
       name: 'MultiversX',
       symbol: 'EGLD',

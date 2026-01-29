@@ -1,3 +1,4 @@
+import { WarpChainEnv, WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { UserSigner } from '@multiversx/sdk-core'
 import { WarpMultiversxWallet } from './WarpMultiversxWallet'
 
@@ -31,7 +32,7 @@ describe('WarpMultiversxWallet', () => {
 
     wallet = new WarpMultiversxWallet(
       {
-        env: 'devnet',
+        env: 'devnet' as WarpChainEnv,
         cache: { type: 'memory' },
         user: {
           wallets: {
@@ -44,7 +45,7 @@ describe('WarpMultiversxWallet', () => {
         },
       },
       {
-        name: 'multiversx',
+        name: WarpChainName.Multiversx,
         displayName: 'MultiversX',
         chainId: 'D',
         blockTime: 6000,
@@ -52,7 +53,7 @@ describe('WarpMultiversxWallet', () => {
         defaultApiUrl: 'https://api.multiversx.com',
         logoUrl: 'https://example.com/multiversx-logo.png',
         nativeToken: {
-          chain: 'multiversx',
+          chain: WarpChainName.Multiversx,
           identifier: 'EGLD',
           name: 'MultiversX',
           symbol: 'EGLD',
@@ -132,20 +133,20 @@ describe('WarpMultiversxWallet', () => {
       expect(publicKey).toBeDefined()
       expect(typeof publicKey).toBe('string')
       expect(publicKey).toMatch(/^[0-9a-f]+$/)
-      expect(publicKey.length).toBeGreaterThan(0)
+      expect(publicKey!.length).toBeGreaterThan(0)
     })
 
     it('should return null when wallet is not initialized', () => {
       const walletWithoutConfig = new WarpMultiversxWallet(
         {
-          env: 'devnet',
+          env: 'devnet' as WarpChainEnv,
           cache: { type: 'memory' },
           user: {
             wallets: {},
           },
         },
         {
-          name: 'multiversx',
+          name: WarpChainName.Multiversx,
           displayName: 'MultiversX',
           chainId: 'D',
           blockTime: 6000,
@@ -153,7 +154,7 @@ describe('WarpMultiversxWallet', () => {
           defaultApiUrl: 'https://api.multiversx.com',
           logoUrl: 'https://example.com/multiversx-logo.png',
           nativeToken: {
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             identifier: 'EGLD',
             name: 'MultiversX',
             symbol: 'EGLD',
@@ -172,8 +173,8 @@ describe('WarpMultiversxWallet', () => {
     let readOnlyWallet: WarpMultiversxWallet
 
     beforeEach(() => {
-      const readOnlyConfig = {
-        env: 'devnet',
+      const readOnlyConfig: WarpClientConfig = {
+        env: 'devnet' as WarpChainEnv,
         cache: { type: 'memory' },
         user: {
           wallets: {
@@ -182,7 +183,7 @@ describe('WarpMultiversxWallet', () => {
         },
       }
       readOnlyWallet = new WarpMultiversxWallet(readOnlyConfig, {
-        name: 'multiversx',
+        name: WarpChainName.Multiversx,
         displayName: 'MultiversX',
         chainId: 'D',
         blockTime: 6000,
@@ -190,7 +191,7 @@ describe('WarpMultiversxWallet', () => {
         defaultApiUrl: 'https://api.multiversx.com',
         logoUrl: 'https://example.com/multiversx-logo.png',
         nativeToken: {
-          chain: 'multiversx',
+          chain: WarpChainName.Multiversx,
           identifier: 'EGLD',
           name: 'MultiversX',
           symbol: 'EGLD',
@@ -259,8 +260,8 @@ describe('WarpMultiversxWallet', () => {
   })
 
   describe('wallet object with null or undefined provider', () => {
-    const chainInfo = {
-      name: 'multiversx',
+    const chainInfo: WarpChainInfo = {
+      name: WarpChainName.Multiversx,
       displayName: 'MultiversX',
       chainId: 'D',
       blockTime: 6000,
@@ -268,7 +269,7 @@ describe('WarpMultiversxWallet', () => {
       defaultApiUrl: 'https://api.multiversx.com',
       logoUrl: 'https://example.com/multiversx-logo.png',
       nativeToken: {
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         identifier: 'EGLD',
         name: 'MultiversX',
         symbol: 'EGLD',
@@ -278,8 +279,8 @@ describe('WarpMultiversxWallet', () => {
     }
 
     it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
-      const config = {
-        env: 'devnet',
+      const config: WarpClientConfig = {
+        env: 'devnet' as WarpChainEnv,
         cache: { type: 'memory' },
         user: {
           wallets: {
@@ -291,8 +292,8 @@ describe('WarpMultiversxWallet', () => {
     })
 
     it('should use ReadOnlyWalletProvider when provider is undefined', () => {
-      const config = {
-        env: 'devnet',
+      const config: WarpClientConfig = {
+        env: 'devnet' as WarpChainEnv,
         cache: { type: 'memory' },
         user: {
           wallets: {

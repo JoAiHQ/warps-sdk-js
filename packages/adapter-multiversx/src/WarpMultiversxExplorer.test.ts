@@ -1,4 +1,4 @@
-import { WarpClientConfig } from '@joai/warps'
+import { WarpChainName, WarpClientConfig } from '@joai/warps'
 import { MultiversxExplorers, VibechainExplorers } from './constants'
 import { WarpMultiversxExplorer } from './WarpMultiversxExplorer'
 
@@ -15,7 +15,7 @@ describe('WarpMultiversxExplorer', () => {
   let explorer: WarpMultiversxExplorer
 
   beforeEach(() => {
-    explorer = new WarpMultiversxExplorer('multiversx', mockConfig)
+    explorer = new WarpMultiversxExplorer(WarpChainName.Multiversx, mockConfig)
   })
 
   describe('getAccountUrl', () => {
@@ -95,7 +95,7 @@ describe('WarpMultiversxExplorer', () => {
     })
 
     it('should return fallback explorer when chain is not supported', () => {
-      const unsupportedExplorer = new WarpMultiversxExplorer('unsupported-chain', mockConfig)
+      const unsupportedExplorer = new WarpMultiversxExplorer('unsupported-chain' as WarpChainName, mockConfig)
       const explorers = unsupportedExplorer.getAllExplorers()
       expect(explorers).toEqual(['multiversx_explorer'])
     })
@@ -146,7 +146,7 @@ describe('WarpMultiversxExplorer', () => {
     let testnetExplorer: WarpMultiversxExplorer
 
     beforeEach(() => {
-      testnetExplorer = new WarpMultiversxExplorer('multiversx', testnetConfig)
+      testnetExplorer = new WarpMultiversxExplorer(WarpChainName.Multiversx, testnetConfig)
     })
 
     it('should return correct testnet explorer URLs', () => {
@@ -174,7 +174,7 @@ describe('WarpMultiversxExplorer', () => {
     let vibechainExplorer: WarpMultiversxExplorer
 
     beforeEach(() => {
-      vibechainExplorer = new WarpMultiversxExplorer('vibechain', vibechainConfig)
+      vibechainExplorer = new WarpMultiversxExplorer(WarpChainName.Vibechain, vibechainConfig)
     })
 
     it('should return correct vibechain explorer URLs', () => {
