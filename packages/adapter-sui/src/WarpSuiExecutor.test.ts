@@ -1,3 +1,5 @@
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
+import { SuiAdapter } from './main'
 import { WarpSuiExecutor } from './WarpSuiExecutor'
 
 describe('WarpSuiExecutor', () => {
@@ -6,8 +8,8 @@ describe('WarpSuiExecutor', () => {
     env: 'devnet',
     user: { wallets: { sui: '0x1234' } },
   } as any
-  const chain = {
-    name: 'sui',
+  const chain: WarpChainInfo = {
+    name: WarpChainName.Sui,
     displayName: 'Sui',
     chainId: 'sui-mainnet',
     blockTime: 1000,
@@ -16,19 +18,20 @@ describe('WarpSuiExecutor', () => {
     explorerUrl: 'https://explorer.sui.io',
     logoUrl: 'https://example.com/sui-chain-logo.png',
     nativeToken: {
-      chain: 'sui',
+      chain: WarpChainName.Sui,
       identifier: 'SUI',
       name: 'Sui',
       symbol: 'SUI',
       decimals: 9,
       logoUrl: 'https://example.com/sui-logo.png',
     },
-  }
+  } as WarpChainInfo
 
   it('createTransaction - creates a transfer transaction', async () => {
     const action = { type: 'transfer', label: 'test', description: 'test', address: '0x5678' }
     const warp = { actions: [action] } as any
     const executable = {
+      adapter: SuiAdapter(config),
       warp,
       chain,
       action: 1,
@@ -49,6 +52,7 @@ describe('WarpSuiExecutor', () => {
     const action = { type: 'contract', label: 'test', description: 'test', func: 'func', address: '0xpackage::module' }
     const warp = { actions: [action] } as any
     const executable = {
+      adapter: SuiAdapter(config),
       warp,
       chain,
       action: 1,
@@ -69,6 +73,7 @@ describe('WarpSuiExecutor', () => {
     const action = { type: 'contract', label: 'test', description: 'test', func: 'func', address: '0xpackage::module' }
     const warp = { actions: [action] } as any
     const executable = {
+      adapter: SuiAdapter(config),
       warp,
       chain,
       action: 1,

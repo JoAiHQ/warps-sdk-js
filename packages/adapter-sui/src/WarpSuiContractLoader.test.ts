@@ -1,9 +1,10 @@
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpSuiContractLoader } from './WarpSuiContractLoader'
 
 describe('WarpSuiContractLoader', () => {
   const config = { env: 'devnet' as const }
-  const chain = {
-    name: 'sui',
+  const chain: WarpChainInfo = {
+    name: WarpChainName.Sui,
     displayName: 'Sui Devnet',
     chainId: 'devnet',
     blockTime: 3000,
@@ -11,7 +12,7 @@ describe('WarpSuiContractLoader', () => {
     defaultApiUrl: 'https://fullnode.devnet.sui.io',
     logoUrl: 'https://example.com/sui-chain-logo.png',
     nativeToken: {
-      chain: 'sui',
+      chain: WarpChainName.Sui,
       identifier: 'SUI',
       name: 'Sui',
       symbol: 'SUI',

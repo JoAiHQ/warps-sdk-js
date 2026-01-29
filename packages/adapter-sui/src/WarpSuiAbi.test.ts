@@ -1,10 +1,10 @@
-import { WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { WarpSuiAbiBuilder } from './WarpSuiAbiBuilder'
 
 describe('WarpSuiAbiBuilder', () => {
   const config: WarpClientConfig = { env: 'devnet', currentUrl: 'https://fullnode.devnet.sui.io:443' }
   const chain: WarpChainInfo = {
-    name: 'sui',
+    name: WarpChainName.Sui,
     displayName: 'Sui Devnet',
     chainId: 'devnet',
     blockTime: 3000,
@@ -12,7 +12,7 @@ describe('WarpSuiAbiBuilder', () => {
     defaultApiUrl: 'https://fullnode.devnet.sui.io',
     logoUrl: 'https://example.com/sui-chain-logo.png',
     nativeToken: {
-      chain: 'sui',
+      chain: WarpChainName.Sui,
       identifier: 'SUI',
       name: 'Sui',
       symbol: 'SUI',

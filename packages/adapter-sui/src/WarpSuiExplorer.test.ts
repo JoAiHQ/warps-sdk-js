@@ -1,4 +1,4 @@
-import { WarpClientConfig } from '@joai/warps'
+import { WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { SuiExplorers } from './constants'
 import { WarpSuiExplorer } from './WarpSuiExplorer'
 
@@ -12,17 +12,16 @@ describe('WarpSuiExplorer', () => {
     },
   }
 
-  const mockChainInfo = {
-    name: 'sui',
+  const mockChainInfo: WarpChainInfo = {
+    name: WarpChainName.Sui,
     displayName: 'Sui',
     chainId: 'sui-mainnet',
     blockTime: 1000,
     addressHrp: '0x',
     defaultApiUrl: 'https://fullnode.mainnet.sui.io',
-    explorerUrl: 'https://explorer.sui.io',
     logoUrl: 'https://example.com/sui-chain-logo.png',
     nativeToken: {
-      chain: 'sui',
+      chain: WarpChainName.Sui,
       identifier: 'SUI',
       name: 'Sui',
       symbol: 'SUI',
@@ -115,8 +114,8 @@ describe('WarpSuiExplorer', () => {
     })
 
     it('should return fallback explorer when chain is not supported', () => {
-      const unsupportedChainInfo = { ...mockChainInfo, name: 'unsupported-chain' }
-      const unsupportedExplorer = new WarpSuiExplorer(mockConfig, unsupportedChainInfo)
+      const unsupportedChainInfo = { ...mockChainInfo, name: 'unsupported-chain' as WarpChainName }
+      const unsupportedExplorer = new WarpSuiExplorer(mockConfig, unsupportedChainInfo as WarpChainInfo)
       const explorers = unsupportedExplorer.getAllExplorers()
       expect(explorers).toEqual(['suivision'])
     })
@@ -164,17 +163,16 @@ describe('WarpSuiExplorer', () => {
       },
     }
 
-    const testnetChainInfo = {
-      name: 'sui',
+    const testnetChainInfo: WarpChainInfo = {
+      name: WarpChainName.Sui,
       displayName: 'Sui',
       chainId: 'sui-testnet',
       blockTime: 1000,
       addressHrp: '0x',
       defaultApiUrl: 'https://fullnode.testnet.sui.io',
-      explorerUrl: 'https://explorer.sui.io',
       logoUrl: 'https://example.com/sui-chain-logo.png',
       nativeToken: {
-        chain: 'sui',
+        chain: WarpChainName.Sui,
         identifier: 'SUI',
         name: 'Sui',
         symbol: 'SUI',

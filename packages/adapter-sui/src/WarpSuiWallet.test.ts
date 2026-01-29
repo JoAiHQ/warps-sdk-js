@@ -1,15 +1,21 @@
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpSuiWallet } from './WarpSuiWallet'
 
 describe('WarpSuiWallet', () => {
   let wallet: WarpSuiWallet
   let config: any
-  let chain: any
+  let chain: WarpChainInfo
 
   beforeEach(() => {
     chain = {
-      name: 'sui',
-      defaultApiUrl: 'https://fullnode.testnet.sui.io',
+      name: WarpChainName.Sui,
+      displayName: 'Sui',
+      chainId: 'testnet',
+      blockTime: 3000,
       addressHrp: '0x',
+      defaultApiUrl: 'https://fullnode.testnet.sui.io',
+      logoUrl: '',
+      nativeToken: { chain: WarpChainName.Sui, identifier: 'SUI', name: 'Sui', symbol: 'SUI', decimals: 9, logoUrl: '' },
     }
     // Use a valid 32-byte hex private key for Ed25519
     config = {
@@ -89,13 +95,13 @@ describe('WarpSuiWallet', () => {
       expect(publicKey).toBeDefined()
       expect(typeof publicKey).toBe('string')
       expect(publicKey).toMatch(/^[0-9a-f]+$/)
-      expect(publicKey.length).toBeGreaterThan(0)
+      expect(publicKey!.length).toBeGreaterThan(0)
     })
 
     it('should return null when wallet is not initialized', () => {
       const walletWithoutConfig = new WarpSuiWallet(
         {
-          env: 'testnet',
+          env: 'testnet' as const,
           user: {
             wallets: {},
           },
@@ -129,7 +135,7 @@ describe('WarpSuiWallet', () => {
   describe('wallet object with null or undefined provider', () => {
     it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
       const cfg = {
-        env: 'testnet',
+        env: 'testnet' as const,
         user: {
           wallets: {
             [chain.name]: { address: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', provider: null },
@@ -141,7 +147,7 @@ describe('WarpSuiWallet', () => {
 
     it('should use ReadOnlyWalletProvider when provider is undefined', () => {
       const cfg = {
-        env: 'testnet',
+        env: 'testnet' as const,
         user: {
           wallets: {
             [chain.name]: { address: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', provider: undefined },

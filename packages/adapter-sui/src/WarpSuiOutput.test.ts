@@ -1,9 +1,10 @@
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpSuiOutput } from './WarpSuiOutput'
 
 describe('WarpSuiOutput', () => {
   const config = { env: 'devnet' as const }
-  const chain = {
-    name: 'sui',
+  const chain: WarpChainInfo = {
+    name: WarpChainName.Sui,
     displayName: 'Sui',
     chainId: '1',
     blockTime: 3000,
@@ -11,7 +12,7 @@ describe('WarpSuiOutput', () => {
     defaultApiUrl: 'https://fullnode.devnet.sui.io',
     logoUrl: 'https://example.com/sui-chain-logo.png',
     nativeToken: {
-      chain: 'sui',
+      chain: WarpChainName.Sui,
       identifier: 'SUI',
       name: 'Sui',
       symbol: 'SUI',
