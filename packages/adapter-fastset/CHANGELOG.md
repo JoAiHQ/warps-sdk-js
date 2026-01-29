@@ -1,5 +1,11 @@
 # @joai/warps-adapter-fastset
 
+## 1.0.0-beta.59
+
+### Patch Changes
+
+- a9eb023: fix wallet undefined provider handling
+
 ## 1.0.0-beta.58
 
 ### Major Changes

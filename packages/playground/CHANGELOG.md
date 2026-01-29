@@ -1,5 +1,16 @@
 # @warps/playground
 
+## 1.0.0-beta.193
+
+### Patch Changes
+
+- Updated dependencies [a9eb023]
+  - @joai/warps-adapter-fastset@1.0.0-beta.59
+  - @joai/warps-adapter-solana@1.0.0-beta.26
+  - @joai/warps-adapter-near@1.0.0-beta.20
+  - @joai/warps-adapter-evm@1.0.0-beta.75
+  - @joai/warps-adapter-sui@1.0.0-beta.75
+
 ## 1.0.0-beta.192
 
 ### Patch Changes

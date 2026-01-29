@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.26
+
+### Patch Changes
+
+- a9eb023: fix wallet undefined provider handling
+
 ## 1.0.0-beta.25
 
 ### Patch Changes

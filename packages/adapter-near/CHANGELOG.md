@@ -1,5 +1,11 @@
 # @joai/warps-adapter-near
 
+## 1.0.0-beta.20
+
+### Patch Changes
+
+- a9eb023: fix wallet undefined provider handling
+
 ## 1.0.0-beta.19
 
 ### Major Changes

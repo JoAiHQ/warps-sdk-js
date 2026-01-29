@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-fastset",
-  "version": "1.0.0-beta.58",
+  "version": "1.0.0-beta.59",
   "description": "Fastset adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
