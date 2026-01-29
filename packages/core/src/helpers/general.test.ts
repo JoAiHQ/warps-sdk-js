@@ -1,10 +1,11 @@
+import { WarpChainName } from '../constants'
 import { Warp, WarpAction, WarpActionType, WarpMeta } from '../types'
 import { evaluateWhenCondition, getWarpPrimaryAction, isWarpActionAutoExecute } from './general'
 
 describe('getWarpPrimaryAction', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
     protocol: 'warp:1.0.0',
-    chain: 'ethereum',
+    chain: WarpChainName.Ethereum,
     name: 'test-warp',
     title: 'Test Warp',
     description: 'Test description',
@@ -202,7 +203,7 @@ describe('getWarpPrimaryAction', () => {
 describe('isWarpActionAutoExecute', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
     protocol: 'warp:1.0.0',
-    chain: 'ethereum',
+    chain: WarpChainName.Ethereum,
     name: 'test-warp',
     title: 'Test Warp',
     description: 'Test description',
@@ -311,7 +312,9 @@ describe('evaluateWhenCondition', () => {
   it('should handle string comparisons', () => {
     expect(evaluateWhenCondition("'test' === 'test'")).toBe(true)
     expect(evaluateWhenCondition("'test' !== 'other'")).toBe(true)
-    expect(evaluateWhenCondition("'0x0000000000000000000000000000000000000000' !== '0x0000000000000000000000000000000000000000'")).toBe(false)
+    expect(evaluateWhenCondition("'0x0000000000000000000000000000000000000000' !== '0x0000000000000000000000000000000000000000'")).toBe(
+      false
+    )
   })
 
   it('should handle complex expressions', () => {

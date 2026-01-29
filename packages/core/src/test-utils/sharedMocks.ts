@@ -1,5 +1,5 @@
-import { WarpClientConfig, WarpTransferAction, WarpWalletProvider } from '../types'
 import { WarpChainName } from '../constants'
+import { WarpClientConfig, WarpTransferAction, WarpWalletProvider } from '../types'
 
 export const createMockChainInfo = (chainName: WarpChainName = WarpChainName.Multiversx) => ({
   name: chainName,
@@ -276,7 +276,8 @@ export const createMockAdapter = (chainName: WarpChainName = WarpChainName.Multi
       return 'erd1test'
     },
     importFromMnemonic: async (mnemonic: string) => Promise.resolve({ provider: 'mnemonic' as const, address: 'mock-address', mnemonic }),
-    importFromPrivateKey: async (privateKey: string) => Promise.resolve({ provider: 'privateKey' as const, address: 'mock-address', privateKey }),
+    importFromPrivateKey: async (privateKey: string) =>
+      Promise.resolve({ provider: 'privateKey' as const, address: 'mock-address', privateKey }),
     export: async (provider: WarpWalletProvider) => Promise.resolve({ provider, address: 'mock-address' }),
     getPublicKey: () => 'mock-public-key',
     generate: async (provider: WarpWalletProvider) => Promise.resolve({ provider, address: 'mock-address' }),
@@ -302,7 +303,7 @@ export const createMockWarp = () => ({
     {
       type: 'transfer' as const,
       label: 'Test Action',
-      chain: 'multiversx',
+      chain: WarpChainName.Multiversx,
       address: 'erd1...',
       value: '0',
       inputs: [],

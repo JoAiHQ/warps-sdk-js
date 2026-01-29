@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { WarpChainName } from './constants'
 import { createMockConfig } from './test-utils/mockConfig'
 import { Warp } from './types'
 import { WarpValidator } from './WarpValidator'
@@ -7,12 +8,12 @@ import { WarpValidator } from './WarpValidator'
 const localSchemaPath = join(__dirname, '../../../warp-schema.json')
 const localSchema = JSON.parse(readFileSync(localSchemaPath, 'utf-8'))
 
-global.fetch = jest.fn(() =>
+;(global as any).fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve(localSchema),
   } as Response)
-) as jest.Mock
+)
 
 describe('WarpValidator', () => {
   const defaultConfig = createMockConfig()
@@ -22,7 +23,7 @@ describe('WarpValidator', () => {
     name: 'test',
     title: 'test',
     description: 'test',
-    chain: 'multiversx',
+    chain: WarpChainName.Multiversx,
     actions: [],
     ...overrides,
   })

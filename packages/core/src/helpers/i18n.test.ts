@@ -94,9 +94,9 @@ describe('i18n helpers', () => {
     })
 
     it('should return false for invalid objects', () => {
-      expect(isWarpI18nText(null)).toBe(false)
-      expect(isWarpI18nText(undefined)).toBe(false)
-      expect(isWarpI18nText({})).toBe(false)
+      expect(isWarpI18nText(null as any)).toBe(false)
+      expect(isWarpI18nText(undefined as any)).toBe(false)
+      expect(isWarpI18nText({} as any)).toBe(false)
     })
 
     it('should return true for any i18n object with translations', () => {
@@ -106,10 +106,10 @@ describe('i18n helpers', () => {
     })
 
     it('should return false for non-object types', () => {
-      expect(isWarpI18nText('string')).toBe(false)
-      expect(isWarpI18nText(123)).toBe(false)
-      expect(isWarpI18nText(true)).toBe(false)
-      expect(isWarpI18nText([])).toBe(false)
+      expect(isWarpI18nText('string' as any)).toBe(false)
+      expect(isWarpI18nText(123 as any)).toBe(false)
+      expect(isWarpI18nText(true as any)).toBe(false)
+      expect(isWarpI18nText([] as any)).toBe(false)
     })
   })
 

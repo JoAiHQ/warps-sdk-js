@@ -1,3 +1,4 @@
+import { WarpChainName } from './constants'
 import { createMockAdapter, createMockChainInfo, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
 import { WarpTransferAction } from './types'
 import { WarpCache } from './WarpCache'
@@ -8,7 +9,7 @@ const testConfig = createMockConfig({
   clientUrl: 'https://anyclient.com',
   currentUrl: 'https://anyclient.com',
   vars: {},
-  user: { wallets: { MULTIVERSX: 'erd1abc' } },
+  user: { wallets: { multiversx: 'erd1abc' } },
   schema: {
     warp: 'https://schema.warp.to/warp.json',
     brand: 'https://schema.warp.to/brand.json',
@@ -37,7 +38,7 @@ const mockAdapter = {
     getUserWarpRegistryInfos: jest.fn().mockResolvedValue([]),
     getUserBrands: jest.fn().mockResolvedValue([]),
     getChainInfos: jest.fn().mockResolvedValue([]),
-    getChainInfo: jest.fn().mockResolvedValue(createMockChainInfo('multiversx')),
+    getChainInfo: jest.fn().mockResolvedValue(createMockChainInfo(WarpChainName.Multiversx)),
     setChain: jest.fn().mockResolvedValue({}),
     removeChain: jest.fn().mockResolvedValue({}),
     fetchBrand: jest.fn().mockResolvedValue(null),
@@ -117,8 +118,8 @@ describe('WarpInterpolator', () => {
         ],
       }
 
-      const chainA = createMockChainInfo('A')
-      const chainB = createMockChainInfo('B')
+      const chainA = createMockChainInfo('A' as WarpChainName)
+      const chainB = createMockChainInfo('B' as WarpChainName)
 
       const mockRepository = {
         ...createMockAdapter(),
@@ -479,8 +480,8 @@ describe('WarpInterpolator per-action chain info', () => {
       ],
     }
 
-    const chainA = createMockChainInfo('A')
-    const chainB = createMockChainInfo('B')
+    const chainA = createMockChainInfo('A' as WarpChainName)
+    const chainB = createMockChainInfo('B' as WarpChainName)
 
     const mockRepository = {
       ...createMockAdapter(),
@@ -545,7 +546,12 @@ describe('WarpInterpolator applyInputs with primary inputs', () => {
       },
     ]
 
-    const result = interpolator.applyInputs('address:{{BRIDGE}},amount:{{primary.AMOUNT}},token:{{primary.TOKEN}}', resolvedInputs, serializer, primaryInputs)
+    const result = interpolator.applyInputs(
+      'address:{{BRIDGE}},amount:{{primary.AMOUNT}},token:{{primary.TOKEN}}',
+      resolvedInputs,
+      serializer,
+      primaryInputs
+    )
     expect(result).toBe('address:,amount:1000,token:erd1token')
   })
 
@@ -803,8 +809,8 @@ describe('WarpInterpolator chain-specific placeholders', () => {
 
   const createMockAdapterForChain = (chainName: string, walletAddress?: string, publicKey?: string) => {
     const adapter = createMockAdapter()
-    adapter.chainInfo = createMockChainInfo(chainName)
-    adapter.chainInfo.name = chainName
+    adapter.chainInfo = createMockChainInfo(chainName as WarpChainName)
+    adapter.chainInfo.name = chainName as WarpChainName
     if (walletAddress) {
       adapter.wallet = {
         ...adapter.wallet,

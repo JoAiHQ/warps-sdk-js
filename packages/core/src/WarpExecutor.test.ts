@@ -1,3 +1,4 @@
+import { WarpChainName } from './constants'
 import { createMockAdapter, createMockWarp } from './test-utils/sharedMocks'
 import { Warp, WarpClientConfig, WarpCollectAction, WarpMcpAction, WarpQueryAction } from './types'
 import { WarpExecutor } from './WarpExecutor'
@@ -18,21 +19,21 @@ describe('WarpExecutor', () => {
 
   const config: WarpClientConfig = {
     env: 'devnet',
-    user: { wallets: { MULTIVERSX: 'erd1...' } },
+    user: { wallets: { multiversx: 'erd1...' } },
     clientUrl: 'https://anyclient.com',
     currentUrl: 'https://anyclient.com',
   }
   const adapters = [
     (() => {
       const a = createMockAdapter()
-      a.chain = 'multiversx'
-      a.prefix = 'multiversx'
+      a.chain = WarpChainName.Multiversx
+      a.prefix = WarpChainName.Multiversx
       return a
     })(),
     (() => {
       const a = createMockAdapter()
-      a.chain = 'sui'
-      a.prefix = 'sui'
+      a.chain = WarpChainName.Sui
+      a.prefix = WarpChainName.Sui
       return a
     })(),
   ]
@@ -71,7 +72,7 @@ describe('WarpExecutor', () => {
       const result = await executor.execute(errorWarp, [])
       expect(result).toBeDefined()
       expect(result.chain).toBeDefined()
-      expect(result.chain.name).toBe('multiversx') // Should fall back to default chain
+      expect(result.chain!.name).toBe(WarpChainName.Multiversx) // Should fall back to default chain
     })
 
     it('automatically merges queries from warp.meta.query with provided queries', async () => {
@@ -83,11 +84,11 @@ describe('WarpExecutor', () => {
       const warpWithMetaQuery = {
         ...warp,
         meta: {
-          chain: 'multiversx' as const,
+          chain: WarpChainName.Multiversx,
           identifier: 'hash:abc123',
           query: {
             provider: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
           },
           hash: 'abc123',
           creator: 'erd1creator',
@@ -132,7 +133,7 @@ describe('WarpExecutor', () => {
       const warpWithMetaQuery = {
         ...warp,
         meta: {
-          chain: 'multiversx' as const,
+          chain: WarpChainName.Multiversx as const,
           identifier: 'hash:abc123',
           query: {
             provider: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
@@ -171,9 +172,9 @@ describe('WarpExecutor', () => {
       const providerAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww'
       const contractWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         meta: {
-          chain: 'multiversx' as const,
+          chain: WarpChainName.Multiversx as const,
           identifier: '@multiversx:multiversx-staking-claim',
           query: {
             PROVIDER: providerAddress,
@@ -204,12 +205,12 @@ describe('WarpExecutor', () => {
       }
 
       const executable = await executor['factory'].createExecutable(contractWarp, 1, [], { queries: { PROVIDER: providerAddress } })
-      
+
       // Verify the input was resolved from queries
       const providerInput = executable.resolvedInputs.find((ri) => ri.input.as === 'PROVIDER')
       expect(providerInput).toBeDefined()
       expect(providerInput?.value).toBe(`address:${providerAddress}`)
-      
+
       // Verify the destination was interpolated from the resolved input
       expect(executable.destination).toBe(providerAddress)
     })
@@ -225,7 +226,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -282,7 +283,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -696,7 +697,7 @@ describe('WarpExecutor', () => {
     it('should return unhandled status when collect action destination object has no URL property', async () => {
       const unhandledWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -741,7 +742,7 @@ describe('WarpExecutor', () => {
     it('should return unhandled status when collect action destination is a string without URL', async () => {
       const unhandledWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -780,7 +781,7 @@ describe('WarpExecutor', () => {
     it('should evaluate output correctly for unhandled collect', async () => {
       const unhandledWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -844,7 +845,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -878,7 +879,7 @@ describe('WarpExecutor', () => {
     it('should handle unhandled collect with no output configuration', async () => {
       const unhandledWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -922,7 +923,7 @@ describe('WarpExecutor', () => {
           {
             type: 'transfer' as const,
             label: 'Transfer 1',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             address: 'erd1receiver1',
             value: '1000000000000000000',
             inputs: [],
@@ -930,7 +931,7 @@ describe('WarpExecutor', () => {
           {
             type: 'transfer' as const,
             label: 'Transfer 2',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             address: 'erd1receiver2',
             value: '2000000000000000000',
             inputs: [],
@@ -966,7 +967,7 @@ describe('WarpExecutor', () => {
           {
             type: 'transfer' as const,
             label: 'Transfer After Collect',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             address: 'erd1receiver',
             value: '1000000000000000000',
             inputs: [],
@@ -984,7 +985,7 @@ describe('WarpExecutor', () => {
           {
             type: 'transfer' as const,
             label: 'Transfer 1',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             address: 'erd1receiver1',
             value: '1000000000000000000',
             inputs: [],
@@ -992,7 +993,7 @@ describe('WarpExecutor', () => {
           {
             type: 'transfer' as const,
             label: 'Transfer 2',
-            chain: 'multiversx',
+            chain: WarpChainName.Multiversx,
             address: 'erd1receiver2',
             value: '2000000000000000000',
             inputs: [],
@@ -1017,7 +1018,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -1062,7 +1063,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -1111,7 +1112,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect' as const,
@@ -1177,7 +1178,7 @@ describe('WarpExecutor', () => {
     it('should skip action when when condition evaluates to false', async () => {
       const contractWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'contract' as const,
@@ -1216,7 +1217,7 @@ describe('WarpExecutor', () => {
     it('should execute action when when condition evaluates to true', async () => {
       const contractWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'contract' as const,
@@ -1255,7 +1256,7 @@ describe('WarpExecutor', () => {
     it('should execute action when when property is not present', async () => {
       const contractWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'contract' as const,
@@ -1275,7 +1276,7 @@ describe('WarpExecutor', () => {
     it('should handle when condition with primary asset properties', async () => {
       const contractWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'contract' as const,
@@ -1318,7 +1319,7 @@ describe('WarpExecutor', () => {
 
       const linkWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'contract' as const,
@@ -1359,7 +1360,7 @@ describe('WarpExecutor', () => {
 
       const collectWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'collect',
@@ -1389,7 +1390,7 @@ describe('WarpExecutor', () => {
     it('should call onError with result.output._DATA for query action errors', async () => {
       const errorData = { error: 'Query failed', code: 400 }
       const queryAdapter = createMockAdapter()
-      queryAdapter.chain = 'multiversx'
+      queryAdapter.chain = WarpChainName.Multiversx
       queryAdapter.executor.executeQuery = jest.fn().mockResolvedValue({
         status: 'error',
         warp: warp,
@@ -1410,7 +1411,7 @@ describe('WarpExecutor', () => {
 
       const queryWarp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [{ type: 'query', label: 'Query Data', address: 'erd1test', func: 'getAccount', inputs: [] } as WarpQueryAction],
       } as Warp
 
@@ -1434,7 +1435,7 @@ describe('WarpExecutor', () => {
     it('handles error when mcp action has no destination', async () => {
       const mcpWarp: Warp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'mcp' as const,
@@ -1454,16 +1455,14 @@ describe('WarpExecutor', () => {
       expect(execution.output._DATA).toBeDefined()
       expect(handlers.onError).toHaveBeenCalled()
 
-      const errorMessage = execution.output._DATA instanceof Error
-        ? execution.output._DATA.message
-        : String(execution.output._DATA)
+      const errorMessage = execution.output._DATA instanceof Error ? execution.output._DATA.message : String(execution.output._DATA)
       expect(errorMessage).toContain('MCP action requires destination')
     })
 
     it('handles error when mcp sdk is not installed or connection fails', async () => {
       const mcpWarp: Warp = {
         ...warp,
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         actions: [
           {
             type: 'mcp' as const,
@@ -1494,9 +1493,7 @@ describe('WarpExecutor', () => {
       expect(execution.output._DATA).toBeDefined()
       expect(handlers.onError).toHaveBeenCalled()
 
-      const errorMessage = execution.output._DATA instanceof Error
-        ? execution.output._DATA.message
-        : String(execution.output._DATA)
+      const errorMessage = execution.output._DATA instanceof Error ? execution.output._DATA.message : String(execution.output._DATA)
       expect(errorMessage.length).toBeGreaterThan(0)
     })
   })

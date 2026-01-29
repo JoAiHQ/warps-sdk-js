@@ -6,12 +6,12 @@ const originalFetch = global.fetch
 
 describe('WarpBuilder', () => {
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
+    ;(global as any).fetch = jest.fn().mockResolvedValue({
       json: async () => ({ type: 'object' }),
     } as any)
   })
   afterEach(() => {
-    global.fetch = originalFetch
+    ;(global as any).fetch = originalFetch
   })
 
   it('creates a warp', async () => {

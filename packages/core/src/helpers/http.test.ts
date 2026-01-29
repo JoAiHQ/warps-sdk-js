@@ -26,7 +26,13 @@ describe('HTTP Helpers', () => {
     mockExecutable = {
       warp: {} as any,
       action: 0,
+      adapter: null as any,
       chain: { name: 'multiversx' } as WarpChainInfo,
+      destination: null,
+      args: [],
+      value: 0n,
+      transfers: [],
+      data: null,
       resolvedInputs: [],
     }
 

@@ -1,4 +1,4 @@
-import { WarpConstants } from './constants'
+import { WarpChainName, WarpConstants } from './constants'
 import { getNextInfo } from './helpers'
 import { createMockAdapter, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
 import { TransformRunner, WarpAction, WarpChainInfo, WarpClientConfig, WarpContractAction, WarpMcpAction } from './types'
@@ -84,14 +84,15 @@ describe('WarpFactory', () => {
     currentUrl: 'https://example.com?foo=bar',
   })
   const chain: WarpChainInfo = {
-    name: 'multiversx',
+    name: WarpChainName.Multiversx,
     displayName: 'MultiversX',
     chainId: 'D',
     blockTime: 6000,
     addressHrp: 'erd',
     defaultApiUrl: 'https://api',
+    logoUrl: 'https://example.com/multiversx.png',
     nativeToken: {
-      chain: 'multiversx',
+      chain: WarpChainName.Multiversx,
       identifier: 'EGLD',
       name: 'MultiversX',
       symbol: 'EGLD',
@@ -142,9 +143,7 @@ describe('WarpFactory', () => {
           func: 'transfer',
           args: [],
           gasLimit: 1000000,
-          inputs: [
-            { name: 'Contract Address', as: 'CONTRACT_ADDRESS', type: 'address', source: 'field' },
-          ],
+          inputs: [{ name: 'Contract Address', as: 'CONTRACT_ADDRESS', type: 'address', source: 'field' }],
         } as WarpContractAction,
       ],
     }
@@ -162,9 +161,7 @@ describe('WarpFactory', () => {
           label: 'Test Transfer',
           address: '{{RECIPIENT}}',
           value: '0',
-          inputs: [
-            { name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' },
-          ],
+          inputs: [{ name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' }],
         },
       ],
     }
@@ -182,9 +179,7 @@ describe('WarpFactory', () => {
           label: 'Test Transfer',
           address: '{{Recipient}}',
           value: '0',
-          inputs: [
-            { name: 'Recipient', type: 'address', source: 'field' },
-          ],
+          inputs: [{ name: 'Recipient', type: 'address', source: 'field' }],
         },
       ],
     }
@@ -202,9 +197,7 @@ describe('WarpFactory', () => {
           label: 'Test Transfer',
           address: '{{recipient}}',
           value: '0',
-          inputs: [
-            { name: 'Recipient', as: 'recipient', type: 'address', source: 'field' },
-          ],
+          inputs: [{ name: 'Recipient', as: 'recipient', type: 'address', source: 'field' }],
         },
       ],
     }
@@ -226,7 +219,7 @@ describe('WarpFactory', () => {
         { name: 'wallet', type: 'address', source: WarpConstants.Source.UserWallet } as any,
       ],
     }
-    const result = await factory.getResolvedInputs('multiversx', action, ['string:ignored', 'address:ignored'], interpolator)
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['string:ignored', 'address:ignored'], interpolator)
     expect(result[0].value).toBe('string:ignored')
     expect(result[1].value).toBe('address:erd1testwallet')
   })
@@ -249,7 +242,7 @@ describe('WarpFactory', () => {
         { name: 'amount', type: 'string', source: 'field' } as any,
       ],
     }
-    const result = await factory.getResolvedInputs('multiversx', action, [], interpolator)
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, [], interpolator)
     expect(result[0].value).toBe('address:erd1recipient')
     expect(result[1].value).toBe('string:100')
   })
@@ -267,11 +260,9 @@ describe('WarpFactory', () => {
       label: 'Test',
       address: 'erd1dest',
       value: '0',
-      inputs: [
-        { name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' } as any,
-      ],
+      inputs: [{ name: 'Recipient', as: 'RECIPIENT', type: 'address', source: 'field' } as any],
     }
-    const result = await factory.getResolvedInputs('multiversx', action, ['address:erd1fromargs'], interpolator)
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['address:erd1fromargs'], interpolator)
     expect(result[0].value).toBe('address:erd1fromargs')
   })
 
@@ -288,7 +279,7 @@ describe('WarpFactory', () => {
       inputs: [{ name: 'wallet', type: 'address', source: 'field' } as any],
     }
 
-    const result = await factory.getResolvedInputs('multiversx', action, ['address:{{USER_WALLET}}'], interpolator)
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['address:{{USER_WALLET}}'], interpolator)
     expect(result[0].value).toBe('address:erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
   })
 
@@ -314,7 +305,7 @@ describe('WarpFactory', () => {
       inputs: [{ name: 'wallet', type: 'address', source: 'field' } as any],
     }
 
-    const result = await factory.getResolvedInputs('multiversx', action, ['address:{{USER_WALLET}}'], interpolator)
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['address:{{USER_WALLET}}'], interpolator)
     expect(result[0].value).toBe('address:erd1walletdetails')
   })
 
@@ -356,7 +347,13 @@ describe('WarpFactory', () => {
 
       const inputs = [
         {
-          input: { name: 'Asset', as: 'asset', type: 'asset', modifier: 'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset' },
+          input: {
+            name: 'Asset',
+            as: 'asset',
+            type: 'asset',
+            modifier:
+              'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset',
+          },
           value: 'asset:ETH|1000000000000000000',
         },
       ]
@@ -392,7 +389,13 @@ describe('WarpFactory', () => {
 
       const inputs = [
         {
-          input: { name: 'Asset', as: 'asset', type: 'asset', modifier: 'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset' },
+          input: {
+            name: 'Asset',
+            as: 'asset',
+            type: 'asset',
+            modifier:
+              'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset',
+          },
           value: 'asset:USDC-123|1000000',
         },
       ]
@@ -426,7 +429,12 @@ describe('WarpFactory', () => {
           value: 'asset:ETH|1000000000000000000',
         },
         {
-          input: { name: 'TokenAddress', type: 'address', modifier: 'transform:(inputs) => inputs["asset.token"] === "ETH" ? "0x0000000000000000000000000000000000000000" : inputs["asset.token"]' },
+          input: {
+            name: 'TokenAddress',
+            type: 'address',
+            modifier:
+              'transform:(inputs) => inputs["asset.token"] === "ETH" ? "0x0000000000000000000000000000000000000000" : inputs["asset.token"]',
+          },
           value: 'address:0x123',
         },
       ]
@@ -438,7 +446,7 @@ describe('WarpFactory', () => {
 
   it('preprocessInput returns input as-is for non-asset', async () => {
     const factory = new WarpFactory(config, [createMockAdapter()])
-    const result = await factory.preprocessInput('multiversx', 'biguint:123')
+    const result = await factory.preprocessInput(WarpChainName.Multiversx, 'biguint:123')
     expect(result).toBe('biguint:123')
   })
 
@@ -446,14 +454,14 @@ describe('WarpFactory', () => {
     it('should return input as-is when existing decimals are provided', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const input = 'asset:TOKEN-123|100|18'
-      const result = await factory.preprocessInput('multiversx', input)
+      const result = await factory.preprocessInput(WarpChainName.Multiversx, input)
       expect(result).toBe(input)
     })
 
     it('should fetch asset decimals and scale amount when no existing decimals', async () => {
       const mockAdapter = createMockAdapter()
       mockAdapter.dataLoader.getAsset = jest.fn().mockResolvedValue({
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         identifier: 'TOKEN-123',
         name: 'Test Token',
         symbol: 'TEST',
@@ -463,14 +471,14 @@ describe('WarpFactory', () => {
       })
       const factory = new WarpFactory(config, [mockAdapter])
 
-      const result = await factory.preprocessInput('multiversx', 'asset:TOKEN-123|100')
+      const result = await factory.preprocessInput(WarpChainName.Multiversx, 'asset:TOKEN-123|100')
       expect(result).toBe('asset:TOKEN-123|100000000|6')
     })
 
     it('should handle zero amount correctly', async () => {
       const mockAdapter = createMockAdapter()
       mockAdapter.dataLoader.getAsset = jest.fn().mockResolvedValue({
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         identifier: 'TOKEN-123',
         name: 'Test Token',
         symbol: 'TEST',
@@ -480,14 +488,14 @@ describe('WarpFactory', () => {
       })
       const factory = new WarpFactory(config, [mockAdapter])
 
-      const result = await factory.preprocessInput('multiversx', 'asset:TOKEN-123|0')
+      const result = await factory.preprocessInput(WarpChainName.Multiversx, 'asset:TOKEN-123|0')
       expect(result).toBe('asset:TOKEN-123|0|18')
     })
 
     it('should handle decimal amounts correctly', async () => {
       const mockAdapter = createMockAdapter()
       mockAdapter.dataLoader.getAsset = jest.fn().mockResolvedValue({
-        chain: 'multiversx',
+        chain: WarpChainName.Multiversx,
         identifier: 'TOKEN-123',
         name: 'Test Token',
         symbol: 'TEST',
@@ -497,7 +505,7 @@ describe('WarpFactory', () => {
       })
       const factory = new WarpFactory(config, [mockAdapter])
 
-      const result = await factory.preprocessInput('multiversx', 'asset:TOKEN-123|1.50')
+      const result = await factory.preprocessInput(WarpChainName.Multiversx, 'asset:TOKEN-123|1.50')
       expect(result).toBe('asset:TOKEN-123|150|2')
     })
   })
@@ -666,9 +674,7 @@ describe('WarpFactory', () => {
             address: 'erd1dest',
             value: '0',
             primary: true,
-            inputs: [
-              { name: 'Amount', as: 'AMOUNT', type: 'biguint', position: 'value', source: 'field' },
-            ],
+            inputs: [{ name: 'Amount', as: 'AMOUNT', type: 'biguint', position: 'value', source: 'field' }],
           },
         ],
       }
@@ -689,9 +695,7 @@ describe('WarpFactory', () => {
             args: [],
             gasLimit: 200000,
             primary: true,
-            inputs: [
-              { name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' },
-            ],
+            inputs: [{ name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' }],
           } as WarpContractAction,
         ],
         vars: {
@@ -796,9 +800,7 @@ describe('WarpFactory', () => {
             args: [],
             gasLimit: 200000,
             primary: true,
-            inputs: [
-              { name: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' },
-            ],
+            inputs: [{ name: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' }],
           } as WarpContractAction,
         ],
         vars: {
@@ -933,24 +935,29 @@ describe('getChainInfoForAction', () => {
       defaultApiUrl: 'https://api.multiversx.com',
       explorerUrl: 'https://explorer.multiversx.com',
       nativeToken: {
+        chain: WarpChainName.Multiversx,
         identifier: 'EGLD',
         name: 'MultiversX',
+        symbol: 'EGLD',
         decimals: 18,
         logoUrl: 'https://example.com/egld-logo.png',
       },
     })
     const adapter = createMockAdapter()
-    adapter.chain = 'mainnet'
+    adapter.chain = 'mainnet' as any
     adapter.chainInfo = {
-      name: 'mainnet',
+      name: 'mainnet' as any,
       displayName: 'Mainnet',
       chainId: '1',
       blockTime: 6000,
       addressHrp: 'erd',
       defaultApiUrl: 'https://api.multiversx.com',
+      logoUrl: 'https://example.com/multiversx.png',
       nativeToken: {
+        chain: WarpChainName.Multiversx,
         identifier: 'EGLD',
         name: 'MultiversX',
+        symbol: 'EGLD',
         decimals: 18,
         logoUrl: 'https://example.com/egld-logo.png',
       },
@@ -1010,24 +1017,29 @@ describe('getChainInfoForAction', () => {
       addressHrp: 'erd',
       defaultApiUrl: 'https://testnet-api.multiversx.com',
       nativeToken: {
+        chain: WarpChainName.Multiversx,
         identifier: 'EGLD',
         name: 'MultiversX',
+        symbol: 'EGLD',
         decimals: 18,
         logoUrl: 'https://example.com/egld-logo.png',
       },
     })
     const adapter = createMockAdapter()
-    adapter.chain = 'testnet'
+    adapter.chain = 'testnet' as any
     adapter.chainInfo = {
-      name: 'testnet',
+      name: 'testnet' as any,
       displayName: 'Testnet',
       chainId: 'T',
       blockTime: 6,
       addressHrp: 'erd',
       defaultApiUrl: 'https://testnet-api.multiversx.com',
+      logoUrl: 'https://example.com/multiversx.png',
       nativeToken: {
+        chain: WarpChainName.Multiversx,
         identifier: 'EGLD',
         name: 'MultiversX',
+        symbol: 'EGLD',
         decimals: 18,
         logoUrl: 'https://example.com/egld-logo.png',
       },
@@ -1203,7 +1215,7 @@ describe('getChainInfoForAction', () => {
                 source: 'field',
               },
             ],
-          } as WarpContractAction,
+          } as unknown as WarpContractAction,
         ],
       }
       await expect(factory.createExecutable(warp, 1, ['asset:EGLD|1000'])).rejects.toThrow(

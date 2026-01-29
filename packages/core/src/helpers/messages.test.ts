@@ -1,10 +1,11 @@
+import { WarpChainName } from '../constants'
 import { Warp, WarpClientConfig } from '../types'
 import { applyOutputToMessages } from './messages'
 
 describe('applyOutputToMessages', () => {
   const createMockWarp = (messages?: Record<string, any>): Warp => ({
     protocol: 'warp:1.0.0',
-    chain: 'ethereum',
+    chain: WarpChainName.Ethereum,
     name: 'test-warp',
     title: 'Test Warp',
     description: 'Test description',
@@ -141,4 +142,3 @@ describe('applyOutputToMessages', () => {
     })
   })
 })
-

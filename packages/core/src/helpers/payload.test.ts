@@ -1,5 +1,6 @@
-import { buildMappedOutput, buildNestedPayload, mergeNestedPayload, toInputPayloadValue } from './payload'
+import type { ResolvedInput } from '../types'
 import { WarpSerializer } from '../WarpSerializer'
+import { buildMappedOutput, buildNestedPayload, mergeNestedPayload, toInputPayloadValue } from './payload'
 
 describe('buildNestedPayload', () => {
   it('should handle flat payload structure (no position prefix)', () => {
@@ -180,17 +181,17 @@ describe('toInputPayloadValue', () => {
   const serializer = new WarpSerializer()
 
   it('should convert string input', () => {
-    const input = { input: { name: 'test', type: 'string', source: 'field' }, value: 'string:hello' }
+    const input: ResolvedInput = { input: { name: 'test', type: 'string', source: 'field' }, value: 'string:hello' }
     expect(toInputPayloadValue(input, serializer)).toBe('hello')
   })
 
   it('should convert biguint to string', () => {
-    const input = { input: { name: 'amount', type: 'biguint', source: 'field' }, value: 'biguint:1000000000000000000' }
+    const input: ResolvedInput = { input: { name: 'amount', type: 'biguint', source: 'field' }, value: 'biguint:1000000000000000000' }
     expect(toInputPayloadValue(input, serializer)).toBe('1000000000000000000')
   })
 
   it('should convert asset to object with identifier and amount', () => {
-    const input = { input: { name: 'token', type: 'asset', source: 'field' }, value: 'asset:EGLD|1000000000000000000' }
+    const input: ResolvedInput = { input: { name: 'token', type: 'asset', source: 'field' }, value: 'asset:EGLD|1000000000000000000' }
     expect(toInputPayloadValue(input, serializer)).toEqual({
       identifier: 'EGLD',
       amount: '1000000000000000000',
@@ -198,7 +199,7 @@ describe('toInputPayloadValue', () => {
   })
 
   it('should return null for null value', () => {
-    const input = { input: { name: 'test', type: 'string', source: 'field' }, value: null }
+    const input: ResolvedInput = { input: { name: 'test', type: 'string', source: 'field' }, value: null }
     expect(toInputPayloadValue(input, serializer)).toBeNull()
   })
 })
@@ -211,7 +212,7 @@ describe('buildMappedOutput', () => {
   })
 
   it('should map inputs by name', () => {
-    const inputs = [
+    const inputs: ResolvedInput[] = [
       { input: { name: 'amount', type: 'string', source: 'field' }, value: 'string:100' },
       { input: { name: 'recipient', type: 'address', source: 'field' }, value: 'address:0x123' },
     ]
@@ -222,16 +223,14 @@ describe('buildMappedOutput', () => {
   })
 
   it('should use "as" alias when provided', () => {
-    const inputs = [
-      { input: { name: 'amount', as: 'AMOUNT', type: 'string', source: 'field' }, value: 'string:500' },
-    ]
+    const inputs: ResolvedInput[] = [{ input: { name: 'amount', as: 'AMOUNT', type: 'string', source: 'field' }, value: 'string:500' }]
     expect(buildMappedOutput(inputs, serializer)).toEqual({
       AMOUNT: '500',
     })
   })
 
   it('should handle nested payload structures', () => {
-    const inputs = [
+    const inputs: ResolvedInput[] = [
       {
         input: { name: 'email', type: 'string', source: 'field', position: 'payload:data.customer' },
         value: 'string:test@example.com',
@@ -252,7 +251,7 @@ describe('buildMappedOutput', () => {
   })
 
   it('should handle mixed flat and nested structures', () => {
-    const inputs = [
+    const inputs: ResolvedInput[] = [
       { input: { name: 'reference', type: 'string', source: 'field' }, value: 'string:REF123' },
       {
         input: { name: 'email', type: 'string', source: 'field', position: 'payload:data.customer' },
