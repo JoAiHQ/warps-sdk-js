@@ -3,6 +3,15 @@ import fetchMock from 'jest-fetch-mock'
 import { z } from 'zod'
 import { convertMcpToolToWarp, convertWarpToMcpCapabilities } from './warps'
 
+const testWarpMeta = (identifier: string) => ({
+  chain: 'multiversx' as WarpChainName,
+  identifier,
+  query: null as Record<string, unknown> | null,
+  hash: identifier,
+  creator: 'test',
+  createdAt: '2024-01-01',
+})
+
 const getInnerSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
   if ((schema as any)._def?.typeName === 'ZodOptional') {
     return (schema as any)._def.innerType
@@ -759,10 +768,7 @@ describe('convertWarpToMcpCapabilities', () => {
           ],
         },
       ],
-      meta: {
-        identifier: 'transfer_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('transfer_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -794,10 +800,7 @@ describe('convertWarpToMcpCapabilities', () => {
           ],
         },
       ],
-      meta: {
-        identifier: 'contract_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('contract_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -819,10 +822,7 @@ describe('convertWarpToMcpCapabilities', () => {
           func: 'getBalance',
         },
       ],
-      meta: {
-        identifier: 'query_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('query_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -856,10 +856,7 @@ describe('convertWarpToMcpCapabilities', () => {
           ],
         },
       ],
-      meta: {
-        identifier: 'collect_post_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_post_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -883,10 +880,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'collect_put_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_put_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -909,10 +903,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'collect_delete_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_delete_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -936,10 +927,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'collect_get_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_get_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -963,10 +951,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'collect_no_method_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_no_method_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -987,10 +972,7 @@ describe('convertWarpToMcpCapabilities', () => {
           destination: 'https://api.example.com/data',
         },
       ],
-      meta: {
-        identifier: 'collect_string_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('collect_string_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1032,10 +1014,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'multiple_actions_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('multiple_actions_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1056,10 +1035,7 @@ describe('convertWarpToMcpCapabilities', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'delegate',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('delegate'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1081,10 +1057,7 @@ describe('convertWarpToMcpCapabilities', () => {
           address: 'erd1query',
         },
       ],
-      meta: {
-        identifier: 'get_balance_test',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('get_balance_test'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1109,10 +1082,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         },
       ],
-      meta: {
-        identifier: 'with_colons',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('with_colons'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1134,10 +1104,7 @@ describe('convertWarpToMcpCapabilities', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'tool_with_spaces',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('tool_with_spaces'),
     }
 
     const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1444,7 +1411,6 @@ describe('convertWarpToMcpCapabilities', () => {
       expect(result.resource?.content).toBe(mockComponentCode)
     })
 
-
     it('handles failed resource downloads gracefully', async () => {
       const warp: Warp = {
         protocol: 'warp:3.0.0',
@@ -1493,10 +1459,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         ],
         ui: 'table',
-        meta: {
-          identifier: 'table_test',
-          source: 'https://example.com/warp.json',
-        },
+        meta: testWarpMeta('table_test'),
       }
 
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1520,10 +1483,7 @@ describe('convertWarpToMcpCapabilities', () => {
           },
         ],
         ui: 'https://example.com/missing.html',
-        meta: {
-          identifier: 'download_fail_test',
-          source: 'https://example.com/warp.json',
-        },
+        meta: testWarpMeta('download_fail_test'),
       }
 
       fetchMock.mockResponseOnce('', { status: 404 })
@@ -1564,7 +1524,6 @@ describe('convertWarpToMcpCapabilities', () => {
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
       expect(result.resource?.content).toBe(mockHtml)
     })
-
   })
 
   describe('prompt action conversion', () => {
@@ -1591,10 +1550,7 @@ describe('convertWarpToMcpCapabilities', () => {
             ],
           },
         ],
-        meta: {
-          identifier: 'prompt_test',
-          source: 'https://example.com/warp.json',
-        },
+        meta: testWarpMeta('prompt_test'),
       }
 
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1623,10 +1579,7 @@ describe('convertWarpToMcpCapabilities', () => {
             prompt: 'This is a static prompt with no placeholders.',
           },
         ],
-        meta: {
-          identifier: 'static_prompt',
-          source: 'https://example.com/warp.json',
-        },
+        meta: testWarpMeta('static_prompt'),
       }
 
       const result = await convertWarpToMcpCapabilities(warp, mockConfig)
@@ -1665,6 +1618,7 @@ describe('convertWarpToMcpCapabilities', () => {
         protocol: 'warp:3.0.0',
         name: 'Empty Actions',
         title: { en: 'Empty Actions' },
+        description: null,
         actions: [],
       }
 

@@ -1,6 +1,15 @@
-import { Warp, WarpActionInput, WarpMcpAction, WarpTransferAction } from '@joai/warps'
+import { Warp, WarpActionInput, WarpChainName, WarpMcpAction, WarpTransferAction } from '@joai/warps'
 import { z } from 'zod'
 import { buildZodInputSchema, convertActionToTool, convertMcpActionToTool } from './tools'
+
+const testWarpMeta = (identifier: string) => ({
+  chain: 'multiversx' as WarpChainName,
+  identifier,
+  query: null as Record<string, unknown> | null,
+  hash: identifier,
+  creator: 'test',
+  createdAt: '2024-01-01',
+})
 
 const getInnerSchema = (schema: z.ZodTypeAny): z.ZodTypeAny => {
   if ((schema as any)._def?.typeName === 'ZodOptional') {
@@ -262,10 +271,7 @@ describe('convertActionToTool', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -291,10 +297,7 @@ describe('convertActionToTool', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -322,10 +325,7 @@ describe('convertActionToTool', () => {
         invoking: { en: 'Processing transfer' },
         invoked: { en: 'Transfer completed' },
       },
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -353,10 +353,7 @@ describe('convertActionToTool', () => {
         invoking: { de: 'Übertragung wird verarbeitet' },
         invoked: { de: 'Übertragung abgeschlossen' },
       },
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -384,10 +381,7 @@ describe('convertActionToTool', () => {
         invoking: 'Starting',
         invoked: 'Done',
       },
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -410,10 +404,7 @@ describe('convertActionToTool', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'test-warp_with_spaces',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test-warp_with_spaces'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -435,10 +426,7 @@ describe('convertActionToTool', () => {
           address: 'erd1test',
         },
       ],
-      meta: {
-        identifier: 'staking_undelegate',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('staking_undelegate'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -469,10 +457,7 @@ describe('convertActionToTool', () => {
           ],
         },
       ],
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action = warp.actions[0] as WarpTransferAction
@@ -503,10 +488,7 @@ describe('convertMcpActionToTool', () => {
       title: { en: 'Test Warp' },
       description: null,
       actions: [],
-      meta: {
-        identifier: 'test_warp',
-        source: 'https://example.com/warp.json',
-      },
+      meta: testWarpMeta('test_warp'),
     }
 
     const action: WarpMcpAction = {

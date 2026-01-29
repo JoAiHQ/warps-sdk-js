@@ -1,4 +1,4 @@
-import { Warp, WarpActionInput, WarpPromptAction } from '@joai/warps'
+import { Warp, WarpPromptAction } from '@joai/warps'
 import { convertPromptActionToPrompt, interpolatePromptWithArgs } from './prompts'
 
 describe('interpolatePromptWithArgs', () => {
@@ -74,6 +74,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'Simple Prompt',
       title: { en: 'Simple Prompt' },
+      description: null,
       actions: [],
     }
 
@@ -96,6 +97,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'Prompt Example',
       title: { en: 'Prompt Example' },
+      description: null,
       actions: [],
     }
 
@@ -145,6 +147,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'Hidden Input Test',
       title: { en: 'Test' },
+      description: null,
       actions: [],
     }
 
@@ -180,6 +183,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'Test',
       title: { en: 'Test' },
+      description: null,
       actions: [],
     }
 
@@ -208,6 +212,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'My Awesome Prompt!@#$',
       title: { en: 'Test' },
+      description: null,
       actions: [],
     }
 
@@ -227,6 +232,7 @@ describe('convertPromptActionToPrompt', () => {
       protocol: 'warp:3.0.0',
       name: 'Empty Inputs',
       title: { en: 'Test' },
+      description: null,
       actions: [],
     }
 

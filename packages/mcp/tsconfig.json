@@ -3,7 +3,8 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "esnext",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "types": ["node", "jest"]
   },
   "include": ["src"],
   "exclude": ["dist", "build", "node_modules"]
