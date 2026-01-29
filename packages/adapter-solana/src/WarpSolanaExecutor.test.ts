@@ -1,12 +1,27 @@
-import { WarpChainInfo, WarpChainName, WarpClientConfig, WarpExecutable } from '@joai/warps'
+import { ChainAdapter, WarpChainInfo, WarpChainName, WarpClientConfig, WarpExecutable } from '@joai/warps'
 import { NativeTokenSol, SolanaAdapter } from './chains/solana'
 import { WarpSolanaExecutor } from './WarpSolanaExecutor'
+
+const mockFallbackAdapter = {
+  chainInfo: {} as WarpChainInfo,
+  builder: () => ({}) as any,
+  executor: {} as any,
+  output: {} as any,
+  serializer: {} as any,
+  registry: {} as any,
+  explorer: {} as any,
+  abiBuilder: () => ({}) as any,
+  brandBuilder: () => ({}) as any,
+  dataLoader: {} as any,
+  wallet: {} as any,
+} as ChainAdapter
 
 describe('WarpSolanaExecutor', () => {
   let executor: WarpSolanaExecutor
   let mockConfig: WarpClientConfig
   let mockChainInfo: WarpChainInfo
   let mockWarp: any
+  let solanaAdapter: ChainAdapter
 
   beforeEach(() => {
     mockConfig = {
@@ -37,13 +52,14 @@ describe('WarpSolanaExecutor', () => {
       ],
     }
 
+    solanaAdapter = SolanaAdapter(mockConfig, mockFallbackAdapter)
     executor = new WarpSolanaExecutor(mockConfig, mockChainInfo)
   })
 
   describe('createTransferTransaction', () => {
     it('should create a native token transfer transaction', async () => {
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -66,7 +82,7 @@ describe('WarpSolanaExecutor', () => {
 
     it('should throw error for invalid destination address', async () => {
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -83,7 +99,7 @@ describe('WarpSolanaExecutor', () => {
 
     it('should create transaction with data when provided', async () => {
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -115,7 +131,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: contractWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -144,7 +160,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: contractWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -173,7 +189,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: queryWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -203,7 +219,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: transferWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -222,7 +238,7 @@ describe('WarpSolanaExecutor', () => {
   describe('createTransaction', () => {
     it('should create a transfer transaction', async () => {
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -252,7 +268,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
-        adapter: SolanaAdapter(mockConfig),
+        adapter: solanaAdapter,
         warp: queryWarp as any,
         action: 1,
         chain: mockChainInfo,

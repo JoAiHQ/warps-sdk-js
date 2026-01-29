@@ -1,4 +1,12 @@
-import { WarpChainInfo, WarpChainName, WarpClientConfig, WarpContractAction, WarpExecutable, WarpTransferAction } from '@joai/warps'
+import {
+  ChainAdapter,
+  WarpChainInfo,
+  WarpChainName,
+  WarpClientConfig,
+  WarpContractAction,
+  WarpExecutable,
+  WarpTransferAction,
+} from '@joai/warps'
 import { Connection, Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { NativeTokenSol, SolanaAdapter } from './chains/solana'
@@ -7,6 +15,20 @@ import { WarpSolanaExecutor } from './WarpSolanaExecutor'
 import { WarpSolanaWallet } from './WarpSolanaWallet'
 
 jest.unmock('@scure/bip39')
+
+const mockFallbackAdapter = {
+  chainInfo: {} as WarpChainInfo,
+  builder: () => ({}) as any,
+  executor: {} as any,
+  output: {} as any,
+  serializer: {} as any,
+  registry: {} as any,
+  explorer: {} as any,
+  abiBuilder: () => ({}) as any,
+  brandBuilder: () => ({}) as any,
+  dataLoader: {} as any,
+  wallet: {} as any,
+} as ChainAdapter
 
 describe('WarpSolanaIntegration', () => {
   const privateKey = '5ChhuwWoBzvXFsaCBuz9woTzb7tXgV5oALFBQ9LABRbnjb9fzioHsoak1qA8SKEkDzZyqtc4cNsxdcK8gzc5iLUt'
@@ -62,8 +84,10 @@ describe('WarpSolanaIntegration', () => {
     let executor: WarpSolanaExecutor
     let wallet: WarpSolanaWallet
     let dataLoader: WarpSolanaDataLoader
+    let solanaAdapter: ChainAdapter
 
     beforeEach(() => {
+      solanaAdapter = SolanaAdapter(mockConfig, mockFallbackAdapter)
       chainInfo = {
         name: WarpChainName.Solana,
         displayName: 'Solana Devnet',
@@ -90,7 +114,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
-          adapter: SolanaAdapter(mockConfig),
+          adapter: solanaAdapter,
           warp: {
             actions: [
               {
@@ -121,7 +145,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
-          adapter: SolanaAdapter(mockConfig),
+          adapter: solanaAdapter,
           warp: {
             actions: [
               {
@@ -156,7 +180,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
-          adapter: SolanaAdapter(mockConfig),
+          adapter: solanaAdapter,
           warp: {
             actions: [
               {
@@ -189,7 +213,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
-          adapter: SolanaAdapter(mockConfig),
+          adapter: solanaAdapter,
           warp: {
             actions: [
               {
@@ -234,7 +258,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
-          adapter: SolanaAdapter(mockConfig),
+          adapter: solanaAdapter,
           warp: {
             actions: [
               {
