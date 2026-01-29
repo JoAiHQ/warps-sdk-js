@@ -1,11 +1,4 @@
 import {
-  findEventsByFirstTopic,
-  SmartContractTransactionsOutcomeParser,
-  TransactionEventsParser,
-  TransactionOnNetwork,
-  TypedValue,
-} from '@multiversx/sdk-core'
-import {
   AdapterTypeRegistry,
   AdapterWarpOutput,
   applyOutputToMessages,
@@ -28,6 +21,13 @@ import {
   WarpContractAction,
   WarpExecutionOutput,
 } from '@joai/warps'
+import {
+  findEventsByFirstTopic,
+  SmartContractTransactionsOutcomeParser,
+  TransactionEventsParser,
+  TransactionOnNetwork,
+  TypedValue,
+} from '@multiversx/sdk-core'
 import { WarpMultiversxAbiBuilder } from './WarpMultiversxAbiBuilder'
 import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
 
@@ -119,6 +119,10 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
         const topicPosition = Number(partTwo)
         const events = findEventsByFirstTopic(tx, partOne)
         const outcome = eventParser.parseEvents({ events })[0]
+        if (!outcome || typeof outcome !== 'object') {
+          output[resultName] = null
+          continue
+        }
         const outcomeAtPosition = (Object.values(outcome)[topicPosition] || null) as object | null
         stringValues.push(String(outcomeAtPosition))
         nativeValues.push(outcomeAtPosition)
