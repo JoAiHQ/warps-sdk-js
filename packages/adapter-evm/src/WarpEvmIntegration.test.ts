@@ -1,9 +1,31 @@
-import { WarpChainInfo, WarpClientConfig, WarpExecutable, WarpTransferAction, WarpContractAction, WarpChainName } from '@joai/warps'
+import {
+  ChainAdapter,
+  WarpChainInfo,
+  WarpChainName,
+  WarpClientConfig,
+  WarpContractAction,
+  WarpExecutable,
+  WarpTransferAction,
+} from '@joai/warps'
 import { ethers } from 'ethers'
+import { BaseAdapter, NativeTokenBase } from './chains/base'
+import { EthereumAdapter, NativeTokenEth } from './chains/ethereum'
 import { WarpEvmExecutor } from './WarpEvmExecutor'
 import { WarpEvmWallet } from './WarpEvmWallet'
-import { NativeTokenEth } from './chains/ethereum'
-import { NativeTokenBase } from './chains/base'
+
+const mockFallbackAdapter = {
+  chainInfo: {} as WarpChainInfo,
+  builder: () => ({}) as any,
+  executor: {} as any,
+  output: {} as any,
+  serializer: {} as any,
+  registry: {} as any,
+  explorer: {} as any,
+  abiBuilder: () => ({}) as any,
+  brandBuilder: () => ({}) as any,
+  dataLoader: {} as any,
+  wallet: {} as any,
+} as ChainAdapter
 
 jest.unmock('@scure/bip39')
 
@@ -76,8 +98,10 @@ describe('WarpEvmIntegration', () => {
     let chainInfo: WarpChainInfo
     let executor: WarpEvmExecutor
     let wallet: WarpEvmWallet
+    let evmAdapter: ChainAdapter
 
     beforeEach(() => {
+      evmAdapter = EthereumAdapter(mockConfig, mockFallbackAdapter)
       chainInfo = {
         name: WarpChainName.Ethereum,
         displayName: 'Ethereum Sepolia',
@@ -114,6 +138,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -162,6 +187,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -186,6 +212,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -217,6 +244,7 @@ describe('WarpEvmIntegration', () => {
             },
           ],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -291,6 +319,7 @@ describe('WarpEvmIntegration', () => {
           args: [`address:${receiverAddress}`, 'uint256:1000000000000000000'],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -333,6 +362,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -366,6 +396,7 @@ describe('WarpEvmIntegration', () => {
           args: [`address:${checksummedAddress}`],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const result = await executor.executeQuery(executable)
@@ -436,8 +467,10 @@ describe('WarpEvmIntegration', () => {
     let chainInfo: WarpChainInfo
     let executor: WarpEvmExecutor
     let wallet: WarpEvmWallet
+    let evmAdapter: ChainAdapter
 
     beforeEach(() => {
+      evmAdapter = BaseAdapter(mockConfig, mockFallbackAdapter)
       chainInfo = {
         name: WarpChainName.Base,
         displayName: 'Base Sepolia',
@@ -474,6 +507,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -522,6 +556,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -547,6 +582,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -572,6 +608,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -604,6 +641,7 @@ describe('WarpEvmIntegration', () => {
             },
           ],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -659,6 +697,7 @@ describe('WarpEvmIntegration', () => {
             },
           ],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -690,6 +729,7 @@ describe('WarpEvmIntegration', () => {
             },
           ],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -741,6 +781,7 @@ describe('WarpEvmIntegration', () => {
           args: [`address:${receiverAddress}`, 'uint256:5000000000000000000'],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -783,6 +824,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -838,6 +880,7 @@ describe('WarpEvmIntegration', () => {
           args: [`address:${checksummedAddress}`],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const result = await executor.executeQuery(executable)
@@ -881,6 +924,7 @@ describe('WarpEvmIntegration', () => {
           args: [`address:${receiverAddress}`, 'uint256:1000000000000000000', 'hex:0x1234'],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -893,9 +937,7 @@ describe('WarpEvmIntegration', () => {
       it('should handle contract call with bytes argument on Base', async () => {
         const bytesAbi = [
           {
-            inputs: [
-              { name: 'data', type: 'bytes' },
-            ],
+            inputs: [{ name: 'data', type: 'bytes' }],
             name: 'processData',
             outputs: [],
             stateMutability: 'nonpayable',
@@ -922,6 +964,7 @@ describe('WarpEvmIntegration', () => {
           args: ['hex:0x1234567890abcdef'],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createContractCallTransaction(executable)
@@ -1040,6 +1083,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         const tx = await executor.createTransferTransaction(executable)
@@ -1065,6 +1109,7 @@ describe('WarpEvmIntegration', () => {
           args: [],
           transfers: [],
           resolvedInputs: [],
+          adapter: evmAdapter,
         }
 
         await expect(executor.createTransferTransaction(executable)).rejects.toThrow()
@@ -1075,8 +1120,10 @@ describe('WarpEvmIntegration', () => {
   describe('Edge Cases and Error Handling', () => {
     let chainInfo: WarpChainInfo
     let executor: WarpEvmExecutor
+    let evmAdapter: ChainAdapter
 
     beforeEach(() => {
+      evmAdapter = EthereumAdapter(mockConfig, mockFallbackAdapter)
       chainInfo = {
         name: WarpChainName.Ethereum,
         displayName: 'Ethereum Sepolia',
@@ -1101,8 +1148,8 @@ describe('WarpEvmIntegration', () => {
               type: 'transfer',
               label: 'Zero Transfer',
             } as WarpTransferAction,
-            ],
-          } as any,
+          ],
+        } as any,
         action: 1,
         chain: chainInfo,
         destination: receiverAddress,
@@ -1111,52 +1158,54 @@ describe('WarpEvmIntegration', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: evmAdapter,
       }
 
       const tx = await executor.createTransferTransaction(executable)
       expect(tx.value).toBe(0n)
     })
 
-      it('should handle contract call with complex arguments', async () => {
-        const complexAbi = [
-          {
-            inputs: [
-              { name: 'recipients', type: 'address[]' },
-              { name: 'amounts', type: 'uint256[]' },
-            ],
-            name: 'batchTransfer',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-          },
-        ]
-
-        const executable: WarpExecutable = {
-          warp: {
-            actions: [
-              {
-                type: 'contract',
-                label: 'Complex Contract Call',
-                func: 'batchTransfer(address[],uint256[])',
-                abi: JSON.stringify(complexAbi),
-              } as WarpContractAction,
-            ],
-          } as any,
-          action: 1,
-          chain: chainInfo,
-          destination: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-          value: 0n,
-          data: null,
-          args: [
-            'address[]:["0x1234567890123456789012345678901234567890","0x0987654321098765432109876543210987654321"]',
-            'uint256[]:[1000000000000000000,2000000000000000000]',
+    it('should handle contract call with complex arguments', async () => {
+      const complexAbi = [
+        {
+          inputs: [
+            { name: 'recipients', type: 'address[]' },
+            { name: 'amounts', type: 'uint256[]' },
           ],
-          transfers: [],
-          resolvedInputs: [],
-        }
+          name: 'batchTransfer',
+          outputs: [],
+          stateMutability: 'nonpayable',
+          type: 'function',
+        },
+      ]
 
-        await expect(executor.createContractCallTransaction(executable)).rejects.toThrow()
-      })
+      const executable: WarpExecutable = {
+        warp: {
+          actions: [
+            {
+              type: 'contract',
+              label: 'Complex Contract Call',
+              func: 'batchTransfer(address[],uint256[])',
+              abi: JSON.stringify(complexAbi),
+            } as WarpContractAction,
+          ],
+        } as any,
+        action: 1,
+        chain: chainInfo,
+        destination: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+        value: 0n,
+        data: null,
+        args: [
+          'address[]:["0x1234567890123456789012345678901234567890","0x0987654321098765432109876543210987654321"]',
+          'uint256[]:[1000000000000000000,2000000000000000000]',
+        ],
+        transfers: [],
+        resolvedInputs: [],
+        adapter: evmAdapter,
+      }
+
+      await expect(executor.createContractCallTransaction(executable)).rejects.toThrow()
+    })
 
     it('should handle gas estimation failures gracefully', async () => {
       mockProvider.estimateGas.mockRejectedValueOnce(new Error('Gas estimation failed'))
@@ -1178,6 +1227,7 @@ describe('WarpEvmIntegration', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: evmAdapter,
       }
 
       const tx = await executor.createTransferTransaction(executable)

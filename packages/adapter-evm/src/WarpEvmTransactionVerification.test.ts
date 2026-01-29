@@ -1,10 +1,10 @@
-import { WarpChainInfo, WarpClientConfig, WarpChainName } from '@joai/warps'
+import { WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { ethers } from 'ethers'
 import { WarpEvmDataLoader } from './WarpEvmDataLoader'
 import { WarpEvmExplorer } from './WarpEvmExplorer'
 import { WarpEvmOutput } from './WarpEvmOutput'
-import { NativeTokenEth } from './chains/ethereum'
 import { NativeTokenBase } from './chains/base'
+import { NativeTokenEth } from './chains/ethereum'
 
 jest.unmock('@scure/bip39')
 
@@ -189,7 +189,8 @@ describe('WarpEvmTransactionVerification', () => {
 
     it('should verify successful ERC-20 token transfer transaction', async () => {
       const tokenAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
-      const transferData = '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
+      const transferData =
+        '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
 
       const mockTx = {
         hash: testTxHash,
@@ -232,7 +233,8 @@ describe('WarpEvmTransactionVerification', () => {
 
     it('should verify successful contract call transaction', async () => {
       const contractAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
-      const contractData = '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
+      const contractData =
+        '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
 
       const mockTx = {
         hash: testTxHash,
@@ -405,7 +407,8 @@ describe('WarpEvmTransactionVerification', () => {
 
     it('should verify successful ERC-20 token transfer transaction on Base', async () => {
       const tokenAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
-      const transferData = '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
+      const transferData =
+        '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
 
       const mockTx = {
         hash: testTxHash,
@@ -448,7 +451,8 @@ describe('WarpEvmTransactionVerification', () => {
 
     it('should verify successful contract call transaction on Base', async () => {
       const contractAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
-      const contractData = '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
+      const contractData =
+        '0xa9059cbb0000000000000000000000001234567890abcdef1234567890abcdef123456780000000000000000000000000000000000000000000000000de0b6b3a7640000'
 
       const mockTx = {
         hash: testTxHash,
@@ -556,7 +560,7 @@ describe('WarpEvmTransactionVerification', () => {
         gasUsed: 21000n,
         gasPrice: ethers.parseUnits('20', 'gwei'),
         logs: [],
-      } as ethers.TransactionReceipt
+      } as unknown as ethers.TransactionReceipt
 
       mockProvider.getTransactionReceipt.mockResolvedValue(mockReceipt)
 
@@ -575,7 +579,7 @@ describe('WarpEvmTransactionVerification', () => {
         gasUsed: 21000n,
         gasPrice: ethers.parseUnits('20', 'gwei'),
         logs: [],
-      } as ethers.TransactionReceipt
+      } as unknown as ethers.TransactionReceipt
 
       mockProvider.getTransactionReceipt.mockResolvedValue(mockReceipt)
 

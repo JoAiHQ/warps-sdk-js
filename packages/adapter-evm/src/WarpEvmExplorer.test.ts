@@ -1,10 +1,10 @@
-import { WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { WarpEvmExplorer } from './WarpEvmExplorer'
 import { ArbitrumExplorers, BaseExplorers, EthereumExplorers } from './constants'
 
 describe('WarpEvmExplorer', () => {
   const mockChainInfo: WarpChainInfo = {
-    name: 'ethereum',
+    name: WarpChainName.Ethereum,
     chainId: '1',
     displayName: 'Ethereum',
     blockTime: 12000,
@@ -12,7 +12,7 @@ describe('WarpEvmExplorer', () => {
     defaultApiUrl: 'https://api.example.com',
     logoUrl: 'https://example.com/ethereum-logo.png',
     nativeToken: {
-      chain: 'ethereum',
+      chain: WarpChainName.Ethereum,
       identifier: 'ETH',
       name: 'Ethereum',
       symbol: 'ETH',
@@ -21,7 +21,7 @@ describe('WarpEvmExplorer', () => {
   }
 
   const arbitrumChainInfo: WarpChainInfo = {
-    name: 'arbitrum',
+    name: WarpChainName.Arbitrum,
     chainId: '42161',
     displayName: 'Arbitrum',
     blockTime: 12000,
@@ -29,7 +29,7 @@ describe('WarpEvmExplorer', () => {
     defaultApiUrl: 'https://api.arbitrum.com',
     logoUrl: 'https://example.com/arbitrum-logo.png',
     nativeToken: {
-      chain: 'arbitrum',
+      chain: WarpChainName.Arbitrum,
       identifier: 'ARB',
       name: 'Arbitrum',
       symbol: 'ARB',
@@ -38,7 +38,7 @@ describe('WarpEvmExplorer', () => {
   }
 
   const baseChainInfo: WarpChainInfo = {
-    name: 'base',
+    name: WarpChainName.Base,
     chainId: '8453',
     displayName: 'Base',
     blockTime: 12000,
@@ -46,7 +46,7 @@ describe('WarpEvmExplorer', () => {
     defaultApiUrl: 'https://api.base.com',
     logoUrl: 'https://example.com/base-logo.png',
     nativeToken: {
-      chain: 'ethereum',
+      chain: WarpChainName.Ethereum,
       identifier: 'ETH',
       name: 'Ethereum',
       symbol: 'ETH',

@@ -1,4 +1,4 @@
-import { WarpChainInfo, WarpClientConfig, WarpExecutable } from '@joai/warps'
+import { ChainAdapter, WarpChainInfo, WarpChainName, WarpClientConfig, WarpExecutable } from '@joai/warps'
 import { ethers } from 'ethers'
 import { WarpEvmExecutor } from './WarpEvmExecutor'
 import { NativeTokenEth } from './chains'
@@ -11,6 +11,7 @@ describe('WarpEvmExecutor', () => {
   let mockProvider: any
   let mockChainInfo: WarpChainInfo
   let mockWarp: any
+  let mockEvmAdapter: ChainAdapter
 
   const getTestChainInfo = () => mockChainInfo
 
@@ -29,7 +30,7 @@ describe('WarpEvmExecutor', () => {
     } as WarpClientConfig
 
     mockChainInfo = {
-      name: 'ethereum',
+      name: WarpChainName.Ethereum,
       displayName: 'Ethereum Testnet',
       chainId: '11155111',
       blockTime: 12000,
@@ -109,6 +110,19 @@ describe('WarpEvmExecutor', () => {
     }))
 
     executor = new WarpEvmExecutor(mockConfig, mockChainInfo)
+    mockEvmAdapter = {
+      chainInfo: mockChainInfo,
+      builder: () => ({}) as any,
+      executor: {} as any,
+      output: {} as any,
+      serializer: {} as any,
+      registry: {} as any,
+      explorer: {} as any,
+      abiBuilder: () => ({}) as any,
+      brandBuilder: () => ({}) as any,
+      dataLoader: {} as any,
+      wallet: {} as any,
+    } as ChainAdapter
   })
 
   describe('createTransferTransaction', () => {
@@ -123,6 +137,7 @@ describe('WarpEvmExecutor', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       const tx = await executor.createTransferTransaction(executable)
@@ -148,6 +163,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       const tx = await executor.createTransferTransaction(executable)
@@ -171,6 +187,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       const tx = await executor.createTransferTransaction(executable)
@@ -195,6 +212,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       await expect(executor.createTransferTransaction(executable)).rejects.toThrow(
@@ -224,6 +242,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       await expect(executor.createTransferTransaction(executable)).rejects.toThrow(
@@ -247,6 +266,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       await expect(executor.createTransferTransaction(executable)).rejects.toThrow(
@@ -270,6 +290,7 @@ describe('WarpEvmExecutor', () => {
           },
         ],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       }
 
       await expect(executor.createTransferTransaction(executable)).rejects.toThrow(
@@ -294,6 +315,7 @@ describe('WarpEvmExecutor', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       await expect(executor.createTransferTransaction(executable)).rejects.toThrow('WarpEvmExecutor: Invalid destination address')
@@ -331,6 +353,7 @@ describe('WarpEvmExecutor', () => {
         args: ['address:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', 'uint256:1000000000000000000'],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       const tx = await executor.createContractCallTransaction(executable)
@@ -364,6 +387,7 @@ describe('WarpEvmExecutor', () => {
         args: ['address:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', 'uint256:1000000000000000000'],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       await expect(executor.createContractCallTransaction(executable)).rejects.toThrow('WarpEvmExecutor: Invalid contract address')
@@ -389,6 +413,7 @@ describe('WarpEvmExecutor', () => {
         args: ['address:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       const result = await executor.executeQuery(executable)
@@ -427,6 +452,7 @@ describe('WarpEvmExecutor', () => {
         args: ['address:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       const result = await executor.executeQuery(executable)
@@ -466,6 +492,7 @@ describe('WarpEvmExecutor', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       const tx = await executor.createTransaction(executable)
@@ -511,6 +538,7 @@ describe('WarpEvmExecutor', () => {
         args: ['address:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', 'uint256:1000000000000000000'],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       const tx = await executor.createTransaction(executable)
@@ -544,6 +572,7 @@ describe('WarpEvmExecutor', () => {
         args: [],
         transfers: [],
         resolvedInputs: [],
+        adapter: mockEvmAdapter,
       } as any
 
       await expect(executor.createTransaction(executable)).rejects.toThrow(

@@ -1,4 +1,4 @@
-import { WarpChainEnv, WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { WarpChainEnv, WarpChainInfo, WarpChainName, WarpClientConfig } from '@joai/warps'
 import { ethers } from 'ethers'
 import { WarpEvmDataLoader } from './WarpEvmDataLoader'
 
@@ -31,7 +31,7 @@ describe('WarpEvmDataLoader', () => {
   }
 
   const mockChainInfo: WarpChainInfo = {
-    name: 'ethereum',
+    name: WarpChainName.Ethereum,
     displayName: 'Ethereum',
     chainId: '1',
     blockTime: 12000,
@@ -39,7 +39,7 @@ describe('WarpEvmDataLoader', () => {
     defaultApiUrl: 'https://mainnet.infura.io/v3/your-project-id',
     logoUrl: 'https://example.com/ethereum-logo.png',
     nativeToken: {
-      chain: 'ethereum',
+      chain: WarpChainName.Ethereum,
       identifier: 'ETH',
       name: 'Ethereum',
       symbol: 'ETH',
