@@ -1,7 +1,3 @@
-import { WalletProvider, WarpWalletDetails, WarpWalletProvider } from '@joai/warps'
-import { keyToImplicitAddress } from '@near-js/crypto'
-import * as bip39 from '@scure/bip39'
-import { wordlist } from '@scure/bip39/wordlists/english.js'
 import {
   getWarpWalletAddressFromConfig,
   getWarpWalletMnemonicFromConfig,
@@ -10,11 +6,17 @@ import {
   normalizeMnemonic,
   setWarpWalletInConfig,
   validateMnemonicLength,
+  WalletProvider,
   WarpChainInfo,
   WarpClientConfig,
+  WarpWalletDetails,
+  WarpWalletProvider,
 } from '@joai/warps'
+import { keyToImplicitAddress, type KeyPairString } from '@near-js/crypto'
+import * as bip39 from '@scure/bip39'
+import { wordlist } from '@scure/bip39/wordlists/english.js'
 import bs58 from 'bs58'
-import { KeyPair, KeyPairString } from 'near-api-js'
+import { KeyPair } from 'near-api-js'
 
 export class MnemonicWalletProvider implements WalletProvider {
   static readonly PROVIDER_NAME: WarpWalletProvider = 'mnemonic'
@@ -69,7 +71,7 @@ export class MnemonicWalletProvider implements WalletProvider {
     const trimmedMnemonic = normalizeAndValidateMnemonic(mnemonic)
     const seed = bip39.mnemonicToSeedSync(trimmedMnemonic)
     const secretKey = seed.slice(0, 32)
-    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}`)
+    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}` as KeyPairString)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     const walletDetails: WarpWalletDetails = {
@@ -83,7 +85,7 @@ export class MnemonicWalletProvider implements WalletProvider {
   }
 
   async importFromPrivateKey(privateKey: string): Promise<WarpWalletDetails> {
-    const keyPair = KeyPair.fromString(privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`)
+    const keyPair = KeyPair.fromString((privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`) as KeyPairString)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     const walletDetails: WarpWalletDetails = {
@@ -116,7 +118,7 @@ export class MnemonicWalletProvider implements WalletProvider {
     validateMnemonicLength(mnemonic)
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const secretKey = seed.slice(0, 32)
-    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}`)
+    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}` as KeyPairString)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     return {
@@ -135,7 +137,7 @@ export class MnemonicWalletProvider implements WalletProvider {
 
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const secretKey = seed.slice(0, 32)
-    this.keypair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}`)
+    this.keypair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}` as KeyPairString)
     return this.keypair
   }
 }

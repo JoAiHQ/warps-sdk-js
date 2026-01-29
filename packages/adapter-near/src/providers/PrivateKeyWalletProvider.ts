@@ -1,14 +1,16 @@
-import { WalletProvider, WarpWalletDetails, WarpWalletProvider } from '@joai/warps'
-import { keyToImplicitAddress } from '@near-js/crypto'
-import * as bip39 from '@scure/bip39'
 import {
   getWarpWalletAddressFromConfig,
   getWarpWalletMnemonicFromConfig,
   getWarpWalletPrivateKeyFromConfig,
   setWarpWalletInConfig,
+  WalletProvider,
   WarpChainInfo,
   WarpClientConfig,
+  WarpWalletDetails,
+  WarpWalletProvider,
 } from '@joai/warps'
+import { keyToImplicitAddress, type KeyPairString } from '@near-js/crypto'
+import * as bip39 from '@scure/bip39'
 import bs58 from 'bs58'
 import { KeyPair } from 'near-api-js'
 
@@ -64,7 +66,7 @@ export class PrivateKeyWalletProvider implements WalletProvider {
   async importFromMnemonic(mnemonic: string): Promise<WarpWalletDetails> {
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const secretKey = seed.slice(0, 32)
-    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}`)
+    const keyPair = KeyPair.fromString(`ed25519:${bs58.encode(secretKey)}` as KeyPairString)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     const walletDetails: WarpWalletDetails = {
@@ -78,7 +80,7 @@ export class PrivateKeyWalletProvider implements WalletProvider {
   }
 
   async importFromPrivateKey(privateKey: string): Promise<WarpWalletDetails> {
-    const keyPair = KeyPair.fromString(privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`)
+    const keyPair = KeyPair.fromString((privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`) as KeyPairString)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     const walletDetails: WarpWalletDetails = {
@@ -106,7 +108,7 @@ export class PrivateKeyWalletProvider implements WalletProvider {
   }
 
   async generate(): Promise<WarpWalletDetails> {
-    const keyPair = KeyPair.fromRandom('ed25519')
+    const keyPair = KeyPair.fromRandom('ed25519' as const)
     const publicKey = keyPair.getPublicKey()
     const accountId = keyToImplicitAddress(publicKey.toString())
     return {
@@ -124,7 +126,7 @@ export class PrivateKeyWalletProvider implements WalletProvider {
     if (!privateKey) throw new Error('No private key provided')
 
     try {
-      return KeyPair.fromString(privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`)
+      return KeyPair.fromString((privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`) as KeyPairString)
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Invalid private key format: ${error.message}`)
