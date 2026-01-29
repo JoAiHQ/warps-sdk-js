@@ -1,6 +1,6 @@
 import { WarpChainInfo, WarpChainName, WarpClientConfig, WarpExecutable } from '@joai/warps'
+import { NativeTokenSol, SolanaAdapter } from './chains/solana'
 import { WarpSolanaExecutor } from './WarpSolanaExecutor'
-import { NativeTokenSol } from './chains/solana'
 
 describe('WarpSolanaExecutor', () => {
   let executor: WarpSolanaExecutor
@@ -43,6 +43,7 @@ describe('WarpSolanaExecutor', () => {
   describe('createTransferTransaction', () => {
     it('should create a native token transfer transaction', async () => {
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -57,7 +58,7 @@ describe('WarpSolanaExecutor', () => {
       try {
         const tx = await executor.createTransferTransaction(executable)
         expect(tx).toBeDefined()
-        expect(tx.instructions.length).toBeGreaterThan(0)
+        expect((tx as any).instructions?.length ?? (tx as any).message?.instructions?.length ?? 0).toBeGreaterThan(0)
       } catch (error) {
         // Expected to fail in test environment without real RPC
       }
@@ -65,6 +66,7 @@ describe('WarpSolanaExecutor', () => {
 
     it('should throw error for invalid destination address', async () => {
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -76,13 +78,12 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      await expect(executor.createTransferTransaction(executable)).rejects.toThrow(
-        'WarpSolanaExecutor: Invalid destination address'
-      )
+      await expect(executor.createTransferTransaction(executable)).rejects.toThrow('WarpSolanaExecutor: Invalid destination address')
     })
 
     it('should create transaction with data when provided', async () => {
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -114,6 +115,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: contractWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -142,6 +144,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: contractWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -170,6 +173,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: queryWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -199,6 +203,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: transferWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -210,15 +215,14 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      await expect(executor.executeQuery(executable)).rejects.toThrow(
-        'WarpSolanaExecutor: Invalid action type for executeQuery'
-      )
+      await expect(executor.executeQuery(executable)).rejects.toThrow('WarpSolanaExecutor: Invalid action type for executeQuery')
     })
   })
 
   describe('createTransaction', () => {
     it('should create a transfer transaction', async () => {
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: mockWarp,
         action: 1,
         chain: mockChainInfo,
@@ -248,6 +252,7 @@ describe('WarpSolanaExecutor', () => {
         ],
       }
       const executable: WarpExecutable = {
+        adapter: SolanaAdapter(mockConfig),
         warp: queryWarp as any,
         action: 1,
         chain: mockChainInfo,
@@ -259,9 +264,7 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      await expect(executor.createTransaction(executable)).rejects.toThrow(
-        'WarpSolanaExecutor: Invalid action type for createTransaction'
-      )
+      await expect(executor.createTransaction(executable)).rejects.toThrow('WarpSolanaExecutor: Invalid action type for createTransaction')
     })
   })
 })

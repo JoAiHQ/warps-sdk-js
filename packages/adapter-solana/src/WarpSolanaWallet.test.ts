@@ -1,20 +1,25 @@
-import { WarpChainName } from '@joai/warps'
+import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpSolanaWallet } from './WarpSolanaWallet'
 
 describe('WarpSolanaWallet', () => {
   const privateKey = '5ChhuwWoBzvXFsaCBuz9woTzb7tXgV5oALFBQ9LABRbnjb9fzioHsoak1qA8SKEkDzZyqtc4cNsxdcK8gzc5iLUt'
   let wallet: WarpSolanaWallet
   let config: any
-  let chain: any
+  let chain: WarpChainInfo
 
   beforeEach(() => {
     chain = {
       name: WarpChainName.Solana,
-      defaultApiUrl: 'https://api.testnet.solana.com',
+      displayName: 'Solana',
+      chainId: 'testnet',
+      blockTime: 400,
       addressHrp: '',
+      defaultApiUrl: 'https://api.testnet.solana.com',
+      logoUrl: '',
+      nativeToken: { chain: WarpChainName.Solana, identifier: 'SOL', name: 'Solana', symbol: 'SOL', decimals: 9, logoUrl: '' },
     }
     config = {
-      env: 'testnet',
+      env: 'testnet' as const,
       user: {
         wallets: {
           [chain.name]: {
@@ -113,7 +118,7 @@ describe('WarpSolanaWallet', () => {
 
     beforeEach(() => {
       const readOnlyConfig = {
-        env: 'testnet',
+        env: 'testnet' as const,
         user: {
           wallets: {
             [chain.name]: readOnlyAddress,
@@ -164,7 +169,7 @@ describe('WarpSolanaWallet', () => {
   describe('wallet object with null or undefined provider', () => {
     it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
       const cfg = {
-        env: 'testnet',
+        env: 'testnet' as const,
         user: {
           wallets: {
             [chain.name]: {
@@ -179,7 +184,7 @@ describe('WarpSolanaWallet', () => {
 
     it('should use ReadOnlyWalletProvider when provider is undefined', () => {
       const cfg = {
-        env: 'testnet',
+        env: 'testnet' as const,
         user: {
           wallets: {
             [chain.name]: {

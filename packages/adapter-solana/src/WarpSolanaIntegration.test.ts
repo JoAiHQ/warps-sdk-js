@@ -1,10 +1,10 @@
-import { Connection, Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { WarpChainInfo, WarpChainName, WarpClientConfig, WarpContractAction, WarpExecutable, WarpTransferAction } from '@joai/warps'
+import { Connection, Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
+import { NativeTokenSol, SolanaAdapter } from './chains/solana'
 import { WarpSolanaDataLoader } from './WarpSolanaDataLoader'
 import { WarpSolanaExecutor } from './WarpSolanaExecutor'
 import { WarpSolanaWallet } from './WarpSolanaWallet'
-import { NativeTokenSol } from './chains/solana'
 
 jest.unmock('@scure/bip39')
 
@@ -15,9 +15,9 @@ describe('WarpSolanaIntegration', () => {
   const receiverAddress = '11111111111111111111111111111111' // System Program (valid Solana address)
 
   // Create a valid blockhash (32 bytes encoded as base58)
-  const validBlockhash = bs58.encode(Buffer.alloc(32, 1))
+  const validBlockhash = bs58.encode(new Uint8Array(32).fill(1))
   // Create a valid signature (64 bytes encoded as base58 - Solana transaction signatures are 64 bytes)
-  const validSignature = bs58.encode(Buffer.alloc(64, 1))
+  const validSignature = bs58.encode(new Uint8Array(64).fill(1))
 
   let mockConnection: any
   let mockConfig: WarpClientConfig
@@ -90,6 +90,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
+          adapter: SolanaAdapter(mockConfig),
           warp: {
             actions: [
               {
@@ -120,6 +121,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
+          adapter: SolanaAdapter(mockConfig),
           warp: {
             actions: [
               {
@@ -154,6 +156,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
+          adapter: SolanaAdapter(mockConfig),
           warp: {
             actions: [
               {
@@ -186,6 +189,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
+          adapter: SolanaAdapter(mockConfig),
           warp: {
             actions: [
               {
@@ -204,6 +208,7 @@ describe('WarpSolanaIntegration', () => {
                   { address: 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb', writable: true, signer: false },
                   { address: '{{USER_WALLET}}', writable: true, signer: true },
                 ],
+                gasLimit: 0,
               } as WarpContractAction,
             ],
           } as any,
@@ -229,6 +234,7 @@ describe('WarpSolanaIntegration', () => {
         }
 
         const executable: WarpExecutable = {
+          adapter: SolanaAdapter(mockConfig),
           warp: {
             actions: [
               {
