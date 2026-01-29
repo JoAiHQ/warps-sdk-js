@@ -1,6 +1,4 @@
 /// <reference path="./types.d.ts" />
-import { createKeyPairSignerFromBytes } from '@solana/kit'
-import { Commitment, Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js'
 import {
   AdapterWarpWallet,
   getProviderConfig,
@@ -12,6 +10,8 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
+import { createKeyPairSignerFromBytes } from '@solana/kit'
+import { Commitment, Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { registerExactSvmScheme } from '@x402/svm/exact/client'
 import { SupportedX402SolanaNetworks } from './constants'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
@@ -130,6 +130,7 @@ export class WarpSolanaWallet implements AdapterWarpWallet {
     const wallet = this.config.user?.wallets?.[this.chain.name]
     if (!wallet) return null
     if (typeof wallet === 'string') return new ReadOnlyWalletProvider(this.config, this.chain)
+    if (!wallet.provider) return new ReadOnlyWalletProvider(this.config, this.chain)
     return this.createProviderForOperation(wallet.provider)
   }
 
@@ -222,7 +223,10 @@ export class WarpSolanaWallet implements AdapterWarpWallet {
     }
   }
 
-  private async sendRawTransaction(transaction: VersionedTransaction, options: { skipPreflight: boolean; preflightCommitment?: Commitment; maxRetries?: number }): Promise<string> {
+  private async sendRawTransaction(
+    transaction: VersionedTransaction,
+    options: { skipPreflight: boolean; preflightCommitment?: Commitment; maxRetries?: number }
+  ): Promise<string> {
     const signature = await this.connection.sendRawTransaction(transaction.serialize(), {
       skipPreflight: options.skipPreflight,
       maxRetries: options.maxRetries || 3,

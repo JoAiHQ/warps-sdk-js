@@ -287,4 +287,30 @@ describe('WarpEvmWallet', () => {
       expect(result).toBeDefined()
     })
   })
+
+  describe('wallet object with null or undefined provider', () => {
+    it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
+      const cfg = {
+        env: 'testnet' as const,
+        user: {
+          wallets: {
+            [chain.name]: { address: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', provider: null },
+          } as any,
+        },
+      }
+      expect(() => new WarpEvmWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
+    })
+
+    it('should use ReadOnlyWalletProvider when provider is undefined', () => {
+      const cfg = {
+        env: 'testnet' as const,
+        user: {
+          wallets: {
+            [chain.name]: { address: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', provider: undefined },
+          } as any,
+        },
+      }
+      expect(() => new WarpEvmWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
+    })
+  })
 })

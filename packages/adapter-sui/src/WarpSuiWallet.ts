@@ -12,8 +12,8 @@ import {
 } from '@joai/warps'
 import { getConfiguredSuiClient } from './helpers'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
-import { PrivateKeyWalletProvider } from './providers/SuiWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
+import { PrivateKeyWalletProvider } from './providers/SuiWalletProvider'
 
 export class WarpSuiWallet implements AdapterWarpWallet {
   private client: SuiClient
@@ -97,7 +97,9 @@ export class WarpSuiWallet implements AdapterWarpWallet {
         }
       }
 
-      throw new Error(`Transaction must be a Transaction object or have bytes and signature. Got: ${typeof tx}, has sign: ${tx && typeof tx === 'object' && 'sign' in tx}, has bytes: ${tx && typeof tx === 'object' && 'bytes' in tx}, has signature: ${tx && typeof tx === 'object' && 'signature' in tx}`)
+      throw new Error(
+        `Transaction must be a Transaction object or have bytes and signature. Got: ${typeof tx}, has sign: ${tx && typeof tx === 'object' && 'sign' in tx}, has bytes: ${tx && typeof tx === 'object' && 'bytes' in tx}, has signature: ${tx && typeof tx === 'object' && 'signature' in tx}`
+      )
     }
 
     throw new Error('Wallet provider does not support sending transactions')
@@ -144,11 +146,13 @@ export class WarpSuiWallet implements AdapterWarpWallet {
     const wallet = this.config.user?.wallets?.[this.chain.name]
     if (!wallet) return null
     if (typeof wallet === 'string') return new ReadOnlyWalletProvider(this.config, this.chain)
+    if (!wallet.provider) return new ReadOnlyWalletProvider(this.config, this.chain)
     return this.createProviderForOperation(wallet.provider)
   }
 
-  private async initializeCache() { // Made async
-    const cache = await initializeWalletCache(this.walletProvider); // Await the promise
+  private async initializeCache() {
+    // Made async
+    const cache = await initializeWalletCache(this.walletProvider) // Await the promise
     this.cachedAddress = cache.address
     this.cachedPublicKey = cache.publicKey
     this.isInitializedResolve() // Resolve the promise once initialized

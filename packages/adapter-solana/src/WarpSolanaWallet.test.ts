@@ -145,7 +145,9 @@ describe('WarpSolanaWallet', () => {
     })
 
     it('should create wallet with provider even when wallet is read-only', async () => {
-      const result = await readOnlyWallet.importFromMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art')
+      const result = await readOnlyWallet.importFromMnemonic(
+        'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art'
+      )
       expect(result).toBeDefined()
       expect(result.address).toBeDefined()
       expect(result.provider).toBe('mnemonic')
@@ -156,6 +158,38 @@ describe('WarpSolanaWallet', () => {
       expect(result).toBeDefined()
       expect(result.address).toBeDefined()
       expect(result.provider).toBe('privateKey')
+    })
+  })
+
+  describe('wallet object with null or undefined provider', () => {
+    it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
+      const cfg = {
+        env: 'testnet',
+        user: {
+          wallets: {
+            [chain.name]: {
+              address: '5ChhuwWoBzvXFsaCBuz9woTzb7tXgV5oALFBQ9LABRbnjb9fzioHsoak1qA8SKEkDzZyqtc4cNsxdcK8gzc5iLUt',
+              provider: null,
+            },
+          } as any,
+        },
+      }
+      expect(() => new WarpSolanaWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
+    })
+
+    it('should use ReadOnlyWalletProvider when provider is undefined', () => {
+      const cfg = {
+        env: 'testnet',
+        user: {
+          wallets: {
+            [chain.name]: {
+              address: '5ChhuwWoBzvXFsaCBuz9woTzb7tXgV5oALFBQ9LABRbnjb9fzioHsoak1qA8SKEkDzZyqtc4cNsxdcK8gzc5iLUt',
+              provider: undefined,
+            },
+          } as any,
+        },
+      }
+      expect(() => new WarpSolanaWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
     })
   })
 })

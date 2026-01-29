@@ -122,14 +122,16 @@ describe('WarpFastsetWallet', () => {
 
   describe('Wallet Creation', () => {
     test('create() should create wallet from mnemonic', async () => {
-      const mnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art'
+      const mnemonic =
+        'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art'
       const configWithMnemonic = {
         env: 'testnet' as const,
         user: {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
-              mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
+              mnemonic:
+                'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
           },
         },
@@ -153,7 +155,8 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
-              mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
+              mnemonic:
+                'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
           },
         },
@@ -176,7 +179,8 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
-              mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
+              mnemonic:
+                'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
           },
         },
@@ -372,7 +376,8 @@ describe('WarpFastsetWallet', () => {
           wallets: {
             fastset: {
               provider: 'mnemonic' as const,
-              mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
+              mnemonic:
+                'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art',
             },
           },
         },
@@ -389,6 +394,32 @@ describe('WarpFastsetWallet', () => {
         const words = result.mnemonic.split(' ')
         expect(words.length).toBe(24)
       }
+    })
+  })
+
+  describe('wallet object with null or undefined provider', () => {
+    it('should use ReadOnlyWalletProvider when provider is null (no "Unsupported wallet provider" throw)', () => {
+      const cfg = {
+        env: 'testnet' as const,
+        user: {
+          wallets: {
+            [mockChain.name]: { address: 'set1testaddress123456789', provider: null },
+          } as any,
+        },
+      }
+      expect(() => new WarpFastsetWallet(cfg, mockChain)).not.toThrow('Unsupported wallet provider')
+    })
+
+    it('should use ReadOnlyWalletProvider when provider is undefined', () => {
+      const cfg = {
+        env: 'testnet' as const,
+        user: {
+          wallets: {
+            [mockChain.name]: { address: 'set1testaddress123456789', provider: undefined },
+          } as any,
+        },
+      }
+      expect(() => new WarpFastsetWallet(cfg, mockChain)).not.toThrow('Unsupported wallet provider')
     })
   })
 })

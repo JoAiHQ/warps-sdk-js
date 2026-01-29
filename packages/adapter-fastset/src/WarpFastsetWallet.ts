@@ -9,10 +9,10 @@ import {
   WarpWalletProvider,
 } from '@joai/warps'
 import { getConfiguredFastsetClient } from './helpers/general'
-import { FastsetClient } from './sdk'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
 import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
+import { FastsetClient } from './sdk'
 
 export class WarpFastsetWallet implements AdapterWarpWallet {
   private client: FastsetClient
@@ -93,6 +93,7 @@ export class WarpFastsetWallet implements AdapterWarpWallet {
     const wallet = this.config.user?.wallets?.[this.chain.name]
     if (!wallet) return null
     if (typeof wallet === 'string') return new ReadOnlyWalletProvider(this.config, this.chain)
+    if (!wallet.provider) return new ReadOnlyWalletProvider(this.config, this.chain)
     return this.createProviderForOperation(wallet.provider)
   }
 
