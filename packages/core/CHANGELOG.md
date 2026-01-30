@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.1
+
+### Patch Changes
+
+- fix(core): remove implicit output unwrapping and inject 'out' into transform context
+
 ## 3.0.0
 
 ### Major Changes
