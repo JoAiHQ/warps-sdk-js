@@ -41,7 +41,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:test-value')
+    expect(result[0]).toBe('test-value')
   })
 
   it('converts number input from args', () => {
@@ -58,7 +58,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('uint256:100')
+    expect(result[0]).toBe('100')
   })
 
   it('converts boolean input from args', () => {
@@ -75,7 +75,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('bool:true')
+    expect(result[0]).toBe('true')
   })
 
   it('uses default value when arg is missing', () => {
@@ -93,7 +93,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:default-name')
+    expect(result[0]).toBe('default-name')
   })
 
   it('uses default value for number type', () => {
@@ -111,7 +111,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('uint256:42')
+    expect(result[0]).toBe('42')
   })
 
   it('uses default value for boolean type', () => {
@@ -129,7 +129,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('bool:true')
+    expect(result[0]).toBe('true')
   })
 
   it('defaults bool to false when value is null and no default', () => {
@@ -146,7 +146,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('bool:false')
+    expect(result[0]).toBe('false')
   })
 
   it('uses null when value is null for non-bool types', () => {
@@ -163,7 +163,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:')
+    expect(result[0]).toBe('')
   })
 
   it('uses input.as as key when provided', () => {
@@ -181,7 +181,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:test-value')
+    expect(result[0]).toBe('test-value')
   })
 
   it('falls back to input.name when as is not provided', () => {
@@ -198,7 +198,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:test-value')
+    expect(result[0]).toBe('test-value')
   })
 
   it('handles multiple inputs with mixed types', () => {
@@ -231,9 +231,9 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(3)
-    expect(result[0]).toBe('string:test')
-    expect(result[1]).toBe('uint256:100')
-    expect(result[2]).toBe('bool:true')
+    expect(result[0]).toBe('test')
+    expect(result[1]).toBe('100')
+    expect(result[2]).toBe('true')
   })
 
   it('handles inputs with some args provided and some using defaults', () => {
@@ -257,8 +257,8 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(2)
-    expect(result[0]).toBe('string:default-name')
-    expect(result[1]).toBe('uint256:50')
+    expect(result[0]).toBe('default-name')
+    expect(result[1]).toBe('50')
   })
 
   it('handles address type', () => {
@@ -275,7 +275,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('address:0x1234567890123456789012345678901234567890')
+    expect(result[0]).toBe('0x1234567890123456789012345678901234567890')
   })
 
   it('handles hex type', () => {
@@ -292,7 +292,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('hex:0xabcdef')
+    expect(result[0]).toBe('0xabcdef')
   })
 
   it('handles biguint type', () => {
@@ -309,7 +309,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('biguint:1000000000000000000')
+    expect(result[0]).toBe('1000000000000000000')
   })
 
   it('handles undefined args gracefully', () => {
@@ -327,7 +327,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:default')
+    expect(result[0]).toBe('default')
   })
 
   it('handles empty args object', () => {
@@ -345,7 +345,7 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('string:default-value')
+    expect(result[0]).toBe('default-value')
   })
 
   it('uses default when null is provided and default exists', () => {
@@ -363,6 +363,6 @@ describe('convertMcpArgsToWarpInputs', () => {
     const result = convertMcpArgsToWarpInputs(warp, args)
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toBe('bool:true')
+    expect(result[0]).toBe('true')
   })
 })
