@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.0.2
+
+### Patch Changes
+
+- 44000d0: Add removeWarpChainPrefix helper to core identifier helpers.
+
 ## 3.0.1
 
 ### Patch Changes

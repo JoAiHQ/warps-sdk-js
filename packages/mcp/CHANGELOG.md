@@ -1,5 +1,13 @@
 # @joai/warps-mcp
 
+## 1.0.2
+
+### Patch Changes
+
+- 1c4aba1: Update MCP tool name derivation to use removeWarpChainPrefix and keep original separators.
+- Updated dependencies [44000d0]
+  - @joai/warps@3.0.2
+
 ## 1.0.1
 
 ### Patch Changes

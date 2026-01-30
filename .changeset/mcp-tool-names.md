@@ -1,1 +1,0 @@
----\n"@joai/warps-mcp": patch\n---\n\nUpdate MCP tool name derivation to use removeWarpChainPrefix and keep original separators.
