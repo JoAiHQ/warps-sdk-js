@@ -180,7 +180,7 @@ export class WarpEvmOutput implements AdapterWarpOutput {
       }
     }
 
-    return { values, output: await evaluateOutputCommon(warp, output, actionIndex, inputs, this.serializer.coreSerializer, this.config) }
+    return { values, output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config) }
   }
 
   async getTransactionStatus(

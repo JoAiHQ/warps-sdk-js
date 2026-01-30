@@ -95,7 +95,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       }
       return {
         values: { string: stringValues, native: nativeValues, mapped: {} },
-        output: await evaluateOutputCommon(warp, output, actionIndex, inputs, this.serializer.coreSerializer, this.config),
+        output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config),
       }
     }
     const abi = await this.abi.getAbiForAction(action)
@@ -146,7 +146,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     }
     return {
       values: { string: stringValues, native: nativeValues, mapped: {} },
-      output: await evaluateOutputCommon(warp, output, actionIndex, inputs, this.serializer.coreSerializer, this.config),
+      output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config),
     }
   }
 
@@ -188,7 +188,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       }
     }
 
-    output = await evaluateOutputCommon(warp, output, actionIndex, inputs, this.serializer.coreSerializer, this.config)
+    output = await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config)
 
     return { values, output }
   }
@@ -251,6 +251,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     }
     const finalOutput = await evaluateOutputCommon(
       warp,
+      combinedOutput,
       combinedOutput,
       entryActionIndex,
       inputs,

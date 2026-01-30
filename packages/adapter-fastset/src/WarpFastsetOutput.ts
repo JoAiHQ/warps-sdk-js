@@ -107,6 +107,7 @@ export class WarpFastsetOutput implements AdapterWarpOutput {
       output: await evaluateOutputCommon(
         warp,
         output,
+        nativeValues,
         actionIndex,
         inputs,
         this.serializer.coreSerializer,

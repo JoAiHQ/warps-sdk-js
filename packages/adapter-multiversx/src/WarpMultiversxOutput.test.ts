@@ -611,7 +611,7 @@ describe('Result Helpers', () => {
       })
 
       // Patch: evaluate transforms directly if missing
-      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer() as any, testConfig)
+      const finalOutput = await evaluateOutputCommon(warp, result.output, {}, 1, [], new WarpSerializer() as any, testConfig)
 
       // The result should be from the entry action (1)
       expect(result.status).toBe('success')
@@ -740,7 +740,7 @@ describe('Result Helpers', () => {
       })
 
       // Patch: evaluate transforms directly if missing
-      const finalOutput = await evaluateOutputCommon(warp, result.output, 1, [], new WarpSerializer() as any, testConfig)
+      const finalOutput = await evaluateOutputCommon(warp, result.output, {}, 1, [], new WarpSerializer() as any, testConfig)
 
       // The result should be from the entry action (1)
       expect(result.status).toBe('success')
