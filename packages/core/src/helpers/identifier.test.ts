@@ -8,6 +8,7 @@ import {
   getWarpInfoFromIdentifier,
   isEqualWarpIdentifier,
   parseWarpQueryStringToObject,
+  removeWarpChainPrefix,
 } from './identifier'
 
 describe('cleanWarpIdentifier', () => {
@@ -738,3 +739,26 @@ describe('parseWarpQueryStringToObject', () => {
     })
   })
 })
+
+describe('removeWarpChainPrefix', () => {
+  it('removes chain prefix if matches', () => {
+    expect(removeWarpChainPrefix('multiversx:mywarp', WarpChainName.Multiversx)).toBe('mywarp')
+  })
+
+  it('removes chain prefix even if it does not match (returns parsed identifier base)', () => {
+    expect(removeWarpChainPrefix('sui:mywarp', WarpChainName.Multiversx)).toBe('mywarp')
+  })
+
+  it('handles simple alias', () => {
+    expect(removeWarpChainPrefix('mywarp')).toBe('mywarp')
+  })
+
+  it('handles chain.type.identifier format by returning identifier base', () => {
+    expect(removeWarpChainPrefix('sui:alias:mywarp')).toBe('mywarp')
+  })
+
+  it('removes @ prefix', () => {
+    expect(removeWarpChainPrefix('@mywarp')).toBe('mywarp')
+  })
+})
+

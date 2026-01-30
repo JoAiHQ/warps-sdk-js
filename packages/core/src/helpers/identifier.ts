@@ -184,3 +184,8 @@ export const parseWarpQueryStringToObject = (queryString: string | null): Record
   })
   return result
 }
+
+export const removeWarpChainPrefix = (identifier: string, chain?: WarpChainName): string => {
+  const info = getWarpInfoFromIdentifier(identifier, chain)
+  return (info ? info.identifierBase : cleanWarpIdentifier(identifier)).trim()
+}
