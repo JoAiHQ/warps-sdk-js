@@ -1,5 +1,6 @@
 import {
   cleanWarpIdentifier,
+  removeWarpChainPrefix,
   Warp,
   WarpActionInput,
   WarpClientConfig,
@@ -177,7 +178,5 @@ const buildToolMeta = (warp: Warp, resource: WarpMcpResource | null, config: War
 const deriveToolNameFromWarp = (warp: Warp): string => {
   const warpIdentifier = warp.meta?.identifier
   if (!warpIdentifier) throw new Error(`Warp identifier for warp ${warp.name} is required`)
-  const cleanedIdentifier = cleanWarpIdentifier(warpIdentifier)
-  const validIdentifier = cleanedIdentifier.replace(':', '.') // Colons are not allowed per MCP specification
-  return validIdentifier
+  return removeWarpChainPrefix(warpIdentifier)
 }
