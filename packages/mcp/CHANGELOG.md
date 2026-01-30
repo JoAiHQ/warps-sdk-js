@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 1.0.1
+
+### Patch Changes
+
+- 7759fe1: fix mcp execs
+
 ## 1.0.0
 
 ### Major Changes
