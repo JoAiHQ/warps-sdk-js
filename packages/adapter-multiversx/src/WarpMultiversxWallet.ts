@@ -22,6 +22,7 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
   private walletProvider: WalletProvider | null
   private cachedAddress: string | null = null
   private cachedPublicKey: string | null = null
+  private signingQueue: Promise<any> = Promise.resolve()
 
   constructor(
     private config: WarpClientConfig,
@@ -33,7 +34,12 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     this.initializeCache()
   }
 
-  async signTransaction(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
+  signTransaction(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
+    this.signingQueue = this.signingQueue.catch(() => {}).then(() => this.signTransactionInner(tx))
+    return this.signingQueue
+  }
+
+  private async signTransactionInner(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
     const castedTx = tx as Transaction
     if (!castedTx || typeof castedTx !== 'object') throw new Error('Invalid transaction object')
     if (!this.walletProvider) throw new Error('No wallet provider available')
