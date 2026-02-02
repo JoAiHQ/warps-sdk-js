@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.0.1
+
+### Patch Changes
+
+- 442817b: Fix duplicate nonces when signing multiple transactions in parallel by serializing through a promise queue
+
 ## 1.0.0
 
 ### Major Changes
