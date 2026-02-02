@@ -17,14 +17,11 @@ import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
 
 export class WarpMultiversxWallet implements AdapterWarpWallet {
-  private static signingQueues = new Map<string, Promise<any>>()
-
   private entry: NetworkEntrypoint
   private cache: WarpCache
   private walletProvider: WalletProvider | null
   private cachedAddress: string | null = null
   private cachedPublicKey: string | null = null
-  private readonly walletAddress: string | null
 
   constructor(
     private config: WarpClientConfig,
@@ -33,25 +30,10 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     this.entry = getMultiversxEntrypoint(chain, config.env, config)
     this.cache = new WarpCache(config.env, config.cache)
     this.walletProvider = this.createProvider()
-    this.walletAddress = this.resolveAddressFromConfig()
     this.initializeCache()
   }
 
-  signTransaction(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
-    const key = this.walletAddress
-    if (!key) return this.signTransactionInner(tx)
-    const queue = WarpMultiversxWallet.signingQueues.get(key) ?? Promise.resolve()
-    const next = queue.catch(() => {}).then(() => this.signTransactionInner(tx))
-    WarpMultiversxWallet.signingQueues.set(key, next)
-    // Clean up the map entry once the queue drains (avoid memory leak)
-    next.then(
-      () => { if (WarpMultiversxWallet.signingQueues.get(key) === next) WarpMultiversxWallet.signingQueues.delete(key) },
-      () => { if (WarpMultiversxWallet.signingQueues.get(key) === next) WarpMultiversxWallet.signingQueues.delete(key) },
-    )
-    return next
-  }
-
-  private async signTransactionInner(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
+  async signTransaction(tx: WarpAdapterGenericTransaction): Promise<WarpAdapterGenericTransaction> {
     const castedTx = tx as Transaction
     if (!castedTx || typeof castedTx !== 'object') throw new Error('Invalid transaction object')
     if (!this.walletProvider) throw new Error('No wallet provider available')
@@ -138,13 +120,6 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
 
   getPublicKey(): string | null {
     return this.cachedPublicKey
-  }
-
-  private resolveAddressFromConfig(): string | null {
-    const wallet = this.config.user?.wallets?.[this.chain.name]
-    if (!wallet) return null
-    if (typeof wallet === 'string') return wallet
-    return wallet.address || null
   }
 
   private createProvider(): WalletProvider | null {

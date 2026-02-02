@@ -1,17 +1,5 @@
 # @joai/warps-adapter-multiversx
 
-## 1.0.2
-
-### Patch Changes
-
-- c4def02: Fix duplicate nonce when multiple WarpClient instances sign transactions for the same wallet concurrently. The signing queue is now static per wallet address, ensuring nonce serialization across all instances in the same process.
-
-## 1.0.1
-
-### Patch Changes
-
-- 442817b: Fix duplicate nonces when signing multiple transactions in parallel by serializing through a promise queue
-
 ## 1.0.0
 
 ### Major Changes
