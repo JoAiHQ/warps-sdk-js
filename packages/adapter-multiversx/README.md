@@ -14,7 +14,7 @@ npm install @joai/warps-adapter-multiversx
 import { WarpClient } from '@joai/warps'
 import { getAllMultiversxAdapters } from '@joai/warps-adapter-multiversx'
 
-// Use all MultiversX networks (includes MultiversX and Vibechain)
+// Use all MultiversX networks (includes MultiversX and Claws)
 const client = new WarpClient(config, {
   chains: getAllMultiversxAdapters(),
 })
@@ -25,7 +25,7 @@ const client = new WarpClient(config, {
 You can also import individual chain adapters:
 
 ```typescript
-import { MultiversxAdapter, VibechainAdapter } from '@joai/warps-adapter-multiversx'
+import { MultiversxAdapter, ClawsAdapter } from '@joai/warps-adapter-multiversx'
 
 const client = new WarpClient(config, {
   chains: [MultiversxAdapter],

@@ -2,7 +2,7 @@ import { WarpChainName, WarpChainAsset, WarpChainEnv } from '@joai/warps'
 import { MultiversxDevnetTokens } from './tokens/multiversx-devnet'
 import { MultiversxMainnetTokens } from './tokens/multiversx-mainnet'
 import { MultiversxTestnetTokens } from './tokens/multiversx-testnet'
-import { VibechainTokens } from './tokens/vibechain'
+import { ClawsTokens } from './tokens/claws'
 
 export const KnownTokens: Partial<Record<WarpChainName, Record<WarpChainEnv, WarpChainAsset[]>>> = {
   [WarpChainName.Multiversx]: {
@@ -10,10 +10,10 @@ export const KnownTokens: Partial<Record<WarpChainName, Record<WarpChainEnv, War
     testnet: MultiversxTestnetTokens,
     devnet: MultiversxDevnetTokens,
   },
-  [WarpChainName.Vibechain]: {
-    mainnet: VibechainTokens,
-    testnet: VibechainTokens,
-    devnet: VibechainTokens,
+  [WarpChainName.Claws]: {
+    mainnet: ClawsTokens,
+    testnet: ClawsTokens,
+    devnet: ClawsTokens,
   },
 }
 

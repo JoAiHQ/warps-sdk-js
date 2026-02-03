@@ -105,7 +105,12 @@ export class GaupaWalletProvider implements WalletProvider {
   }
 
   private getWalletForChainOrFail(wallet: WalletResponse): string {
-    if (this.chain.name === WarpChainName.Multiversx && wallet.address_multiversx) return wallet.address_multiversx
+    if (
+      (this.chain.name === WarpChainName.Multiversx || this.chain.name === WarpChainName.Claws) &&
+      wallet.address_multiversx
+    ) {
+      return wallet.address_multiversx
+    }
     if (EvmWalletChainNames.includes(this.chain.name) && wallet.address_evm) return wallet.address_evm
     throw new Error(`GaupaWalletProvider: Unsupported chain: ${this.chain.name}`)
   }

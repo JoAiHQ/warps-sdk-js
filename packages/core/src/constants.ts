@@ -3,7 +3,7 @@ import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
 export enum WarpChainName {
   Multiversx = 'multiversx',
-  Vibechain = 'vibechain',
+  Claws = 'claws',
   Sui = 'sui',
   Ethereum = 'ethereum',
   Base = 'base',

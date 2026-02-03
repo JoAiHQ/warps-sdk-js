@@ -1,5 +1,5 @@
 import { WarpChainName, WarpClientConfig } from '@joai/warps'
-import { MultiversxExplorers, VibechainExplorers } from './constants'
+import { ClawsExplorers, MultiversxExplorers } from './constants'
 import { WarpMultiversxExplorer } from './WarpMultiversxExplorer'
 
 describe('WarpMultiversxExplorer', () => {
@@ -161,31 +161,31 @@ describe('WarpMultiversxExplorer', () => {
     })
   })
 
-  describe('with vibechain', () => {
-    const vibechainConfig: WarpClientConfig = {
+  describe('with claws', () => {
+    const clawsConfig: WarpClientConfig = {
       env: 'mainnet',
       preferences: {
         explorers: {
-          vibechain: 'vibechain_explorer',
+          claws: 'claws_explorer',
         },
       },
     }
 
-    let vibechainExplorer: WarpMultiversxExplorer
+    let clawsExplorer: WarpMultiversxExplorer
 
     beforeEach(() => {
-      vibechainExplorer = new WarpMultiversxExplorer(WarpChainName.Vibechain, vibechainConfig)
+      clawsExplorer = new WarpMultiversxExplorer(WarpChainName.Claws, clawsConfig)
     })
 
-    it('should return correct vibechain explorer URLs', () => {
+    it('should return correct claws explorer URLs', () => {
       const address = 'erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36'
-      const url = vibechainExplorer.getAccountUrl(address, VibechainExplorers.VibechainExplorer)
-      expect(url).toBe('https://vibeox-explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
+      const url = clawsExplorer.getAccountUrl(address, ClawsExplorers.ClawsExplorer)
+      expect(url).toBe('https://explorer.claws.network/accounts/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
     })
 
-    it('should return all vibechain explorers', () => {
-      const explorers = vibechainExplorer.getAllExplorers()
-      expect(explorers).toContain(VibechainExplorers.VibechainExplorer)
+    it('should return all claws explorers', () => {
+      const explorers = clawsExplorer.getAllExplorers()
+      expect(explorers).toContain(ClawsExplorers.ClawsExplorer)
     })
   })
 })
