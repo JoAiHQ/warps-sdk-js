@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.1.0
+
+### Minor Changes
+
+- 8562c8e: Rename Vibechain to Claws chain
+
 ## 3.0.2
 
 ### Patch Changes

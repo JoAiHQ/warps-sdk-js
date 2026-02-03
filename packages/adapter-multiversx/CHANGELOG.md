@@ -1,5 +1,16 @@
 # @joai/warps-adapter-multiversx
 
+## 1.1.0
+
+### Minor Changes
+
+- 8562c8e: Rename Vibechain to Claws chain
+
+### Patch Changes
+
+- Updated dependencies [8562c8e]
+  - @joai/warps@3.1.0
+
 ## 1.0.0
 
 ### Major Changes

@@ -1,5 +1,13 @@
 # @joai/warps-wallet-gaupa
 
+## 1.0.1
+
+### Patch Changes
+
+- 8562c8e: Rename Vibechain to Claws chain
+- Updated dependencies [8562c8e]
+  - @joai/warps@3.1.0
+
 ## 1.0.0
 
 ### Major Changes
