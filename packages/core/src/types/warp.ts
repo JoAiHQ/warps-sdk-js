@@ -19,6 +19,7 @@ export type WarpChainInfo = {
   defaultApiUrl: string
   logoUrl: WarpChainInfoLogo
   nativeToken: WarpChainAsset
+  minGasPrice?: bigint
 }
 
 export type WarpIdentifierType = 'hash' | 'alias'

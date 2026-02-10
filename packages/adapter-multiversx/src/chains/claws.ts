@@ -19,6 +19,7 @@ const chainInfo: WarpChainInfo = {
   defaultApiUrl: 'https://api.claws.network',
   logoUrl: 'https://raw.githubusercontent.com/JoAiHQ/assets/refs/heads/main/chains/logos/claws.png',
   nativeToken: NativeTokenClaw,
+  minGasPrice: 20000000000000n,
 }
 
 export const ClawsAdapter = createMultiversxAdapter(WarpChainName.Claws, {

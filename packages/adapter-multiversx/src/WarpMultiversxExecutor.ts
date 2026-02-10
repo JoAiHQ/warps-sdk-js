@@ -62,6 +62,10 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
 
     if (!tx) throw new Error(`WarpMultiversxExecutor: Invalid action type (${action.type})`)
 
+    if (this.chain.minGasPrice) {
+      tx.gasPrice = this.chain.minGasPrice
+    }
+
     return tx
   }
 
