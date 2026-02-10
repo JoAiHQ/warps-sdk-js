@@ -123,7 +123,7 @@ export class PrivateKeyWalletProvider implements WalletProvider {
 
     const isPrivateKeyPem = privateKey.startsWith('-----')
     const secretKey = isPrivateKeyPem ? UserSecretKey.fromPem(privateKey) : UserSecretKey.fromString(privateKey)
-    this.account = new Account(secretKey)
+    this.account = new Account(secretKey, this.chain.addressHrp)
     return this.account
   }
 }

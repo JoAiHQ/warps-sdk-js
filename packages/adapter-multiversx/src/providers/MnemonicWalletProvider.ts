@@ -133,7 +133,7 @@ export class MnemonicWalletProvider implements WalletProvider {
 
     const mnemonicObj = Mnemonic.fromString(mnemonic)
     const secretKey = mnemonicObj.deriveKey(0)
-    this.account = new Account(secretKey)
+    this.account = new Account(secretKey, this.chain.addressHrp)
     return this.account
   }
 }
