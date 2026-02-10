@@ -24,7 +24,7 @@ import {
   WarpQueryAction,
 } from '@joai/warps'
 import { AdapterTypeRegistry } from '@joai/warps/src/types'
-import { getMultiversxEntrypoint } from './helpers/general'
+import { getMultiversxEntrypoint, toChainAddress } from './helpers/general'
 import { WarpMultiversxAbiBuilder } from './WarpMultiversxAbiBuilder'
 import { WarpMultiversxOutput } from './WarpMultiversxOutput'
 import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
@@ -69,7 +69,7 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
     if (!executable.destination) throw new Error('WarpMultiversxExecutor: createTransfer - destination not set')
     const userWallet = getWarpWalletAddressFromConfig(this.config, executable.chain.name)
     if (!userWallet) throw new Error('WarpMultiversxExecutor: createTransfer - user address not set')
-    const sender = Address.newFromBech32(userWallet)
+    const sender = toChainAddress(userWallet, this.chain)
     const config = new TransactionsFactoryConfig({ chainID: executable.chain.chainId })
     const data = executable.data ? Buffer.from(this.serializer.stringToTyped(executable.data).valueOf()) : null
 
@@ -80,7 +80,7 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
     const nativeAmountTotal = nativeAmountInTransfers + executable.value
 
     return await new TransferTransactionsFactory({ config }).createTransactionForTransfer(sender, {
-      receiver: Address.newFromBech32(executable.destination),
+      receiver: toChainAddress(executable.destination, executable.chain),
       nativeAmount: nativeAmountTotal,
       tokenTransfers: isSingleNativeTransfer ? [] : this.toTokenTransfers(executable.transfers),
       data: data ? new Uint8Array(data) : undefined,
@@ -92,11 +92,11 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
     const userWallet = getWarpWalletAddressFromConfig(this.config, executable.chain.name)
     if (!userWallet) throw new Error('WarpMultiversxExecutor: createContractCall - user address not set')
     const action = getWarpActionByIndex(executable.warp, executable.action)
-    const sender = Address.newFromBech32(userWallet)
+    const sender = toChainAddress(userWallet, this.chain)
     const typedArgs = executable.args.map((arg) => this.serializer.stringToTyped(arg))
     const config = new TransactionsFactoryConfig({ chainID: executable.chain.chainId })
     return new SmartContractTransactionsFactory({ config }).createTransactionForExecute(sender, {
-      contract: Address.newFromBech32(executable.destination),
+      contract: toChainAddress(executable.destination, executable.chain),
       function: 'func' in action ? action.func || '' : '',
       gasLimit: 'gasLimit' in action ? BigInt(action.gasLimit || 0) : 0n,
       arguments: typedArgs,
@@ -112,7 +112,7 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
     const abi = await this.abi.getAbiForAction(action)
     const typedArgs = executable.args.map((arg) => this.serializer.stringToTyped(arg))
     const entrypoint = getMultiversxEntrypoint(executable.chain, this.config.env, this.config)
-    const contractAddress = Address.newFromBech32(executable.destination)
+    const contractAddress = toChainAddress(executable.destination, executable.chain)
     const controller = entrypoint.createSmartContractController(abi)
     const query = controller.createQuery({ contract: contractAddress, function: action.func || '', arguments: typedArgs })
     const response = await controller.runQuery(query)

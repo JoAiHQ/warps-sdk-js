@@ -12,7 +12,7 @@ import {
   WarpClientConfig,
   WarpDataLoaderOptions,
 } from '@joai/warps'
-import { getMultiversxEntrypoint, getNormalizedTokenIdentifier, isNativeToken } from './helpers/general'
+import { getMultiversxEntrypoint, getNormalizedTokenIdentifier, isNativeToken, toChainAddress } from './helpers/general'
 import { findKnownTokenById } from './tokens'
 
 export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
@@ -27,19 +27,21 @@ export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
 
   async getAccount(address: string): Promise<WarpChainAccount> {
     const provider = getMultiversxEntrypoint(this.chain, this.config.env, this.config).createNetworkProvider()
-    const accountReq = await provider.getAccount(Address.newFromBech32(address))
+    const chainAddress = toChainAddress(address, this.chain)
+    const accountReq = await provider.getAccount(chainAddress)
 
     return {
       chain: this.chain.name,
-      address: accountReq.address.toBech32(),
+      address: chainAddress.toBech32(),
       balance: accountReq.balance,
     }
   }
 
   async getAccountAssets(address: string): Promise<WarpChainAsset[]> {
     const provider = getMultiversxEntrypoint(this.chain, this.config.env, this.config).createNetworkProvider()
-    const accountReq = provider.getAccount(Address.newFromBech32(address))
-    const tokensReq = provider.getFungibleTokensOfAccount(Address.newFromBech32(address))
+    const chainAddress = toChainAddress(address, this.chain)
+    const accountReq = provider.getAccount(chainAddress)
+    const tokensReq = provider.getFungibleTokensOfAccount(chainAddress)
     const [account, tokens] = await Promise.all([accountReq, tokensReq])
 
     let assets: WarpChainAsset[] = account.balance > 0 ? [{ ...this.chain.nativeToken, amount: account.balance }] : []
@@ -129,7 +131,7 @@ export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
   async getAccountActions(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAction[]> {
     const provider = getMultiversxEntrypoint(this.chain, this.config.env, this.config).createNetworkProvider()
 
-    let url = `accounts/${address}/transactions`
+    let url = `accounts/${toChainAddress(address, this.chain).toBech32()}/transactions`
     const params = new URLSearchParams()
 
     const size = options?.size || 25
