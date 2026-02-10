@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.1.5
+
+### Patch Changes
+
+- 8a5f452: Move nonce cache update from signTransaction to sendTransaction. Previously, a failed or rejected transaction (e.g. due to insufficient gas price) would leave a stale incremented nonce in cache, causing subsequent transactions to use nonce 1 when the account is still at nonce 0.
+
 ## 1.1.4
 
 ### Patch Changes
