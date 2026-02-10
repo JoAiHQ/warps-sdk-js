@@ -2,4 +2,4 @@
 "@joai/warps-adapter-multiversx": patch
 ---
 
-Normalize all addresses to the chain's HRP in executor, data loader, and contract loader. Addresses from warp definitions or wallet configs with a different HRP (e.g. `erd1` on Claws network) are now re-encoded with the correct chain prefix before use in transactions and API calls.
+Fix wallet providers using wrong address HRP for sovereign chains. The `Account` object was created without the chain's `addressHrp`, causing sender addresses to default to `erd` prefix instead of the chain-specific HRP (e.g. `claw`).

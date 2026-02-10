@@ -1,11 +1,5 @@
-import { Address, DevnetEntrypoint, MainnetEntrypoint, NetworkEntrypoint, TestnetEntrypoint } from '@multiversx/sdk-core'
+import { DevnetEntrypoint, MainnetEntrypoint, NetworkEntrypoint, TestnetEntrypoint } from '@multiversx/sdk-core'
 import { getProviderConfig, WarpChainEnv, WarpChainInfo, WarpClientConfig } from '@joai/warps'
-
-// Re-encodes a bech32 address with the given chain's HRP (same public key bytes, correct HRP prefix)
-export const toChainAddress = (bech32Address: string, chain: WarpChainInfo): Address => {
-  const pubKey = Address.newFromBech32(bech32Address).getPublicKey()
-  return new Address(pubKey, chain.addressHrp)
-}
 
 // Native tokens have identifiers that do not follow the ESDT token format, e.g. EGLD, VIBE
 export const isNativeToken = (identifier: string): boolean => !identifier.includes('-')

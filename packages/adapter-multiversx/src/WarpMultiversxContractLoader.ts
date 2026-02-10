@@ -1,18 +1,17 @@
 import { WarpChainInfo, WarpClientConfig, WarpContract, WarpContractVerification, WarpLogger } from '@joai/warps'
-import { getMultiversxEntrypoint, toChainAddress } from './helpers/general'
+import { getMultiversxEntrypoint } from './helpers/general'
 
 export class WarpMultiversxContractLoader {
   constructor(private readonly config: WarpClientConfig) {}
 
   async getContract(address: string, chain: WarpChainInfo): Promise<WarpContract | null> {
     try {
-      const chainAddress = toChainAddress(address, chain).toBech32()
       const chainEntry = getMultiversxEntrypoint(chain, this.config.env, this.config)
       const chainProvider = chainEntry.createNetworkProvider()
-      const res = await chainProvider.doGetGeneric(`accounts/${chainAddress}`)
+      const res = await chainProvider.doGetGeneric(`accounts/${address}`)
 
       return {
-        address: chainAddress,
+        address,
         owner: res.ownerAddress,
         verified: res.isVerified || false,
       }
@@ -24,10 +23,9 @@ export class WarpMultiversxContractLoader {
 
   async getVerificationInfo(address: string, chain: WarpChainInfo): Promise<WarpContractVerification | null> {
     try {
-      const chainAddress = toChainAddress(address, chain).toBech32()
       const chainEntry = getMultiversxEntrypoint(chain, this.config.env, this.config)
       const chainProvider = chainEntry.createNetworkProvider()
-      const res = await chainProvider.doGetGeneric(`accounts/${chainAddress}/verification`)
+      const res = await chainProvider.doGetGeneric(`accounts/${address}/verification`)
 
       return {
         codeHash: res.codeHash,

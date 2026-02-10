@@ -2,10 +2,7 @@ import { WarpChainEnv, WarpChainInfo, WarpChainName, WarpClientConfig } from '@j
 import { WarpMultiversxDataLoader } from './WarpMultiversxDataLoader'
 import { getMultiversxEntrypoint } from './helpers/general'
 
-jest.mock('./helpers/general', () => ({
-  ...jest.requireActual('./helpers/general'),
-  getMultiversxEntrypoint: jest.fn(),
-}))
+jest.mock('./helpers/general')
 
 describe('WarpMultiversxDataLoader', () => {
   const mockConfig: WarpClientConfig = {
@@ -79,9 +76,9 @@ describe('WarpMultiversxDataLoader', () => {
       } as any)
 
       const dataLoader = new WarpMultiversxDataLoader(mockConfig, mockChainInfo)
-      const result = await dataLoader.getAccountActions('erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu')
+      const result = await dataLoader.getAccountActions('erd1test')
 
-      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu/transactions')
+      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1test/transactions')
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         chain: 'multiversx',
@@ -118,9 +115,9 @@ describe('WarpMultiversxDataLoader', () => {
       } as any)
 
       const dataLoader = new WarpMultiversxDataLoader(mockConfig, mockChainInfo)
-      const result = await dataLoader.getAccountActions('erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu', { page: 1, size: 10 })
+      const result = await dataLoader.getAccountActions('erd1test', { page: 1, size: 10 })
 
-      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu/transactions?from=10&size=10')
+      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1test/transactions?from=10&size=10')
       expect(result).toHaveLength(1)
       expect(result[0]).toEqual({
         chain: 'multiversx',
@@ -144,9 +141,9 @@ describe('WarpMultiversxDataLoader', () => {
       } as any)
 
       const dataLoader = new WarpMultiversxDataLoader(mockConfig, mockChainInfo)
-      await dataLoader.getAccountActions('erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu', {})
+      await dataLoader.getAccountActions('erd1test', {})
 
-      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu/transactions')
+      expect(mockProvider.doGetGeneric).toHaveBeenCalledWith('accounts/erd1test/transactions')
     })
   })
 })
