@@ -57,15 +57,6 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
 
     const signedTx = await this.walletProvider.signTransaction(castedTx)
 
-    if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
-      const account = this.walletProvider.getAccountInstance()
-      const newNonce = Number(account.nonce) + 1
-      this.cache.set(`nonce:${account.address.toBech32()}`, newNonce, CacheTtl.OneMinute)
-    } else if (this.cachedAddress) {
-      const currentNonce = castedTx.nonce ? Number(castedTx.nonce) : 0
-      this.cache.set(`nonce:${this.cachedAddress}`, currentNonce + 1, CacheTtl.OneMinute)
-    }
-
     return signedTx
   }
 
@@ -91,7 +82,13 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     const castedTx = tx as Transaction
     if (!castedTx || typeof castedTx !== 'object') throw new Error('Invalid transaction object')
     if (!castedTx.signature || castedTx.signature.length === 0) throw new Error('Transaction must be signed before sending')
-    return await this.entry.sendTransaction(castedTx)
+    const txHash = await this.entry.sendTransaction(castedTx)
+
+    const senderAddress = castedTx.sender
+    const newNonce = Number(castedTx.nonce) + 1
+    this.cache.set(`nonce:${senderAddress}`, newNonce, CacheTtl.OneMinute)
+
+    return txHash
   }
 
   async importFromMnemonic(mnemonic: string): Promise<WarpWalletDetails> {
