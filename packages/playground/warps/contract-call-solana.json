@@ -10,11 +10,7 @@
       "label": "Call System Program",
       "address": "11111111111111111111111111111111",
       "func": "transfer",
-      "abi": "{\"instructions\":{\"transfer\":{\"discriminator\":[2,0,0,0],\"args\":[{\"name\":\"lamports\",\"type\":\"u64\"}]}}}",
-      "accounts": [
-        { "address": "{{USER_WALLET}}", "writable": true, "signer": true },
-        { "address": "{{RECEIVER_ADDRESS}}", "writable": true, "signer": false }
-      ],
+      "abi": "{\"instructions\":{\"transfer\":{\"discriminator\":[2,0,0,0],\"args\":[{\"name\":\"lamports\",\"type\":\"u64\"}],\"accounts\":[{\"address\":\"{{USER_WALLET}}\",\"writable\":true,\"signer\":true},{\"address\":\"{{RECEIVER_ADDRESS}}\",\"writable\":true,\"signer\":false}]}}}",
       "inputs": [
         {
           "name": "Program Address",

@@ -10,12 +10,7 @@
       "label": "Close Account",
       "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "func": "closeAccount",
-      "abi": "{\"instructions\":{\"closeAccount\":{\"discriminator\":[9],\"args\":[]}}}",
-      "accounts": [
-        { "address": "{{USER_ATA:MINT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{USER_WALLET}}", "writable": true, "signer": false },
-        { "address": "{{USER_WALLET}}", "writable": false, "signer": true }
-      ],
+      "abi": "{\"instructions\":{\"closeAccount\":{\"discriminator\":[9],\"args\":[],\"accounts\":[{\"address\":\"{{USER_ATA:MINT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{USER_WALLET}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{USER_WALLET}}\",\"writable\":false,\"signer\":true}]}}}",
       "inputs": [
         {
           "name": "Mint Address",

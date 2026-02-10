@@ -10,12 +10,7 @@
       "label": "Approve Delegate",
       "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "func": "approve",
-      "abi": "{\"instructions\":{\"approve\":{\"discriminator\":[4],\"args\":[{\"name\":\"amount\",\"type\":\"u64\"}]}}}",
-      "accounts": [
-        { "address": "{{USER_ATA:MINT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{DELEGATE_ADDRESS}}", "writable": false, "signer": false },
-        { "address": "{{USER_WALLET}}", "writable": false, "signer": true }
-      ],
+      "abi": "{\"instructions\":{\"approve\":{\"discriminator\":[4],\"args\":[{\"name\":\"amount\",\"type\":\"u64\"}],\"accounts\":[{\"address\":\"{{USER_ATA:MINT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{DELEGATE_ADDRESS}}\",\"writable\":false,\"signer\":false},{\"address\":\"{{USER_WALLET}}\",\"writable\":false,\"signer\":true}]}}}",
       "inputs": [
         {
           "name": "Mint Address",

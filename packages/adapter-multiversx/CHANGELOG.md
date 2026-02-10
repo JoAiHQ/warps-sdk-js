@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.1.1
+
+### Patch Changes
+
+- 5c87a24: Fix wallet providers using wrong address HRP for custom chains (e.g. Claws). The `Account` object was created without the chain's `addressHrp`, defaulting to `erd` instead of the chain-specific HRP like `claw`. This caused API calls to fail with 404 when using non-MultiversX sovereign chains.
+
 ## 1.1.0
 
 ### Minor Changes

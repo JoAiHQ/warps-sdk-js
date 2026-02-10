@@ -1,0 +1,66 @@
+{
+  "protocol": "warp:3.0.0",
+  "chain": "solana",
+  "name": "Jupiter: Swap Quote",
+  "title": "Get Swap Quote via Jupiter",
+  "description": "Get the best swap quote from Jupiter DEX aggregator.",
+  "actions": [
+    {
+      "type": "collect",
+      "label": "Get Quote",
+      "destination": {
+        "url": "https://lite-api.jup.ag/swap/v1/quote?inputMint={{INPUT_MINT}}&outputMint={{OUTPUT_MINT}}&amount={{AMOUNT}}&slippageBps={{SLIPPAGE_BPS}}",
+        "method": "GET"
+      },
+      "inputs": [
+        {
+          "name": "Input Token Mint",
+          "as": "INPUT_MINT",
+          "description": "The mint address of the token to swap from.",
+          "type": "string",
+          "source": "field",
+          "required": true
+        },
+        {
+          "name": "Output Token Mint",
+          "as": "OUTPUT_MINT",
+          "description": "The mint address of the token to receive.",
+          "type": "string",
+          "source": "field",
+          "required": true
+        },
+        {
+          "name": "Amount",
+          "as": "AMOUNT",
+          "description": "Amount of input tokens in smallest unit (e.g., lamports).",
+          "type": "string",
+          "source": "field",
+          "required": true
+        },
+        {
+          "name": "Slippage (BPS)",
+          "as": "SLIPPAGE_BPS",
+          "description": "Max slippage in basis points (50 = 0.5%).",
+          "type": "string",
+          "source": "field",
+          "required": false,
+          "default": "50"
+        }
+      ]
+    }
+  ],
+  "output": {
+    "OUT_AMOUNT": "out.outAmount",
+    "IN_AMOUNT": "out.inAmount",
+    "PRICE_IMPACT": "out.priceImpactPct",
+    "SWAP_USD_VALUE": "out.swapUsdValue",
+    "SLIPPAGE_BPS": "out.slippageBps",
+    "OTHER_AMOUNT_THRESHOLD": "out.otherAmountThreshold",
+    "SWAP_MODE": "out.swapMode",
+    "ROUTE_COUNT": "transform:() => Array.isArray(results.out.routePlan) ? results.out.routePlan.length : 0"
+  },
+  "messages": {
+    "success": "Quote: {{IN_AMOUNT}} -> {{OUT_AMOUNT}} ({{ROUTE_COUNT}} route(s), impact: {{PRICE_IMPACT}}%)"
+  },
+  "defaultChain": "solana"
+}

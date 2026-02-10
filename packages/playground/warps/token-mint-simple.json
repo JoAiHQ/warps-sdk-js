@@ -10,12 +10,7 @@
       "label": "Mint Tokens",
       "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "func": "mintTo",
-      "abi": "{\"instructions\":{\"mintTo\":{\"discriminator\":[7],\"args\":[{\"name\":\"amount\",\"type\":\"u64\"}]}}}",
-      "accounts": [
-        { "address": "{{MINT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{USER_ATA:MINT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{MINT_AUTHORITY}}", "writable": false, "signer": true }
-      ],
+      "abi": "{\"instructions\":{\"mintTo\":{\"discriminator\":[7],\"args\":[{\"name\":\"amount\",\"type\":\"u64\"}],\"accounts\":[{\"address\":\"{{MINT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{USER_ATA:MINT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{MINT_AUTHORITY}}\",\"writable\":false,\"signer\":true}]}}}",
       "inputs": [
         {
           "name": "Mint Address",

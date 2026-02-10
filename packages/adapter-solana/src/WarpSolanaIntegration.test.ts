@@ -225,13 +225,13 @@ describe('WarpSolanaIntegration', () => {
                     deposit_sol: {
                       discriminator: [3, 0, 0, 0, 0, 0, 0, 0],
                       args: [{ name: 'lamports', type: 'u64' }],
+                      accounts: [
+                        { address: 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb', writable: true, signer: false },
+                        { address: '{{USER_WALLET}}', writable: true, signer: true },
+                      ],
                     },
                   },
                 }),
-                accounts: [
-                  { address: 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb', writable: true, signer: false },
-                  { address: '{{USER_WALLET}}', writable: true, signer: true },
-                ],
                 gasLimit: 0,
               } as WarpContractAction,
             ],

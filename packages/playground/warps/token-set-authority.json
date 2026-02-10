@@ -10,11 +10,7 @@
       "label": "Set Authority",
       "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "func": "setAuthority",
-      "abi": "{\"instructions\":{\"setAuthority\":{\"discriminator\":[6],\"args\":[{\"name\":\"authorityType\",\"type\":\"u8\"},{\"name\":\"newAuthority\",\"type\":\"option<Pubkey>\"}]}}}",
-      "accounts": [
-        { "address": "{{ACCOUNT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{CURRENT_AUTHORITY}}", "writable": false, "signer": true }
-      ],
+      "abi": "{\"instructions\":{\"setAuthority\":{\"discriminator\":[6],\"args\":[{\"name\":\"authorityType\",\"type\":\"u8\"},{\"name\":\"newAuthority\",\"type\":\"option<Pubkey>\"}],\"accounts\":[{\"address\":\"{{ACCOUNT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{CURRENT_AUTHORITY}}\",\"writable\":false,\"signer\":true}]}}}",
       "inputs": [
         {
           "name": "Account Address",

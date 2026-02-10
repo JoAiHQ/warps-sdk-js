@@ -107,8 +107,11 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
     const nativeArgs = argsToUse.map((arg) => this.serializer.coreSerializer.stringToNative(arg)[1])
     const instructionData = this.buildInstructionData(action, nativeArgs)
 
-    const accounts = await this.buildInstructionAccounts(action, executable, fromPubkey, programId)
-    await this.ensureATAs(action, accounts, fromPubkey, instructions)
+    const parsedAbi = this.parseAbi(action)
+    const abiAccounts = parsedAbi?.instructions?.[action.func]?.accounts ?? null
+
+    const accounts = await this.buildInstructionAccounts(action, executable, fromPubkey, programId, abiAccounts)
+    await this.ensureATAs(abiAccounts, accounts, fromPubkey, instructions)
     instructions.push(new TransactionInstruction({ keys: accounts, programId, data: instructionData }))
 
     if (executable.value > 0n) {
@@ -118,18 +121,27 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
     return this.setTransactionDefaults(instructions, fromPubkey)
   }
 
+  private parseAbi(action: any): any {
+    if (!action.abi || typeof action.abi !== 'string') return null
+    try {
+      return JSON.parse(action.abi)
+    } catch {
+      return null
+    }
+  }
+
   private async ensureATAs(
-    action: any,
+    abiAccounts: any[] | null,
     accounts: Array<{ pubkey: PublicKey; isSigner: boolean; isWritable: boolean }>,
     fromPubkey: PublicKey,
     instructions: TransactionInstruction[]
   ): Promise<void> {
-    if (!action.accounts || !Array.isArray(action.accounts)) return
+    if (!abiAccounts || !Array.isArray(abiAccounts)) return
 
     const createdATAs = new Set<string>()
 
-    for (let idx = 0; idx < action.accounts.length; idx++) {
-      const accountDef = action.accounts[idx]
+    for (let idx = 0; idx < abiAccounts.length; idx++) {
+      const accountDef = abiAccounts[idx]
       const accountStr = typeof accountDef === 'string' ? accountDef : JSON.stringify(accountDef)
 
       if (accountStr.includes('{{USER_ATA:')) {
@@ -192,13 +204,12 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
           discriminatorBuffer = Buffer.from(funcName).slice(0, 8)
         }
       } else {
-          discriminatorBuffer = Buffer.from(funcName).slice(0, 8)
+        discriminatorBuffer = Buffer.from(funcName).slice(0, 8)
       }
 
       if (args.length > 0 && instructionDef.args && instructionDef.args.length > 0) {
         const encodedArgs = this.encodeArgs(args, instructionDef.args)
-        // @ts-expect-error - Buffer.concat works correctly but TypeScript types are strict
-        return Buffer.concat([discriminatorBuffer, encodedArgs])
+        return Buffer.concat([discriminatorBuffer, encodedArgs] as unknown as Uint8Array[])
       }
 
       return discriminatorBuffer
@@ -208,7 +219,7 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
   }
 
   private encodeBasicInstructionData(args: any[], funcName: string): Buffer {
-        const funcHash = Buffer.from(funcName).slice(0, 8)
+    const funcHash = Buffer.from(funcName).slice(0, 8)
     const data = Buffer.alloc(8)
     data.set(funcHash, 0)
 
@@ -228,8 +239,7 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
         }
         return Buffer.from(String(arg), 'utf8')
       })
-      // @ts-expect-error - Buffer.concat works correctly but TypeScript types are strict
-      return Buffer.concat([data, ...encodedArgs])
+      return Buffer.concat([data, ...encodedArgs] as unknown as Uint8Array[])
     }
 
     return data
@@ -265,15 +275,15 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
         buffers.push(Buffer.from(String(arg), 'utf8'))
       }
     }
-    // @ts-expect-error - Buffer.concat works correctly but TypeScript types are strict
-    return Buffer.concat(buffers)
+    return Buffer.concat(buffers as unknown as Uint8Array[])
   }
 
   private async buildInstructionAccounts(
     action: any,
     executable: WarpExecutable,
     fromPubkey: PublicKey,
-    programId: PublicKey
+    programId: PublicKey,
+    abiAccounts: any[] | null
   ): Promise<Array<{ pubkey: PublicKey; isSigner: boolean; isWritable: boolean }>> {
     const accounts: Array<{ pubkey: PublicKey; isSigner: boolean; isWritable: boolean }> = []
 
@@ -290,15 +300,13 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
       return accounts
     }
 
-    if (!action.accounts || !Array.isArray(action.accounts)) return accounts
+    if (!abiAccounts || !Array.isArray(abiAccounts)) return accounts
 
-    for (let idx = 0; idx < action.accounts.length; idx++) {
-      const accountDef = action.accounts[idx]
+    for (let idx = 0; idx < abiAccounts.length; idx++) {
+      const accountDef = abiAccounts[idx]
       let address = this.extractAccountAddress(accountDef)
 
-      if (address === '[object Object]' || (typeof accountDef === 'string' && accountDef === '[object Object]')) {
-        address = fromPubkey.toBase58()
-      } else if (!address || address.length === 0) {
+      if (!address || address.length === 0) {
         throw new Error(`Invalid account definition at index ${idx}: ${JSON.stringify(accountDef)}`)
       }
 
@@ -397,6 +405,24 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
           return address.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
         }
       }
+    }
+
+    // Handle nested placeholders inside USER_ATA:/RECEIVER_ATA: (e.g. {{USER_ATA:MINT_ADDRESS}} where MINT_ADDRESS is a resolved input name)
+    if (address.includes('{{USER_ATA:') || address.includes('{{RECEIVER_ATA:')) {
+      for (const resolved of resolvedInputs) {
+        if (!resolved.input?.as) continue
+        const key = resolved.input.as.toUpperCase()
+        if (address.includes(key)) {
+          let value = resolved.value
+          if (typeof value === 'string' && value.includes(':')) {
+            value = value.split(':')[1]
+          }
+          if (value) {
+            address = address.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), String(value))
+          }
+        }
+      }
+      return address
     }
 
     return address
@@ -523,31 +549,17 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
     }
   }
 
-  async verifyMessage(message: string, signature: string): Promise<string> {
-    try {
-      const messageBytes = new TextEncoder().encode(message)
-      const signatureBytes = Buffer.from(signature, 'base64')
-      return ''
-    } catch (error) {
-      throw new Error(`Failed to verify message: ${error}`)
-    }
-  }
-
-  private async setTransactionDefaults(instructions: TransactionInstruction[], fromPubkey: PublicKey | null): Promise<VersionedTransaction> {
+  private async setTransactionDefaults(instructions: TransactionInstruction[], fromPubkey: PublicKey): Promise<VersionedTransaction> {
     const { blockhash } = await this.connection.getLatestBlockhash('confirmed')
     const allInstructions = this.addComputeBudgetInstructions(instructions)
-    const accountMetaMap = this.buildAccountMetaMap(allInstructions, fromPubkey)
-    const { signedAccounts, unsignedAccounts } = this.sortAccounts(accountMetaMap)
-    const { staticAccountKeys, accountIndexMap } = this.buildAccountIndexMap(signedAccounts, unsignedAccounts)
-    const compiledInstructions = this.compileInstructions(allInstructions, accountIndexMap)
-    const messageV0 = this.buildMessageV0(blockhash, signedAccounts, unsignedAccounts, accountMetaMap, staticAccountKeys, compiledInstructions)
 
-    const versionedTx = new VersionedTransaction(messageV0)
-    if (versionedTx.version !== 0) {
-      throw new Error(`Expected VersionedTransaction v0, got version: ${versionedTx.version}`)
-    }
+    const messageV0 = MessageV0.compile({
+      payerKey: fromPubkey,
+      instructions: allInstructions,
+      recentBlockhash: blockhash,
+    })
 
-    return versionedTx
+    return new VersionedTransaction(messageV0)
   }
 
   private toPublicKey(address: string, errorMsg: string): PublicKey {
@@ -597,27 +609,13 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
     return this.encodeBasicInstructionData(nativeArgs, action.func)
   }
 
-
   private extractAccountAddress(accountDef: any): string | undefined {
     if (typeof accountDef === 'string') return accountDef
     if (!accountDef || typeof accountDef !== 'object') return undefined
 
-    const str = JSON.stringify(accountDef)
-    if (str.includes('USER_WALLET') || str.includes('{{USER_WALLET}}')) return '{{USER_WALLET}}'
-    if (str.includes('RECEIVER_ADDRESS') || str.includes('{{RECEIVER_ADDRESS}}')) return '{{RECEIVER_ADDRESS}}'
-    if (str.includes('USER_ATA')) {
-      const match = str.match(/USER_ATA[:\s]*([^"}\s]+)/)
-      if (match) return `{{USER_ATA:${match[1]}}}`
-    }
+    const address = accountDef.address || accountDef.pubkey
+    if (typeof address === 'string') return address
 
-    const addrValue = accountDef.address || accountDef.pubkey || accountDef.value
-    if (typeof addrValue === 'string') return addrValue
-    if (addrValue?.toBase58) return addrValue.toBase58()
-    if (addrValue?.identifier) return addrValue.identifier
-    if (addrValue?.value) return addrValue.value
-
-    const keys = Object.keys(accountDef)
-    if (keys.length === 1 && typeof accountDef[keys[0]] === 'string') return accountDef[keys[0]]
     return undefined
   }
 
@@ -676,113 +674,5 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
     const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: WarpSolanaConstants.PriorityFee.Default })
 
     return [computeUnitLimitIx, computeUnitPriceIx, ...instructions]
-  }
-
-  private buildAccountMetaMap(
-    instructions: TransactionInstruction[],
-    fromPubkey: PublicKey | null
-  ): Map<string, { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }> {
-    const accountMetaMap = new Map<string, { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }>()
-
-    if (fromPubkey) {
-      accountMetaMap.set(fromPubkey.toBase58(), { pubkey: fromPubkey, isSigner: true, isWritable: true })
-    }
-
-    for (const ix of instructions) {
-      const programIdStr = ix.programId.toBase58()
-      if (!accountMetaMap.has(programIdStr)) {
-        accountMetaMap.set(programIdStr, { pubkey: ix.programId, isSigner: false, isWritable: false })
-      }
-
-      for (const key of ix.keys) {
-        const keyStr = key.pubkey.toBase58()
-        const existing = accountMetaMap.get(keyStr)
-        if (existing) {
-          accountMetaMap.set(keyStr, {
-            pubkey: key.pubkey,
-            isSigner: existing.isSigner || key.isSigner,
-            isWritable: existing.isWritable || key.isWritable,
-          })
-        } else {
-          accountMetaMap.set(keyStr, {
-            pubkey: key.pubkey,
-            isSigner: key.isSigner,
-            isWritable: key.isWritable,
-          })
-        }
-      }
-    }
-
-    return accountMetaMap
-  }
-
-  private sortAccounts(accountMetaMap: Map<string, { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }>): {
-    signedAccounts: PublicKey[]
-    unsignedAccounts: PublicKey[]
-  } {
-    const signedAccounts: PublicKey[] = []
-    const unsignedAccounts: PublicKey[] = []
-
-    for (const meta of accountMetaMap.values()) {
-      ;(meta.isSigner ? signedAccounts : unsignedAccounts).push(meta.pubkey)
-    }
-
-    const sortByWritable = (a: PublicKey, b: PublicKey) =>
-      (accountMetaMap.get(a.toBase58())!.isWritable ? 0 : 1) - (accountMetaMap.get(b.toBase58())!.isWritable ? 0 : 1)
-
-    signedAccounts.sort(sortByWritable)
-    unsignedAccounts.sort(sortByWritable)
-    return { signedAccounts, unsignedAccounts }
-  }
-
-  private buildAccountIndexMap(
-    signedAccounts: PublicKey[],
-    unsignedAccounts: PublicKey[]
-  ): { staticAccountKeys: PublicKey[]; accountIndexMap: Map<string, number> } {
-    const staticAccountKeys = [...signedAccounts, ...unsignedAccounts]
-    const accountIndexMap = new Map<string, number>()
-
-    staticAccountKeys.forEach((key, index) => {
-      accountIndexMap.set(key.toBase58(), index)
-    })
-
-    return { staticAccountKeys, accountIndexMap }
-  }
-
-  private compileInstructions(
-    instructions: TransactionInstruction[],
-    accountIndexMap: Map<string, number>
-  ): Array<{ programIdIndex: number; accountKeyIndexes: number[]; data: Uint8Array }> {
-    return instructions.map((ix) => {
-      const programIdIndex = accountIndexMap.get(ix.programId.toBase58())!
-      const accountKeyIndexes = ix.keys.map((key) => accountIndexMap.get(key.pubkey.toBase58())!)
-      return {
-        programIdIndex,
-        accountKeyIndexes,
-        data: Uint8Array.from(ix.data),
-      }
-    })
-  }
-
-  private buildMessageV0(
-    blockhash: string,
-    signedAccounts: PublicKey[],
-    unsignedAccounts: PublicKey[],
-    accountMetaMap: Map<string, { pubkey: PublicKey; isSigner: boolean; isWritable: boolean }>,
-    staticAccountKeys: PublicKey[],
-    compiledInstructions: Array<{ programIdIndex: number; accountKeyIndexes: number[]; data: Uint8Array }>
-  ): MessageV0 {
-    const getWritable = (key: PublicKey) => accountMetaMap.get(key.toBase58())!.isWritable
-    return new MessageV0({
-      header: {
-        numRequiredSignatures: signedAccounts.length,
-        numReadonlySignedAccounts: signedAccounts.filter((k) => !getWritable(k)).length,
-        numReadonlyUnsignedAccounts: unsignedAccounts.filter((k) => !getWritable(k)).length,
-      },
-      staticAccountKeys,
-      recentBlockhash: blockhash,
-      compiledInstructions,
-      addressTableLookups: [],
-    })
   }
 }

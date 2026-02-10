@@ -11,16 +11,7 @@
       "auto": true,
       "address": "DPoo15wWDqpPJJtS2MUZ49aRxqz5ZaaJCJP4z8bLuib",
       "func": "updateStakePoolBalance",
-      "abi": "{\"instructions\":{\"updateStakePoolBalance\":{\"discriminator\":[7],\"args\":[]}}}",
-      "accounts": [
-        { "address": "CkQd5vmnrfKbPZPJupQDXSgZ3jVZP1ZndbbPZg1CbWPW", "writable": true, "signer": false },
-        { "address": "VUpPdtVSHRpHPU2vBNWoBXejcS3fRrXNcU7JsYVhPpx", "writable": false, "signer": false },
-        { "address": "csgoLGpki1zwhRuUjxWe1uEeSKn53HiJkcJsE2vCAU9", "writable": true, "signer": false },
-        { "address": "9fSnxT3uv7wGCcm1FrtW3Bop9nGZ6zdLhf1X19JEJWCm", "writable": false, "signer": false },
-        { "address": "948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA", "writable": true, "signer": false },
-        { "address": "8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT", "writable": true, "signer": false },
-        { "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "writable": false, "signer": false }
-      ],
+      "abi": "{\"instructions\":{\"updateStakePoolBalance\":{\"discriminator\":[7],\"args\":[],\"accounts\":[{\"address\":\"CkQd5vmnrfKbPZPJupQDXSgZ3jVZP1ZndbbPZg1CbWPW\",\"writable\":true,\"signer\":false},{\"address\":\"VUpPdtVSHRpHPU2vBNWoBXejcS3fRrXNcU7JsYVhPpx\",\"writable\":false,\"signer\":false},{\"address\":\"csgoLGpki1zwhRuUjxWe1uEeSKn53HiJkcJsE2vCAU9\",\"writable\":true,\"signer\":false},{\"address\":\"9fSnxT3uv7wGCcm1FrtW3Bop9nGZ6zdLhf1X19JEJWCm\",\"writable\":false,\"signer\":false},{\"address\":\"948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA\",\"writable\":true,\"signer\":false},{\"address\":\"8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT\",\"writable\":true,\"signer\":false},{\"address\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"writable\":false,\"signer\":false}]}}}",
       "inputs": []
     },
     {
@@ -29,19 +20,7 @@
       "primary": true,
       "address": "DPoo15wWDqpPJJtS2MUZ49aRxqz5ZaaJCJP4z8bLuib",
       "func": "depositSol",
-      "abi": "{\"instructions\":{\"depositSol\":{\"discriminator\":[14],\"args\":[{\"name\":\"lamports_in\",\"type\":\"u64\"}]}}}",
-      "accounts": [
-        { "address": "CkQd5vmnrfKbPZPJupQDXSgZ3jVZP1ZndbbPZg1CbWPW", "writable": true, "signer": false },
-        { "address": "VUpPdtVSHRpHPU2vBNWoBXejcS3fRrXNcU7JsYVhPpx", "writable": false, "signer": false },
-        { "address": "9fSnxT3uv7wGCcm1FrtW3Bop9nGZ6zdLhf1X19JEJWCm", "writable": true, "signer": false },
-        { "address": "{{USER_WALLET}}", "writable": true, "signer": true },
-        { "address": "{{USER_ATA:8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT}}", "writable": true, "signer": false },
-        { "address": "948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA", "writable": true, "signer": false },
-        { "address": "948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA", "writable": true, "signer": false },
-        { "address": "8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT", "writable": true, "signer": false },
-        { "address": "11111111111111111111111111111111", "writable": false, "signer": false },
-        { "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "writable": false, "signer": false }
-      ],
+      "abi": "{\"instructions\":{\"depositSol\":{\"discriminator\":[14],\"args\":[{\"name\":\"lamports_in\",\"type\":\"u64\"}],\"accounts\":[{\"address\":\"CkQd5vmnrfKbPZPJupQDXSgZ3jVZP1ZndbbPZg1CbWPW\",\"writable\":true,\"signer\":false},{\"address\":\"VUpPdtVSHRpHPU2vBNWoBXejcS3fRrXNcU7JsYVhPpx\",\"writable\":false,\"signer\":false},{\"address\":\"9fSnxT3uv7wGCcm1FrtW3Bop9nGZ6zdLhf1X19JEJWCm\",\"writable\":true,\"signer\":false},{\"address\":\"{{USER_WALLET}}\",\"writable\":true,\"signer\":true},{\"address\":\"{{USER_ATA:8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT}}\",\"writable\":true,\"signer\":false},{\"address\":\"948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA\",\"writable\":true,\"signer\":false},{\"address\":\"948s4szTAuDgirZt5ebBCjVv1M66xGsLoXV2ofivskXA\",\"writable\":true,\"signer\":false},{\"address\":\"8WFRGPPiTskKtuR3Uqfj4KFfipnzpSDH58XfgiX9ECoT\",\"writable\":true,\"signer\":false},{\"address\":\"11111111111111111111111111111111\",\"writable\":false,\"signer\":false},{\"address\":\"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\",\"writable\":false,\"signer\":false}]}}}",
       "inputs": [
         {
           "name": "Amount (Lamports)",

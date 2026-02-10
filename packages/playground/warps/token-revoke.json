@@ -10,11 +10,7 @@
       "label": "Revoke Delegate",
       "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
       "func": "revoke",
-      "abi": "{\"instructions\":{\"revoke\":{\"discriminator\":[5],\"args\":[]}}}",
-      "accounts": [
-        { "address": "{{USER_ATA:MINT_ADDRESS}}", "writable": true, "signer": false },
-        { "address": "{{USER_WALLET}}", "writable": false, "signer": true }
-      ],
+      "abi": "{\"instructions\":{\"revoke\":{\"discriminator\":[5],\"args\":[],\"accounts\":[{\"address\":\"{{USER_ATA:MINT_ADDRESS}}\",\"writable\":true,\"signer\":false},{\"address\":\"{{USER_WALLET}}\",\"writable\":false,\"signer\":true}]}}}",
       "inputs": [
         {
           "name": "Mint Address",

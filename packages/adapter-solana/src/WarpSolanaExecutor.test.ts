@@ -1,6 +1,12 @@
 import { ChainAdapter, WarpChainInfo, WarpChainName, WarpClientConfig, WarpExecutable } from '@joai/warps'
+import { Connection, Keypair } from '@solana/web3.js'
+import bs58 from 'bs58'
 import { NativeTokenSol, SolanaAdapter } from './chains/solana'
 import { WarpSolanaExecutor } from './WarpSolanaExecutor'
+
+const validBlockhash = bs58.encode(new Uint8Array(32).fill(1))
+const testKeypair = Keypair.generate()
+const testWalletAddress = testKeypair.publicKey.toBase58()
 
 const mockFallbackAdapter = {
   chainInfo: {} as WarpChainInfo,
@@ -24,11 +30,17 @@ describe('WarpSolanaExecutor', () => {
   let solanaAdapter: ChainAdapter
 
   beforeEach(() => {
+    jest.spyOn(Connection.prototype, 'getLatestBlockhash').mockResolvedValue({
+      blockhash: validBlockhash,
+      lastValidBlockHeight: 100,
+    })
+    jest.spyOn(Connection.prototype, 'getAccountInfo').mockResolvedValue(null)
+
     mockConfig = {
       env: 'testnet',
       user: {
         wallets: {
-          [WarpChainName.Solana]: '5KJvsngHeMoo424rH3Y1bVhjKM2f7jNsN1Tsp9i6F9XHj8qJ7vK',
+          [WarpChainName.Solana]: testWalletAddress,
         },
       },
     } as WarpClientConfig
@@ -71,13 +83,9 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      try {
-        const tx = await executor.createTransferTransaction(executable)
-        expect(tx).toBeDefined()
-        expect((tx as any).instructions?.length ?? (tx as any).message?.instructions?.length ?? 0).toBeGreaterThan(0)
-      } catch (error) {
-        // Expected to fail in test environment without real RPC
-      }
+      const tx = await executor.createTransferTransaction(executable)
+      expect(tx).toBeDefined()
+      expect(tx.message).toBeDefined()
     })
 
     it('should throw error for invalid destination address', async () => {
@@ -111,12 +119,9 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      try {
-        const tx = await executor.createTransferTransaction(executable)
-        expect(tx).toBeDefined()
-      } catch (error) {
-        // Expected to fail in test environment
-      }
+      const tx = await executor.createTransferTransaction(executable)
+      expect(tx).toBeDefined()
+      expect(tx.message).toBeDefined()
     })
   })
 
@@ -143,12 +148,9 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      try {
-        const tx = await executor.createContractCallTransaction(executable)
-        expect(tx).toBeDefined()
-      } catch (error) {
-        // Expected to fail in test environment
-      }
+      const tx = await executor.createContractCallTransaction(executable)
+      expect(tx).toBeDefined()
+      expect(tx.message).toBeDefined()
     })
 
     it('should throw error when function name is missing', async () => {
@@ -179,12 +181,14 @@ describe('WarpSolanaExecutor', () => {
   })
 
   describe('executeQuery', () => {
-    it('should execute a query for account info', async () => {
+    it('should execute a getBalance query', async () => {
+      jest.spyOn(Connection.prototype, 'getBalance').mockResolvedValue(1000000000)
+
       const queryWarp = {
         actions: [
           {
             type: 'query',
-            func: 'getAccount',
+            func: 'getBalance',
           },
         ],
       }
@@ -201,13 +205,9 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      try {
-        const result = await executor.executeQuery(executable)
-        expect(result).toBeDefined()
-        expect(result.status).toBeDefined()
-      } catch (error) {
-        // Expected to fail in test environment
-      }
+      const result = await executor.executeQuery(executable)
+      expect(result).toBeDefined()
+      expect(result.status).toBe('success')
     })
 
     it('should throw error for invalid query action type', async () => {
@@ -250,12 +250,9 @@ describe('WarpSolanaExecutor', () => {
         resolvedInputs: [],
       }
 
-      try {
-        const tx = await executor.createTransaction(executable)
-        expect(tx).toBeDefined()
-      } catch (error) {
-        // Expected to fail in test environment without real RPC
-      }
+      const tx = await executor.createTransaction(executable)
+      expect(tx).toBeDefined()
+      expect(tx.message).toBeDefined()
     })
 
     it('should throw error for unsupported action type', async () => {

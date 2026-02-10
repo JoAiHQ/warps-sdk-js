@@ -1,0 +1,39 @@
+{
+  "protocol": "warp:3.0.0",
+  "chain": "solana",
+  "name": "Jupiter: Token Price",
+  "title": "Get Token Price via Jupiter",
+  "description": "Get the current USD price of a Solana token using the Jupiter Price API.",
+  "actions": [
+    {
+      "type": "collect",
+      "label": "Get Price",
+      "destination": {
+        "url": "https://lite-api.jup.ag/price/v3?ids={{TOKEN_MINT}}",
+        "method": "GET"
+      },
+      "inputs": [
+        {
+          "name": "Token Mint",
+          "as": "TOKEN_MINT",
+          "description": "The mint address of the token.",
+          "type": "string",
+          "source": "field",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "output": {
+    "TOKEN_DATA": "transform:() => { const data = results.out; const keys = Object.keys(data); return keys.length > 0 ? data[keys[0]] : null; }",
+    "USD_PRICE": "transform:() => results.TOKEN_DATA?.usdPrice ?? null",
+    "DECIMALS": "transform:() => results.TOKEN_DATA?.decimals ?? null",
+    "PRICE_CHANGE_24H": "transform:() => results.TOKEN_DATA?.priceChange24h ?? null",
+    "LIQUIDITY": "transform:() => results.TOKEN_DATA?.liquidity ?? null",
+    "PRICE_FORMATTED": "transform:() => { const p = results.USD_PRICE; return p != null ? '$' + Number(p).toFixed(2) : 'N/A'; }"
+  },
+  "messages": {
+    "success": "Price: {{PRICE_FORMATTED}} (24h: {{PRICE_CHANGE_24H}}%)"
+  },
+  "defaultChain": "solana"
+}
