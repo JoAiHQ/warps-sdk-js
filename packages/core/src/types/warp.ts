@@ -32,6 +32,8 @@ export type WarpResulutionPath = string
 
 export type WarpMessageName = string
 
+export type WarpSchedule = 'minutely' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+
 export type Warp = {
   protocol: string
   chain?: WarpChainName
@@ -48,6 +50,7 @@ export type Warp = {
   ui?: string
   alerts?: WarpAlerts
   related?: string[]
+  schedule?: WarpSchedule
   meta?: WarpMeta
 }
 
