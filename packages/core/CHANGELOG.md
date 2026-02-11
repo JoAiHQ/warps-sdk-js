@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.2.0
+
+### Minor Changes
+
+- c55b591: Add `WarpSchedule` type and optional `schedule` field to `Warp` for defining recurring task schedules (minutely, hourly, daily, weekly, monthly, yearly)
+
 ## 3.1.1
 
 ### Patch Changes
