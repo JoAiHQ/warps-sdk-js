@@ -1,5 +1,13 @@
 # @joai/warps-adapter-multiversx
 
+## 1.1.7
+
+### Patch Changes
+
+- fa811cf: Add `endpointsToWarps` method to ABI builder for converting ABI endpoints into Warp objects for contract interaction previews
+- Updated dependencies [fa811cf]
+  - @joai/warps@3.2.2
+
 ## 1.1.6
 
 ### Patch Changes
