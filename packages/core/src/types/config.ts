@@ -152,6 +152,7 @@ export interface AdapterWarpAbiBuilder {
   createFromRaw(encoded: string): Promise<any>
   createFromTransaction(tx: WarpAdapterGenericTransaction): Promise<any>
   createFromTransactionHash(hash: string, cache?: WarpCacheConfig): Promise<any | null>
+  endpointsToWarps?(abi: any, contractAddress: string, rawAbiJson?: object): Warp[]
 }
 
 export interface AdapterWarpBrandBuilder {

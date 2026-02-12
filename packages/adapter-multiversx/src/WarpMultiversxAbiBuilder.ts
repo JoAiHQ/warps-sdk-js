@@ -1,11 +1,14 @@
-import { AbiRegistry, Address, TransactionOnNetwork, TransactionsFactoryConfig, TransferTransactionsFactory } from '@multiversx/sdk-core'
+import { AbiRegistry, Address, OptionalType, OptionType, TransactionOnNetwork, TransactionsFactoryConfig, TransferTransactionsFactory } from '@multiversx/sdk-core'
 import {
   AdapterWarpAbiBuilder,
   createWarpIdentifier,
   getLatestProtocolIdentifier,
   getWarpWalletAddressFromConfig,
+  Warp,
   WarpAbi,
   WarpAbiContents,
+  WarpActionInput,
+  WarpActionInputPosition,
   WarpAdapterGenericTransaction,
   WarpCache,
   WarpCacheConfig,
@@ -19,6 +22,7 @@ import {
 } from '@joai/warps'
 import { getMultiversxEntrypoint } from './helpers/general'
 import { WarpMultiversxContractLoader } from './WarpMultiversxContractLoader'
+import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
 
 export class WarpMultiversxAbiBuilder implements AdapterWarpAbiBuilder {
   private readonly contractLoader: WarpMultiversxContractLoader
@@ -128,5 +132,35 @@ export class WarpMultiversxAbiBuilder implements AdapterWarpAbiBuilder {
       const abiContents = await abiRes.json()
       return AbiRegistry.create(abiContents)
     }
+  }
+
+  endpointsToWarps(abi: AbiRegistry, contractAddress: string, rawAbiJson?: object): Warp[] {
+    const serializer = new WarpMultiversxSerializer()
+    const abiBase64 = rawAbiJson ? btoa(JSON.stringify(rawAbiJson)) : undefined
+
+    return abi.getEndpoints().map((endpoint: any) => {
+      const isReadonly = endpoint.modifiers.isReadonly()
+
+      const inputs: WarpActionInput[] = endpoint.input.map((input: any, index: number) => ({
+        name: input.name,
+        type: serializer.typeToString(input.type as any),
+        position: `arg:${index + 1}` as WarpActionInputPosition,
+        source: 'field' as const,
+        required: !input.type.hasClassOrSuperclass(OptionalType.ClassName) && !input.type.hasClassOrSuperclass(OptionType.ClassName),
+      }))
+
+      const action = isReadonly
+        ? { type: 'query' as const, label: endpoint.name, address: contractAddress, func: endpoint.name, args: [] as string[], abi: abiBase64, inputs }
+        : { type: 'contract' as const, label: endpoint.name, address: contractAddress, func: endpoint.name, args: [] as string[], gasLimit: 10_000_000, abi: abiBase64, inputs }
+
+      return {
+        protocol: getLatestProtocolIdentifier('warp'),
+        name: endpoint.name,
+        title: endpoint.name,
+        description: null,
+        chain: this.chain.name,
+        actions: [action],
+      } as Warp
+    })
   }
 }
