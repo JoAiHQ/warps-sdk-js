@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.2.1
+
+### Patch Changes
+
+- Add `endpointsToWarps` method to ABI builder for converting ABI endpoints into Warp objects for contract interaction previews
+
 ## 3.2.0
 
 ### Minor Changes
