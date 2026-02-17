@@ -23,7 +23,7 @@ async function getVM2(): Promise<typeof import('vm2')> {
 export const runInVm = async (code: string, results: any): Promise<any> => {
   try {
     const { VM } = await getVM2()
-    const vm = new VM({ timeout: 2000, sandbox: { results }, eval: false, wasm: false })
+    const vm = new VM({ timeout: 2000, sandbox: { results, ...results }, eval: false, wasm: false })
 
     // Handle arrow function syntax: () => { return ... }
     if (code.trim().startsWith('(') && code.includes('=>')) {

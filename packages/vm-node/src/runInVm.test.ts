@@ -53,6 +53,46 @@ describe('runInVm', () => {
     expect(result2).toBe('low')
   })
 
+  it('should access context keys as top-level variables', async () => {
+    const code = '() => out.balance'
+    const context = { out: { balance: '1000000000000000000' } }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe('1000000000000000000')
+  })
+
+  it('should access out with optional chaining', async () => {
+    const code = "() => (out?.balance || '0')"
+    const context = { out: { balance: '500' } }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe('500')
+  })
+
+  it('should access out alongside previous outputs', async () => {
+    const code = '() => out.value + PREVIOUS'
+    const context = { out: { value: 10 }, PREVIOUS: 5 }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe(15)
+  })
+
+  it('should still work with explicit parameter access', async () => {
+    const code = '(ctx) => ctx.out.value'
+    const context = { out: { value: 42 } }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe(42)
+  })
+
+  it('should access context keys in direct expressions', async () => {
+    const code = 'out.value * 2'
+    const context = { out: { value: 7 } }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe(14)
+  })
+
   it('should throw error for invalid code', async () => {
     const code = '(results) => invalidFunction()'
     const results = { value: 5 }

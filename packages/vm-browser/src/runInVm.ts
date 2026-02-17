@@ -10,28 +10,29 @@ export const runInVm = async (code: string, results: any): Promise<any> => {
             self.onmessage = function(e) {
               try {
                 const results = e.data;
-                let output;
 
-                // Create a safe function from the code without using eval
+                // Destructure context keys into scope so they're accessible as top-level variables (e.g. 'out')
+                const contextKeys = Object.keys(results || {});
+                const contextArgs = contextKeys.join(', ');
+                const contextValues = contextKeys.map(function(k) { return results[k]; });
+
+                let output;
                 let transformFunction;
 
                 // Handle arrow function syntax: () => { return ... }
                 if (${JSON.stringify(code.trim())}.startsWith('(') && ${JSON.stringify(code)}.includes('=>')) {
-                  // For arrow functions, we need to create a function that returns the result
-                  transformFunction = new Function('results', \`return (\${${JSON.stringify(code)}})(results);\`);
+                  transformFunction = new Function('results', contextArgs, \`return (\${${JSON.stringify(code)}})(results);\`);
                 }
                 // Handle regular function syntax: function() { return ... }
                 else if (${JSON.stringify(code.trim())}.startsWith('function')) {
-                  // For regular functions, we need to create a function that returns the result
-                  transformFunction = new Function('results', \`return (\${${JSON.stringify(code)}})(results);\`);
+                  transformFunction = new Function('results', contextArgs, \`return (\${${JSON.stringify(code)}})(results);\`);
                 }
                 // Handle direct expression: results.value * 2
                 else {
-                  // For direct expressions, create a function that returns the expression result
-                  transformFunction = new Function('results', \`return \${${JSON.stringify(code)}};\`);
+                  transformFunction = new Function('results', contextArgs, \`return \${${JSON.stringify(code)}};\`);
                 }
 
-                output = transformFunction(results);
+                output = transformFunction.apply(null, [results].concat(contextValues));
                 self.postMessage({ result: output });
               } catch (error) {
                 self.postMessage({ error: error.toString() });
