@@ -1,6 +1,6 @@
 {
   "name": "@warps/playground",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Playground for testing Warps SDK",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "@joai/warps-adapter-multiversx": "1.1.7",
     "@joai/warps-adapter-solana": "1.0.0",
     "@joai/warps-adapter-sui": "1.0.0",
-    "@joai/warps-vm-node": "1.0.0",
+    "@joai/warps-vm-node": "1.0.1",
     "@joai/warps-wallet-coinbase": "1.0.0",
     "@x402/core": "^2.1.0",
     "@x402/evm": "^2.1.0",

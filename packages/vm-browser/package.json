@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-vm-browser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "types": "dist/runInVm.d.ts",
   "files": [

@@ -1,5 +1,11 @@
 # @joai/warps-vm-node
 
+## 1.0.1
+
+### Patch Changes
+
+- 0f23260: Spread transform context keys into VM sandbox scope so variables like `out` are accessible as top-level variables in transform expressions (e.g. `() => out?.balance`)
+
 ## 1.0.0
 
 ### Major Changes
