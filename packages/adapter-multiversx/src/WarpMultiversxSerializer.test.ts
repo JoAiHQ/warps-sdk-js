@@ -32,6 +32,9 @@ import {
   U64Type,
   U64Value,
   U8Value,
+  EnumType,
+  EnumValue,
+  EnumVariantDefinition,
   VariadicType,
   VariadicValue,
 } from '@multiversx/sdk-core/out'
@@ -569,6 +572,64 @@ describe('WarpMultiversxSerializer', () => {
     it('converts OptionalType to optional', () => {
       const result = serializer.typeToString(new OptionalType(new StringType()))
       expect(result).toBe('optional:string')
+    })
+
+    it('converts EnumType to enum(Name)', () => {
+      const enumType = new EnumType('Status', [
+        new EnumVariantDefinition('Active', 0, []),
+        new EnumVariantDefinition('Paused', 1, []),
+        new EnumVariantDefinition('Stopped', 2, []),
+      ])
+      const result = serializer.typeToString(enumType)
+      expect(result).toBe('enum(Status)')
+    })
+  })
+
+  describe('enum handling', () => {
+    it('converts enum discriminant string to EnumValue', () => {
+      const result = serializer.stringToTyped('enum(Status):1')
+      expect(result).toBeInstanceOf(EnumValue)
+      expect((result as EnumValue).discriminant).toBe(1)
+    })
+
+    it('converts enum discriminant 0 correctly', () => {
+      const result = serializer.stringToTyped('enum(Status):0')
+      expect(result).toBeInstanceOf(EnumValue)
+      expect((result as EnumValue).discriminant).toBe(0)
+    })
+
+    it('creates EnumType from nativeToType', () => {
+      const result = (serializer as any).nativeToType('enum(Status)')
+      expect(result).toBeInstanceOf(EnumType)
+      expect(result.getName()).toBe('Status')
+    })
+
+    it('converts EnumValue to string via typedToString', () => {
+      const enumType = new EnumType('Status', [
+        new EnumVariantDefinition('Active', 0, []),
+        new EnumVariantDefinition('Paused', 1, []),
+      ])
+      const value = EnumValue.fromDiscriminant(enumType, 1)
+      const result = serializer.typedToString(value)
+      expect(result).toBe('enum(Status):1')
+    })
+
+    it('round-trips enum through typedToString and stringToTyped', () => {
+      const enumType = new EnumType('Status', [
+        new EnumVariantDefinition('Active', 0, []),
+        new EnumVariantDefinition('Paused', 1, []),
+        new EnumVariantDefinition('Stopped', 2, []),
+      ])
+      const original = EnumValue.fromDiscriminant(enumType, 2)
+      const asString = serializer.typedToString(original)
+      expect(asString).toBe('enum(Status):2')
+      const restored = serializer.stringToTyped(asString)
+      expect(restored).toBeInstanceOf(EnumValue)
+      expect((restored as EnumValue).discriminant).toBe(2)
+    })
+
+    it('throws on invalid enum discriminant', () => {
+      expect(() => serializer.stringToTyped('enum(Status):notanumber')).toThrow('Invalid enum discriminant')
     })
   })
 

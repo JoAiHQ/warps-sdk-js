@@ -13,6 +13,9 @@ import {
   CodeMetadataValue,
   CompositeType,
   CompositeValue,
+  EnumType,
+  EnumValue,
+  EnumVariantDefinition,
   Field,
   FieldDefinition,
   List,
@@ -180,6 +183,11 @@ export class WarpMultiversxSerializer implements AdapterWarpSerializer {
       })
       return `${WarpInputTypes.Struct}(${structName})${WarpConstants.ArgParamsSeparator}${fieldStrings.join(WarpConstants.ArgListSeparator)}`
     }
+    if (type.hasExactClass(EnumType.ClassName) || value.hasClassOrSuperclass(EnumValue.ClassName)) {
+      const enumValue = value as EnumValue
+      const enumType = enumValue.getType() as EnumType
+      return `enum(${enumType.getName()})${WarpConstants.ArgParamsSeparator}${enumValue.discriminant}`
+    }
     if (type.hasExactClass(TokenIdentifierType.ClassName) || value.hasClassOrSuperclass(TokenIdentifierValue.ClassName))
       return WarpMultiversxInputTypes.Token + WarpConstants.ArgParamsSeparator + (value as TokenIdentifierValue).valueOf()
     if (type.hasExactClass(CodeMetadataType.ClassName) || value.hasClassOrSuperclass(CodeMetadataValue.ClassName))
@@ -238,6 +246,11 @@ export class WarpMultiversxSerializer implements AdapterWarpSerializer {
         new FieldDefinition('amount', '', new BigUIntType()),
       ])
 
+    if (type.startsWith('enum')) {
+      const enumNameMatch = type.match(/\(([^)]+)\)/)
+      if (!enumNameMatch) throw new Error('Enum type must include a name in the format enum(Name)')
+      return new EnumType(enumNameMatch[1], [])
+    }
     if (type === WarpMultiversxInputTypes.Token) return new TokenIdentifierType()
     if (type === WarpMultiversxInputTypes.CodeMeta) return new CodeMetadataType()
 
@@ -355,6 +368,15 @@ export class WarpMultiversxSerializer implements AdapterWarpSerializer {
     if (type === WarpMultiversxInputTypes.Token) return val ? new TokenIdentifierValue(val as string) : new NothingValue()
     if (type === WarpMultiversxInputTypes.CodeMeta)
       return new CodeMetadataValue(CodeMetadata.newFromBytes(Uint8Array.from(Buffer.from(val as string, 'hex'))))
+    if (type.startsWith('enum')) {
+      const enumNameMatch = type.match(/\(([^)]+)\)/)
+      const enumName = enumNameMatch ? enumNameMatch[1] : 'CustomEnum'
+      const discriminant = Number(val)
+      if (isNaN(discriminant)) throw new Error(`WarpArgSerializer (stringToTyped): Invalid enum discriminant: ${val}`)
+      const variant = new EnumVariantDefinition(val, discriminant, [])
+      const enumType = new EnumType(enumName, [variant])
+      return new EnumValue(enumType, variant, [])
+    }
 
     throw new Error(`WarpArgSerializer (stringToTyped): Unsupported input type: ${type}`)
   }
@@ -407,6 +429,7 @@ export class WarpMultiversxSerializer implements AdapterWarpSerializer {
     if (type.hasExactClass(CodeMetadataType.ClassName)) return WarpMultiversxInputTypes.CodeMeta
     if (type.hasExactClass(StructType.ClassName) && type.getClassName() === 'EsdtTokenPayment') return WarpInputTypes.Asset
     if (type.hasExactClass(StructType.ClassName)) return `${WarpInputTypes.Struct}(${type.getName()})`
+    if (type.hasExactClass(EnumType.ClassName)) return `enum(${type.getName()})`
 
     throw new Error(`WarpArgSerializer (typeToString): Unsupported input type: ${type.getClassName()}`)
   }

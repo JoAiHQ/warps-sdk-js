@@ -1,4 +1,4 @@
-import { AbiRegistry, Address, OptionalType, OptionType, TransactionOnNetwork, TransactionsFactoryConfig, TransferTransactionsFactory } from '@multiversx/sdk-core'
+import { AbiRegistry, Address, EnumType, OptionalType, OptionType, TransactionOnNetwork, TransactionsFactoryConfig, TransferTransactionsFactory } from '@multiversx/sdk-core'
 import {
   AdapterWarpAbiBuilder,
   createWarpIdentifier,
@@ -141,13 +141,22 @@ export class WarpMultiversxAbiBuilder implements AdapterWarpAbiBuilder {
     return abi.getEndpoints().map((endpoint: any) => {
       const isReadonly = endpoint.modifiers.isReadonly()
 
-      const inputs: WarpActionInput[] = endpoint.input.map((input: any, index: number) => ({
-        name: input.name,
-        type: serializer.typeToString(input.type as any),
-        position: `arg:${index + 1}` as WarpActionInputPosition,
-        source: 'field' as const,
-        required: !input.type.hasClassOrSuperclass(OptionalType.ClassName) && !input.type.hasClassOrSuperclass(OptionType.ClassName),
-      }))
+      const inputs: WarpActionInput[] = endpoint.input.map((input: any, index: number) => {
+        const inputDef: WarpActionInput = {
+          name: input.name,
+          type: serializer.typeToString(input.type as any),
+          position: `arg:${index + 1}` as WarpActionInputPosition,
+          source: 'field' as const,
+          required: !input.type.hasClassOrSuperclass(OptionalType.ClassName) && !input.type.hasClassOrSuperclass(OptionType.ClassName),
+        }
+
+        if (input.type.hasExactClass(EnumType.ClassName)) {
+          const enumType = input.type as EnumType
+          inputDef.options = Object.fromEntries(enumType.variants.map((v: any) => [String(v.discriminant), v.name]))
+        }
+
+        return inputDef
+      })
 
       const action = isReadonly
         ? { type: 'query' as const, label: endpoint.name, address: contractAddress, func: endpoint.name, args: [] as string[], abi: abiBase64, inputs }
