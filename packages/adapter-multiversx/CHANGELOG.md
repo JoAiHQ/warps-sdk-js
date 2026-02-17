@@ -1,5 +1,14 @@
 # @joai/warps-adapter-multiversx
 
+## 1.2.0
+
+### Minor Changes
+
+- 595336b: Add EnumType support to MultiversX serializer and ABI builder
+  - Handle EnumType in typeToString, stringToTyped, typedToString, and nativeToType
+  - Populate enum variant options in endpointsToWarps for UI dropdowns and MCP tool validation
+  - Use discriminant values as option keys with variant names as labels
+
 ## 1.1.7
 
 ### Patch Changes
