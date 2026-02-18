@@ -1,4 +1,4 @@
-import { findWarpAdapterForChain, getWarpInfoFromIdentifier } from './helpers'
+import { findWarpAdapterForChain, getNextInfo, getWarpInfoFromIdentifier, getWarpPrimaryAction } from './helpers'
 import { resolveWarpText } from './helpers/i18n'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
@@ -14,6 +14,7 @@ import {
     ChainAdapterFactory,
     Warp,
     WarpActionExecutionResult,
+    WarpActionIndex,
     WarpAdapterGenericRemoteTransaction,
     WarpAdapterGenericTransaction,
     WarpCacheConfig,
@@ -130,6 +131,19 @@ export class WarpClient {
 
   getOutput(chain: WarpChainName): AdapterWarpOutput {
     return findWarpAdapterForChain(chain, this.chains).output
+  }
+
+  async getActionExecution(
+    chain: WarpChainName,
+    warp: Warp,
+    tx: WarpAdapterGenericRemoteTransaction,
+    actionIndex?: WarpActionIndex
+  ): Promise<WarpActionExecutionResult> {
+    const index = actionIndex ?? getWarpPrimaryAction(warp).index + 1
+    const adapter = findWarpAdapterForChain(chain, this.chains)
+    const result = await adapter.output.getActionExecution(warp, index, tx)
+    result.next = getNextInfo(this.config, this.chains, warp, index, result.output)
+    return result
   }
 
   async getRegistry(chain: WarpChainName): Promise<AdapterWarpRegistry> {
