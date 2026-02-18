@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.2.6
+
+### Patch Changes
+
+- Fix evaluateOutput passing WarpChainAction instead of raw TransactionOnNetwork to getActionExecution, which caused status to always be 'error' and broke chain continuation
+
 ## 3.2.5
 
 ### Patch Changes
