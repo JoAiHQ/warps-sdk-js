@@ -4,7 +4,6 @@ import {
   applyOutputToMessages,
   evaluateOutputCommon,
   extractResolvedInputValues,
-  getNextInfo,
   getWarpActionByIndex,
   getWarpWalletAddressFromConfig,
   parseOutputOutIndex,
@@ -55,7 +54,6 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     const inputs: ResolvedInput[] = this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex)) ?? []
 
     const output = await this.extractContractOutput(warp, actionIndex, tx, inputs)
-    const next = getNextInfo(this.config, [], warp, actionIndex, output.output)
     const messages = applyOutputToMessages(warp, output.output, this.config)
 
     const resolvedInputs = extractResolvedInputValues(inputs)
@@ -66,7 +64,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       user: getWarpWalletAddressFromConfig(this.config, this.chain.name),
       txHash: tx.hash,
       tx,
-      next,
+      next: null,
       values: output.values,
       output: output.output,
       messages,

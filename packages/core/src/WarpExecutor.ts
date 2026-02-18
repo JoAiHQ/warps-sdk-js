@@ -258,6 +258,7 @@ export class WarpExecutor {
           }
 
           const result = await adapter.output.getActionExecution(warp, currentActionIndex, chainAction)
+          result.next = getNextInfo(this.config, this.adapters, warp, currentActionIndex, result.output)
 
           if (result.status === 'success') {
             await this.callHandler(() =>

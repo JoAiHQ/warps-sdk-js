@@ -1497,4 +1497,47 @@ describe('WarpExecutor', () => {
       expect(errorMessage.length).toBeGreaterThan(0)
     })
   })
+
+  describe('evaluateOutput', () => {
+    it('should compute next from output even when adapter returns next as null', async () => {
+      const onExecuted = jest.fn()
+      const warpWithNext = {
+        ...createMockWarp(),
+        next: 'multiversx:my-next-warp',
+        meta: {
+          chain: WarpChainName.Multiversx,
+          identifier: 'multiversx:test-warp',
+          hash: 'abc123',
+          creator: 'erd1test',
+          createdAt: '2024-01-01T00:00:00Z',
+          query: null,
+        },
+      }
+
+      const mockAction = { id: 'tx1', status: { isSuccessful: () => true }, hash: 'tx1' }
+      const mockAdapter = createMockAdapter()
+      mockAdapter.output.getActionExecution = jest.fn().mockResolvedValue({
+        status: 'success',
+        warp: warpWithNext,
+        action: 1,
+        user: 'erd1test',
+        txHash: 'tx1',
+        tx: mockAction,
+        next: null,
+        values: { string: [], native: [], mapped: {} },
+        output: {},
+        messages: {},
+        destination: null,
+        resolvedInputs: [],
+      })
+
+      const testExecutor = new WarpExecutor(config, [mockAdapter], { onExecuted })
+      await testExecutor.evaluateOutput(warpWithNext, [mockAction as any])
+
+      expect(onExecuted).toHaveBeenCalled()
+      const result = onExecuted.mock.calls[0][0]
+      expect(result.next).not.toBeNull()
+      expect(result.next.length).toBeGreaterThan(0)
+    })
+  })
 })
