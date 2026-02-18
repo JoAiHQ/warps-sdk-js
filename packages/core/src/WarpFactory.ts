@@ -104,7 +104,8 @@ export class WarpFactory {
     const transfersMerged = [...(transfersInAction || []), ...(transferInputs || [])]
     const transfers = transfersMerged.map((t) => {
       const interpolated = interpolator.applyInputs(t, modifiedInputs, this.serializer, primaryResolvedInputs)
-      return this.serializer.stringToNative(interpolated)[1]
+      const typed = interpolated.startsWith(`asset${WarpConstants.ArgParamsSeparator}`) ? interpolated : `asset${WarpConstants.ArgParamsSeparator}${interpolated}`
+      return this.serializer.stringToNative(typed)[1]
     }) as WarpChainAssetValue[]
 
     const dataInput = modifiedInputs.find((i) => i.input.position === 'data')?.value

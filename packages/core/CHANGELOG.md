@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.2.5
+
+### Patch Changes
+
+- Fix transfers without asset: prefix in warp definitions. Transfers are always assets, so the SDK now adds the asset: prefix when missing.
+
 ## 3.2.4
 
 ### Patch Changes
