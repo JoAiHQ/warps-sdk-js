@@ -1,5 +1,11 @@
 # @vleap/warp-sdk-core
 
+## 3.2.4
+
+### Patch Changes
+
+- 4b5782c: Fix next warp resolution in evaluateOutput. Adapter's getActionExecution no longer calls getNextInfo (it lacks adapters), executor now computes next with the full adapter context. Add WarpClient.getActionExecution for high-level action execution with resolved next.
+
 ## 3.2.3
 
 ### Patch Changes
