@@ -1,0 +1,41 @@
+{
+  "name": "@joai/warps-openapi",
+  "version": "1.0.0",
+  "description": "OpenAPI to Warps converter",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "jest --config jest.config.mjs",
+    "lint": "tsc --noEmit",
+    "preversion": "npm run lint && npm run build"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "jest-fetch-mock": "^3.0.3",
+    "ts-jest": "^29.4.6",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@joai/warps": "^3.2.0"
+  }
+}
