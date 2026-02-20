@@ -1,5 +1,12 @@
 # @joai/warps-mcp
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @joai/warps@3.3.0
+
 ## 3.0.0
 
 ### Patch Changes

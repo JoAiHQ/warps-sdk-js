@@ -1,5 +1,12 @@
 # @joai/warps-react
 
+## 1.0.12
+
+### Patch Changes
+
+- Updated dependencies
+  - @joai/warps@3.3.0
+
 ## 1.0.11
 
 ### Patch Changes
