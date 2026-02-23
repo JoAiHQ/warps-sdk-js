@@ -1,5 +1,6 @@
-import { InterpolationBag, WarpIdentifierType } from './types'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
+import { InterpolationBag, WarpIdentifierType } from './types'
+import { WarpWalletProvider } from './types/config'
 
 export enum WarpChainName {
   Multiversx = 'multiversx',
@@ -22,6 +23,8 @@ export const EvmWalletChainNames: WarpChainName[] = [
   WarpChainName.Polygon,
   WarpChainName.Somnia,
 ]
+
+export const CLOUD_WALLET_PROVIDERS: WarpWalletProvider[] = ['coinbase', 'privy', 'gaupa']
 
 export const WarpConstants = {
   HttpProtocolPrefix: 'https://',
