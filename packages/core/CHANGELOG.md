@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 3.3.2
+
+### Patch Changes
+
+- eb9a009: fix: preserve falsy values (0, false, empty string) in placeholder interpolation
+
 ## 3.3.1
 
 ### Patch Changes

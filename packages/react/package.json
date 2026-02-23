@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-react",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "type": "module",
   "types": "./src/index.tsx",
   "exports": {
@@ -17,7 +17,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@joai/warps": "3.3.1"
+    "@joai/warps": "3.3.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
