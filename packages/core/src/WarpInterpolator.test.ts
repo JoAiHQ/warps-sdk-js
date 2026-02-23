@@ -422,6 +422,84 @@ describe('WarpInterpolator', () => {
       expect((result.actions[0] as WarpTransferAction).value).toBe('{{TOKEN_ADDRESS}}')
     })
 
+    it('preserves numeric zero query var from meta.queries', async () => {
+      const warp = {
+        ...createMockWarp(),
+        vars: {
+          AMOUNT: 'query:amount',
+        },
+        actions: [
+          {
+            type: 'transfer' as const,
+            label: 'Transfer',
+            address: 'erd1abc',
+            value: '{{AMOUNT}}',
+            inputs: [],
+          } as WarpTransferAction,
+        ],
+      }
+
+      const meta = {
+        queries: {
+          amount: 0,
+        },
+      }
+
+      const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+      const result = await interpolator.apply(warp, meta)
+      expect((result.actions[0] as WarpTransferAction).value).toBe('0')
+    })
+
+    it('preserves string zero query var from meta.queries', async () => {
+      const warp = {
+        ...createMockWarp(),
+        vars: {
+          AMOUNT: 'query:amount',
+        },
+        actions: [
+          {
+            type: 'transfer' as const,
+            label: 'Transfer',
+            address: 'erd1abc',
+            value: '{{AMOUNT}}',
+            inputs: [],
+          } as WarpTransferAction,
+        ],
+      }
+
+      const meta = {
+        queries: {
+          amount: '0',
+        },
+      }
+
+      const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+      const result = await interpolator.apply(warp, meta)
+      expect((result.actions[0] as WarpTransferAction).value).toBe('0')
+    })
+
+    it('preserves numeric zero env var', async () => {
+      const warp = {
+        ...createMockWarp(),
+        vars: {
+          COUNT: 'env:ITEM_COUNT',
+        },
+        actions: [
+          {
+            type: 'transfer' as const,
+            label: 'Transfer',
+            address: 'erd1abc',
+            value: '{{COUNT}}',
+            inputs: [],
+          } as WarpTransferAction,
+        ],
+      }
+
+      const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+      const result = await interpolator.apply(warp, { envs: { ITEM_COUNT: 0 } })
+      expect((result.actions[0] as WarpTransferAction).value).toBe('0')
+    })
+
     it('interpolates query vars with descriptions from meta.queries', async () => {
       const warp = {
         ...createMockWarp(),

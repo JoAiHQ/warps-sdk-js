@@ -1,6 +1,6 @@
 import { WarpChainName } from '../constants'
 import { Warp, WarpAction, WarpActionType, WarpMeta } from '../types'
-import { evaluateWhenCondition, getWarpPrimaryAction, isWarpActionAutoExecute } from './general'
+import { evaluateWhenCondition, getWarpPrimaryAction, isWarpActionAutoExecute, replacePlaceholders } from './general'
 
 describe('getWarpPrimaryAction', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
@@ -326,5 +326,55 @@ describe('evaluateWhenCondition', () => {
   it('should throw error for invalid expressions', () => {
     expect(() => evaluateWhenCondition('invalid syntax !!!')).toThrow()
     expect(() => evaluateWhenCondition('undefinedFunction()')).toThrow()
+  })
+})
+
+describe('replacePlaceholders', () => {
+  it('should replace simple string placeholders', () => {
+    expect(replacePlaceholders('Hello {{name}}', { name: 'World' })).toBe('Hello World')
+  })
+
+  it('should replace multiple placeholders', () => {
+    expect(replacePlaceholders('{{a}} and {{b}}', { a: 'foo', b: 'bar' })).toBe('foo and bar')
+  })
+
+  it('should return empty string for missing keys', () => {
+    expect(replacePlaceholders('{{missing}}', {})).toBe('')
+  })
+
+  it('should return empty string for null values', () => {
+    expect(replacePlaceholders('{{key}}', { key: null })).toBe('')
+  })
+
+  it('should return empty string for undefined values', () => {
+    expect(replacePlaceholders('{{key}}', { key: undefined })).toBe('')
+  })
+
+  it('should preserve numeric zero values', () => {
+    expect(replacePlaceholders('amount={{BALANCE}}', { BALANCE: 0 })).toBe('amount=0')
+  })
+
+  it('should preserve string zero values', () => {
+    expect(replacePlaceholders('amount={{BALANCE}}', { BALANCE: '0' })).toBe('amount=0')
+  })
+
+  it('should preserve empty string values', () => {
+    expect(replacePlaceholders('value={{EMPTY}}', { EMPTY: '' })).toBe('value=')
+  })
+
+  it('should preserve false boolean values', () => {
+    expect(replacePlaceholders('flag={{FLAG}}', { FLAG: false })).toBe('flag=false')
+  })
+
+  it('should handle numeric values', () => {
+    expect(replacePlaceholders('n={{NUM}}', { NUM: 42 })).toBe('n=42')
+  })
+
+  it('should leave text without placeholders unchanged', () => {
+    expect(replacePlaceholders('no placeholders here', { key: 'value' })).toBe('no placeholders here')
+  })
+
+  it('should handle query string style placeholders', () => {
+    expect(replacePlaceholders('id={{ID}}&amount={{AMOUNT}}', { ID: 'abc', AMOUNT: 0 })).toBe('id=abc&amount=0')
   })
 })

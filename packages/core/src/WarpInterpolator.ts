@@ -43,15 +43,15 @@ export class WarpInterpolator {
         const queryVar = value.slice(WarpConstants.Vars.Query.length + 1)
         const [queryName, _queryDescription] = queryVar.split(WarpConstants.ArgCompositeSeparator)
         const queryValueInUrl = this.config.currentUrl ? new URLSearchParams(this.config.currentUrl.split('?')[1]).get(queryName) : null
-        const queryValueInMeta = meta.queries?.[queryName] || null
-        const queryValue = queryValueInMeta || queryValueInUrl
-        if (queryValue) modify(placeholder, queryValue)
+        const queryValueInMeta = meta.queries?.[queryName] ?? null
+        const queryValue = queryValueInMeta ?? queryValueInUrl
+        if (queryValue !== null && queryValue !== undefined) modify(placeholder, queryValue)
       } else if (value.startsWith(WarpConstants.Vars.Env + WarpConstants.ArgParamsSeparator)) {
         const envVar = value.slice(WarpConstants.Vars.Env.length + 1)
         const [envVarName, _envVarDescription] = envVar.split(WarpConstants.ArgCompositeSeparator)
         const combinedEnvs = { ...this.config.vars, ...meta.envs }
         const envVarValue = combinedEnvs?.[envVarName]
-        if (envVarValue) modify(placeholder, envVarValue)
+        if (envVarValue !== undefined && envVarValue !== null) modify(placeholder, envVarValue)
       } else if (value === WarpConstants.Source.UserWallet && wallet) {
         modify(placeholder, wallet)
       } else {
