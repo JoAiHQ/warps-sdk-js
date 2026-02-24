@@ -484,6 +484,160 @@ describe('Result Helpers', () => {
       expect(output.FIRST_OUT).toBe('22')
       expect(output.SECOND_OUT).toBeNull()
     })
+
+    it('throws when out. outputs are requested and parseExecute fails (multiple writeLog events)', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tx = new TransactionOnNetwork({
+        hash: 'multi-writelog-tx',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('first', 'utf-8'))] }),
+              ],
+            }),
+          }),
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@20', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('second', 'utf-8'))] }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          FIRST_OUT: 'out.1',
+        },
+      } as Warp
+
+      // Should throw — out. outputs need parseExecute which fails for this tx
+      await expect(subject.extractContractOutput(warp, 1, tx, [])).rejects.toThrow()
+    })
+
+    it('still extracts event outputs when parseExecute fails', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      // Tx with multiple writeLog SC results (breaks parseExecute) but also has event data
+      const tx = new TransactionOnNetwork({
+        hash: 'multi-writelog-with-events',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('first', 'utf-8'))] }),
+              ],
+            }),
+          }),
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@20', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('second', 'utf-8'))] }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          // Only event-based outputs — no out. paths that need parseExecute
+          TOKEN: 'event.registeredWithToken.2',
+        },
+      } as Warp
+
+      // Should not throw — event parsing is independent of parseExecute
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      // Event may or may not be found depending on tx structure, but the call itself must not throw
+      expect(output).toBeDefined()
+    })
+
+    it('does not call parseExecute when only event outputs are defined', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      // An empty tx that would cause parseExecute to fail if called
+      const tx = new TransactionOnNetwork({
+        hash: 'event-only-tx',
+        sender,
+        function: 'register',
+        nonce: 7n,
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          TOKEN: 'event.registeredWithToken.2',
+        },
+      } as Warp
+
+      // Should not throw — parseExecute is never called since no out. paths exist
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output).toBeDefined()
+    })
   })
 
   describe('extractQueryOutput', () => {

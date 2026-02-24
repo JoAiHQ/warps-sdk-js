@@ -99,7 +99,18 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     const abi = await this.abi.getAbiForAction(action)
     const eventParser = new TransactionEventsParser({ abi })
     const outcomeParser = new SmartContractTransactionsOutcomeParser({ abi })
-    const outcome = outcomeParser.parseExecute({ transactionOnNetwork: tx, function: action.func || undefined })
+
+    // Lazy: only call parseExecute when an `out.` mapping is actually needed.
+    // This avoids crashing on transactions with multiple writeLog events (e.g. DEX swaps)
+    // when the warp only uses event-based output mappings.
+    let outcome: ReturnType<SmartContractTransactionsOutcomeParser['parseExecute']> | null = null
+    let outcomeParsed = false
+    const getOutcome = () => {
+      if (outcomeParsed) return outcome
+      outcomeParsed = true
+      outcome = outcomeParser.parseExecute({ transactionOnNetwork: tx, function: action.func || undefined })
+      return outcome
+    }
     for (const [resultName, resultPath] of Object.entries(warp.output)) {
       if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
       if (resultPath.startsWith('input.')) {
@@ -111,7 +122,7 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
         output[resultName] = null
         continue
       }
-      const [resultType, partOne, partTwo] = resultPath.split('.')
+      const [resultType, partOne, partTwo, partThree] = resultPath.split('.')
       if (resultType === 'event') {
         if (!partOne || isNaN(Number(partTwo))) continue
         const topicPosition = Number(partTwo)
@@ -121,14 +132,21 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
           output[resultName] = null
           continue
         }
-        const outcomeAtPosition = (Object.values(outcome)[topicPosition] || null) as object | null
+        let outcomeAtPosition = (Object.values(outcome)[topicPosition] || null) as any
+        if (outcomeAtPosition && partThree && typeof outcomeAtPosition === 'object') {
+          outcomeAtPosition = outcomeAtPosition[partThree] ?? null
+        }
+        if (outcomeAtPosition && typeof outcomeAtPosition === 'object') {
+          outcomeAtPosition = 'toFixed' in outcomeAtPosition ? outcomeAtPosition.toFixed() : outcomeAtPosition.valueOf()
+        }
         stringValues.push(String(outcomeAtPosition))
         nativeValues.push(outcomeAtPosition)
         output[resultName] = outcomeAtPosition ? outcomeAtPosition.valueOf() : outcomeAtPosition
       } else if (resultType === 'out' || resultType.startsWith('out[')) {
         if (!partOne) continue
+        const parsedOutcome = getOutcome()!
         const outputIndex = Number(partOne)
-        let outputAtPosition = outcome.values[outputIndex - 1] || null
+        let outputAtPosition = parsedOutcome.values[outputIndex - 1] || null
         if (partTwo) {
           outputAtPosition = outputAtPosition[partTwo] || null
         }
