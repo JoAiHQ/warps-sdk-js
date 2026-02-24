@@ -638,6 +638,251 @@ describe('Result Helpers', () => {
       const { output } = await subject.extractContractOutput(warp, 1, tx, [])
       expect(output).toBeDefined()
     })
+
+    it('extracts nested event struct field (event.X.N.field)', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      // SwapDetails struct nested-encoded: amount_in=1000 (0x03E8), amount_out=5000 (0x1388)
+      const swapDetailsEncoded = Buffer.from([
+        0x00, 0x00, 0x00, 0x02, 0x03, 0xE8, // nested BigUint(1000)
+        0x00, 0x00, 0x00, 0x02, 0x13, 0x88, // nested BigUint(5000)
+      ])
+      const tx = new TransactionOnNetwork({
+        hash: 'swap-event-tx',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('ok', 'utf-8'))] }),
+                new TransactionEvent({
+                  identifier: 'testSwapCompleted',
+                  topics: [
+                    Buffer.from('testSwapCompleted') as unknown as Uint8Array,
+                    Buffer.from('WEGLD-abc123') as unknown as Uint8Array,
+                    Buffer.from('SUPER-def456') as unknown as Uint8Array,
+                  ],
+                  additionalData: [new Uint8Array(swapDetailsEncoded)],
+                }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          BOUGHT_AMOUNT: 'event.testSwapCompleted.2.amount_out',
+        },
+      } as Warp
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      // amount_out = 5000, coerced via toFixed() from BigNumber
+      expect(output.BOUGHT_AMOUNT).toBe('5000')
+    })
+
+    it('returns null for non-existent nested event field', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const swapDetailsEncoded = Buffer.from([
+        0x00, 0x00, 0x00, 0x02, 0x03, 0xE8,
+        0x00, 0x00, 0x00, 0x02, 0x13, 0x88,
+      ])
+      const tx = new TransactionOnNetwork({
+        hash: 'swap-event-tx-2',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('ok', 'utf-8'))] }),
+                new TransactionEvent({
+                  identifier: 'testSwapCompleted',
+                  topics: [
+                    Buffer.from('testSwapCompleted') as unknown as Uint8Array,
+                    Buffer.from('WEGLD-abc123') as unknown as Uint8Array,
+                    Buffer.from('SUPER-def456') as unknown as Uint8Array,
+                  ],
+                  additionalData: [new Uint8Array(swapDetailsEncoded)],
+                }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          MISSING: 'event.testSwapCompleted.2.nonexistent_field',
+        },
+      } as Warp
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.MISSING).toBeNull()
+    })
+
+    it('extracts event struct without drill-in (event.X.N)', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const swapDetailsEncoded = Buffer.from([
+        0x00, 0x00, 0x00, 0x02, 0x03, 0xE8,
+        0x00, 0x00, 0x00, 0x02, 0x13, 0x88,
+      ])
+      const tx = new TransactionOnNetwork({
+        hash: 'swap-event-tx-3',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('ok', 'utf-8'))] }),
+                new TransactionEvent({
+                  identifier: 'testSwapCompleted',
+                  topics: [
+                    Buffer.from('testSwapCompleted') as unknown as Uint8Array,
+                    Buffer.from('WEGLD-abc123') as unknown as Uint8Array,
+                    Buffer.from('SUPER-def456') as unknown as Uint8Array,
+                  ],
+                  additionalData: [new Uint8Array(swapDetailsEncoded)],
+                }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          SWAP_RESULT: 'event.testSwapCompleted.2',
+        },
+      } as Warp
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      // Without drill-in, the struct is valueOf()'d — should be an object with amount_in and amount_out
+      expect(output.SWAP_RESULT).toBeDefined()
+      expect(typeof output.SWAP_RESULT).toBe('object')
+    })
+
+    it('extracts indexed event field without drill-in (event.X.N for primitive)', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8',
+        func: 'register',
+        abi: 'https://example.com/test.abi.json',
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const swapDetailsEncoded = Buffer.from([
+        0x00, 0x00, 0x00, 0x02, 0x03, 0xE8,
+        0x00, 0x00, 0x00, 0x02, 0x13, 0x88,
+      ])
+      const tx = new TransactionOnNetwork({
+        hash: 'swap-event-tx-4',
+        sender,
+        function: 'register',
+        nonce: 7n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+            logs: new TransactionLogs({
+              events: [
+                new TransactionEvent({ identifier: 'writeLog', topics: [new Uint8Array(Buffer.from('ok', 'utf-8'))] }),
+                new TransactionEvent({
+                  identifier: 'testSwapCompleted',
+                  topics: [
+                    Buffer.from('testSwapCompleted') as unknown as Uint8Array,
+                    Buffer.from('WEGLD-abc123') as unknown as Uint8Array,
+                    Buffer.from('SUPER-def456') as unknown as Uint8Array,
+                  ],
+                  additionalData: [new Uint8Array(swapDetailsEncoded)],
+                }),
+              ],
+            }),
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          TOKEN_OUT: 'event.testSwapCompleted.1',
+        },
+      } as Warp
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      // Position 1 = token_out (indexed TokenIdentifier) = "SUPER-def456"
+      expect(output.TOKEN_OUT).toBe('SUPER-def456')
+    })
   })
 
   describe('extractQueryOutput', () => {

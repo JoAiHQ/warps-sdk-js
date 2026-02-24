@@ -116,11 +116,43 @@
           "indexed": true
         }
       ]
+    },
+    {
+      "identifier": "testSwapCompleted",
+      "inputs": [
+        {
+          "name": "token_in",
+          "type": "TokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "token_out",
+          "type": "TokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "details",
+          "type": "SwapDetails"
+        }
+      ]
     }
   ],
   "esdtAttributes": [],
   "hasCallback": false,
   "types": {
+    "SwapDetails": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "amount_in",
+          "type": "BigUint"
+        },
+        {
+          "name": "amount_out",
+          "type": "BigUint"
+        }
+      ]
+    },
     "EarnerInfo": {
       "type": "struct",
       "fields": [
