@@ -1,5 +1,5 @@
 import { WarpChainName, WarpConstants } from '../constants'
-import { WarpIdentifierType } from '../types'
+import { WarpIdentifierType, Warp } from '../types'
 
 export const cleanWarpIdentifier = (identifier: string): string => {
   return identifier.startsWith(WarpConstants.IdentifierAliasMarker)
@@ -188,4 +188,15 @@ export const parseWarpQueryStringToObject = (queryString: string | null): Record
 export const removeWarpChainPrefix = (identifier: string, chain?: WarpChainName): string => {
   const info = getWarpInfoFromIdentifier(identifier, chain)
   return (info ? info.identifierBase : cleanWarpIdentifier(identifier)).trim()
+}
+
+export const getWarpIdentifierWithQuery = (warp: Warp): string => {
+  const identifier = warp.meta?.identifier
+  if (!identifier) return ''
+  const query = warp.meta?.query
+  if (query && typeof query === 'object' && Object.keys(query).length > 0) {
+    const params = new URLSearchParams(query as Record<string, string>)
+    return `${identifier}?${params.toString()}`
+  }
+  return identifier
 }
