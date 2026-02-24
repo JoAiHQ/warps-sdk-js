@@ -5,11 +5,13 @@ import {
   extractIdentifierInfoFromUrl,
   extractQueryStringFromIdentifier,
   extractQueryStringFromUrl,
+  getWarpIdentifierWithQuery,
   getWarpInfoFromIdentifier,
   isEqualWarpIdentifier,
   parseWarpQueryStringToObject,
   removeWarpChainPrefix,
 } from './identifier'
+import { Warp } from '../types'
 
 describe('cleanWarpIdentifier', () => {
   it('removes @ prefix from identifier', () => {
@@ -759,6 +761,46 @@ describe('removeWarpChainPrefix', () => {
 
   it('removes @ prefix', () => {
     expect(removeWarpChainPrefix('@mywarp')).toBe('mywarp')
+  })
+})
+
+describe('getWarpIdentifierWithQuery', () => {
+  const createWarpWithMeta = (identifier: string, query: Record<string, any> | null): Warp =>
+    ({ meta: { chain: 'multiversx', identifier, hash: '', creator: '', createdAt: '', query } }) as unknown as Warp
+
+  it('returns identifier without query when query is null', () => {
+    const warp = createWarpWithMeta('mywarp', null)
+    expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp')
+  })
+
+  it('returns identifier without query when query is empty object', () => {
+    const warp = createWarpWithMeta('mywarp', {})
+    expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp')
+  })
+
+  it('returns identifier with query string when query has values', () => {
+    const warp = createWarpWithMeta('mywarp', { amount: '100', token: 'EGLD' })
+    expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp?amount=100&token=EGLD')
+  })
+
+  it('returns identifier with single query parameter', () => {
+    const warp = createWarpWithMeta('mywarp', { provider: 'erd1abc' })
+    expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp?provider=erd1abc')
+  })
+
+  it('returns empty string when meta is undefined', () => {
+    const warp = {} as Warp
+    expect(getWarpIdentifierWithQuery(warp)).toBe('')
+  })
+
+  it('returns empty string when identifier is empty', () => {
+    const warp = createWarpWithMeta('', null)
+    expect(getWarpIdentifierWithQuery(warp)).toBe('')
+  })
+
+  it('handles query values with special characters', () => {
+    const warp = createWarpWithMeta('mywarp', { msg: 'hello world' })
+    expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp?msg=hello+world')
   })
 })
 
