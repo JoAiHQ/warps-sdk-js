@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 3.4.0
+
+### Minor Changes
+
+- f7aabdf: Add `getWarpIdentifierWithQuery` helper that reconstructs a full identifier string (with query parameters) from a Warp's meta fields.
+
 ## 3.3.2
 
 ### Patch Changes
