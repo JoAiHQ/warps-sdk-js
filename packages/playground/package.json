@@ -20,6 +20,8 @@
     "@joai/warps-adapter-sui": "1.0.0",
     "@joai/warps-vm-node": "1.0.1",
     "@joai/warps-wallet-coinbase": "1.0.0",
+    "@joai/warps-wallet-ee": "1.0.0",
+    "@joai/warps-wallet-gaupa": "1.0.1",
     "@x402/core": "^2.1.0",
     "@x402/evm": "^2.1.0",
     "ethers": "^6.16.0"

@@ -87,6 +87,20 @@ describe('WarpSuiWallet', () => {
       await expect(wallet.sendTransaction(null as any)).rejects.toThrow('Invalid transaction object')
       await expect(wallet.sendTransaction('invalid' as any)).rejects.toThrow('Invalid transaction object')
     })
+
+    it('should return digest/transactionHash directly for pre-executed transactions', async () => {
+      await expect(wallet.sendTransaction({ digest: 'already-digest' } as any)).resolves.toBe('already-digest')
+      await expect(wallet.sendTransaction({ transactionHash: 'already-hash' } as any)).resolves.toBe('already-hash')
+    })
+  })
+
+  describe('signTransactions', () => {
+    it('should sign each transaction in batch', async () => {
+      const spy = jest.spyOn(wallet, 'signTransaction').mockResolvedValue({ signature: 'sig' } as any)
+      const signed = await wallet.signTransactions([{ id: 1 } as any, { id: 2 } as any])
+      expect(spy).toHaveBeenCalledTimes(2)
+      expect(signed).toHaveLength(2)
+    })
   })
 
   describe('getPublicKey', () => {

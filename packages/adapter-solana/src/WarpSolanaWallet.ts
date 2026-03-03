@@ -53,6 +53,9 @@ export class WarpSolanaWallet implements AdapterWarpWallet {
 
   async sendTransaction(tx: WarpAdapterGenericTransaction): Promise<string> {
     if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction object')
+    if ((tx as any).transactionHash && typeof (tx as any).transactionHash === 'string') {
+      return (tx as any).transactionHash
+    }
 
     const transaction = this.resolveTransaction(tx)
 

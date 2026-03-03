@@ -79,6 +79,9 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
   }
 
   async sendTransaction(tx: WarpAdapterGenericTransaction): Promise<string> {
+    if ((tx as any)?.transactionHash && typeof (tx as any).transactionHash === 'string') {
+      return (tx as any).transactionHash
+    }
     const castedTx = tx as Transaction
     if (!castedTx || typeof castedTx !== 'object') throw new Error('Invalid transaction object')
     if (!castedTx.signature || castedTx.signature.length === 0) throw new Error('Transaction must be signed before sending')

@@ -94,6 +94,9 @@ export class WarpEvmWallet implements AdapterWarpWallet {
 
   async sendTransaction(tx: WarpAdapterGenericTransaction): Promise<string> {
     if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction object')
+    if ((tx as any).transactionHash && typeof (tx as any).transactionHash === 'string') {
+      return (tx as any).transactionHash
+    }
     if (!tx.signature) throw new Error('Transaction must be signed before sending')
     if (!this.walletProvider) throw new Error('No wallet provider available')
 

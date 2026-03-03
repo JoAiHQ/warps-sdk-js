@@ -24,7 +24,7 @@ export const EvmWalletChainNames: WarpChainName[] = [
   WarpChainName.Somnia,
 ]
 
-export const CLOUD_WALLET_PROVIDERS: WarpWalletProvider[] = ['coinbase', 'privy', 'gaupa']
+export const CLOUD_WALLET_PROVIDERS: WarpWalletProvider[] = ['coinbase', 'privy', 'gaupa', 'ee']
 
 export const WarpConstants = {
   HttpProtocolPrefix: 'https://',

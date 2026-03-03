@@ -63,12 +63,29 @@ export class WarpSuiWallet implements AdapterWarpWallet {
 
   async signTransactions(txs: WarpAdapterGenericTransaction[]): Promise<WarpAdapterGenericTransaction[]> {
     await this.waitUntilInitialized() // Ensure cache is initialized
-    return txs
+    return await Promise.all(txs.map(async (tx) => await this.signTransaction(tx)))
   }
 
   async sendTransaction(tx: WarpAdapterGenericTransaction): Promise<string> {
     await this.waitUntilInitialized() // Ensure cache is initialized
     if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction object')
+
+    if (tx && typeof tx === 'object' && 'digest' in tx && typeof (tx as any).digest === 'string') {
+      return (tx as any).digest
+    }
+
+    if (tx && typeof tx === 'object' && 'transactionHash' in tx && typeof (tx as any).transactionHash === 'string') {
+      return (tx as any).transactionHash
+    }
+
+    if (tx && typeof tx === 'object' && 'bytes' in tx && 'signature' in tx) {
+      const result = await this.client.executeTransactionBlock({
+        transactionBlock: (tx as any).bytes,
+        signature: Array.isArray((tx as any).signature) ? (tx as any).signature : [(tx as any).signature],
+        options: { showEffects: true, showEvents: true },
+      })
+      return result.digest
+    }
 
     if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
       const keypair = (this.walletProvider as any).getKeypairInstance()
@@ -81,20 +98,6 @@ export class WarpSuiWallet implements AdapterWarpWallet {
           options: { showEffects: true, showEvents: true },
         })
         return result.digest
-      }
-
-      // If transaction has bytes and signature, it's already signed - execute it
-      if (tx && typeof tx === 'object' && 'bytes' in tx && 'signature' in tx) {
-        try {
-          const result = await this.client.executeTransactionBlock({
-            transactionBlock: tx.bytes,
-            signature: Array.isArray(tx.signature) ? tx.signature : [tx.signature],
-            options: { showEffects: true, showEvents: true },
-          })
-          return result.digest
-        } catch (error: any) {
-          throw error
-        }
       }
 
       throw new Error(

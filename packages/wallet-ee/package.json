@@ -1,0 +1,40 @@
+{
+  "name": "@joai/warps-wallet-ee",
+  "version": "1.0.0",
+  "description": "Execution Environment wallet provider for Warps SDK",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "jest --config jest.config.mjs",
+    "lint": "tsc --noEmit",
+    "preversion": "npm run lint && npm run build"
+  },
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@joai/warps": "^3.4.0",
+    "jose": "^6.1.0"
+  }
+}

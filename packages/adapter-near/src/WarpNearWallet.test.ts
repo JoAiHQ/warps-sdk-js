@@ -45,4 +45,42 @@ describe('WarpNearWallet', () => {
       expect(() => new WarpNearWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
     })
   })
+
+  it('delegates signTransaction to custom non-local provider', async () => {
+    const signTransaction = jest.fn().mockResolvedValue({ transactionHash: 'near-tx-hash' })
+    const cfg = {
+      env: 'testnet' as const,
+      user: {
+        wallets: {
+          [chain.name]: {
+            address: 'test.near',
+            provider: 'ee',
+            externalId: 'wallet-1',
+          },
+        },
+      },
+      walletProviders: {
+        [chain.name]: {
+          ee: () => ({
+            getAddress: async () => 'test.near',
+            getPublicKey: async () => null,
+            signTransaction,
+            signMessage: async () => 'sig',
+            importFromMnemonic: async () => ({ provider: 'ee', address: 'test.near' }),
+            importFromPrivateKey: async () => ({ provider: 'ee', address: 'test.near' }),
+            export: async () => ({ provider: 'ee', address: 'test.near' }),
+            generate: async () => ({ provider: 'ee', address: 'test.near' }),
+          }),
+        },
+      },
+    }
+
+    const wallet = new WarpNearWallet(cfg as any, chain as any)
+    ;(wallet as any).cachedAddress = 'test.near'
+    const tx = { receiverId: 'receiver.near', actions: [] }
+    const signed = await wallet.signTransaction(tx as any)
+
+    expect(signTransaction).toHaveBeenCalledWith(tx)
+    expect(signed).toEqual({ transactionHash: 'near-tx-hash' })
+  })
 })

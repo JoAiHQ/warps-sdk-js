@@ -65,7 +65,7 @@ export class WarpNearWallet implements AdapterWarpWallet {
       }
     }
 
-    throw new Error('Wallet provider does not support signing transactions')
+    return await this.walletProvider.signTransaction(tx)
   }
 
   async signTransactions(txs: WarpAdapterGenericTransaction[]): Promise<WarpAdapterGenericTransaction[]> {

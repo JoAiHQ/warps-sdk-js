@@ -22,7 +22,8 @@ import {
   WarpNativeValue,
 } from './warp'
 
-export type WarpWalletProvider = 'mnemonic' | 'privateKey' | 'coinbase' | 'privy' | 'gaupa'
+export type BuiltInWarpWalletProvider = 'mnemonic' | 'privateKey' | 'coinbase' | 'privy' | 'gaupa' | 'ee'
+export type WarpWalletProvider = BuiltInWarpWalletProvider | (string & {})
 
 export type WarpWalletDetails = {
   provider: WarpWalletProvider

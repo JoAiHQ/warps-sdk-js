@@ -8,6 +8,7 @@ import { SolanaAdapter } from '@joai/warps-adapter-solana'
 import { SuiAdapter } from '@joai/warps-adapter-sui'
 import { createNodeTransformRunner } from '@joai/warps-vm-node'
 import { createCoinbaseWalletProvider } from '@joai/warps-wallet-coinbase'
+import { createCustomCloudWalletProvider } from '@joai/warps-wallet-ee'
 import { createGaupaWalletProvider } from '@joai/warps-wallet-gaupa'
 import console from 'console'
 import * as fs from 'fs'
@@ -47,6 +48,13 @@ const coinbaseWalletFactory = createCoinbaseWalletProvider({
   walletSecret: process.env.COINBASE_WALLET_SECRET || '',
 })
 
+const eeWalletFactory = createCustomCloudWalletProvider({
+  providerName: 'ee',
+  baseUrl: process.env.EE_BASE_URL || 'http://localhost:3008',
+  serviceToken: process.env.EE_SERVICE_TOKEN,
+  accessToken: process.env.EE_ACCESS_TOKEN,
+})
+
 const runWarp = async (warpFile: string) => {
   const warpPath = path.join(warpsDir, warpFile)
   if (!warpFile.endsWith('.json')) return
@@ -65,6 +73,9 @@ const runWarp = async (warpFile: string) => {
     env: 'devnet',
     currentUrl: 'https://usewarp.to',
     user: {
+      id: process.env.PLAYGROUND_AGENT_ID || 'playground-agent',
+      email: process.env.PLAYGROUND_AGENT_EMAIL || 'playground@joai.ai',
+      name: process.env.PLAYGROUND_AGENT_NAME || 'Playground Agent',
       wallets: filteredWallets,
     },
     walletProviders: {
@@ -73,15 +84,25 @@ const runWarp = async (warpFile: string) => {
           apiKey: process.env.GAUPA_API_KEY || '',
           publicKey: process.env.GAUPA_PUBLIC_KEY,
         }),
+        ee: eeWalletFactory,
       },
       ethereum: {
         coinbase: coinbaseWalletFactory,
+        ee: eeWalletFactory,
       },
       base: {
         coinbase: coinbaseWalletFactory,
+        ee: eeWalletFactory,
+      },
+      arbitrum: {
+        ee: eeWalletFactory,
       },
       polygon: {
         coinbase: coinbaseWalletFactory,
+        ee: eeWalletFactory,
+      },
+      somnia: {
+        ee: eeWalletFactory,
       },
     },
     transform: { runner: createNodeTransformRunner() },
@@ -103,6 +124,10 @@ const runWarp = async (warpFile: string) => {
 
   let walletForChain = filteredWallets[Chain]
   const chainNameForWalletCheck = chainAdapter.chainInfo.name.toLowerCase()
+  if (!walletForChain && [WarpChainName.Multiversx, WarpChainName.Ethereum, WarpChainName.Base, WarpChainName.Arbitrum, WarpChainName.Polygon, WarpChainName.Somnia].includes(chainNameForWalletCheck as WarpChainName)) {
+    const eeWallet = await ensureEeWallet(tempConfig, Chain, chainAdapter.chainInfo)
+    walletForChain = eeWallet
+  }
   if (!walletForChain && (chainNameForWalletCheck === WarpChainName.Ethereum || chainNameForWalletCheck === WarpChainName.Base)) {
     const coinbaseWallet = await ensureCoinbaseWallet(tempConfig, Chain, chainAdapter.chainInfo)
     walletForChain = coinbaseWallet
@@ -360,7 +385,7 @@ const loadAllWallets = async (): Promise<Record<string, any>> => {
     const chainName = walletFile.replace('.json', '')
     try {
       const walletData = await loadWallet(chainName)
-      if (walletData.provider === 'coinbase' || walletData.provider === 'gaupa') {
+      if (walletData.provider === 'coinbase' || walletData.provider === 'gaupa' || walletData.provider === 'ee') {
         wallets[chainName] = walletData
       } else {
         const privateKey = walletData.privateKey || (await loadFile(chainName))
@@ -434,6 +459,36 @@ const ensureGaupaWallet = async (config: WarpClientConfig, chain: WarpChainName,
 
   fs.writeFileSync(walletPath, JSON.stringify(walletDetails, null, 2))
   console.log(`✅ Created and saved Gaupa wallet: ${walletDetails.address} (externalId: ${walletDetails.externalId})`)
+
+  return walletDetails
+}
+
+const ensureEeWallet = async (config: WarpClientConfig, chain: WarpChainName, chainInfo: WarpChainInfo): Promise<WarpWalletDetails> => {
+  const walletPath = path.join(__dirname, 'wallets', `${chain}.json`)
+
+  if (fs.existsSync(walletPath)) {
+    const existingWallet = JSON.parse(fs.readFileSync(walletPath, 'utf-8'))
+    if (existingWallet.provider === 'ee' && existingWallet.address && existingWallet.externalId) {
+      console.log(`✅ Reusing existing EE wallet: ${existingWallet.address}`)
+      return existingWallet
+    }
+  }
+
+  console.log('🔄 Creating new EE wallet...')
+  const walletProviderFactory = config.walletProviders?.[chain as string]?.ee
+  if (!walletProviderFactory) {
+    throw new Error(`EE wallet provider not configured for chain: ${chain}`)
+  }
+
+  const walletProvider = walletProviderFactory(config, chainInfo)
+  if (!walletProvider) {
+    throw new Error(`Failed to create EE wallet provider for chain: ${chain}`)
+  }
+
+  const walletDetails = await walletProvider.generate()
+
+  fs.writeFileSync(walletPath, JSON.stringify(walletDetails, null, 2))
+  console.log(`✅ Created and saved EE wallet: ${walletDetails.address} (externalId: ${walletDetails.externalId})`)
 
   return walletDetails
 }
