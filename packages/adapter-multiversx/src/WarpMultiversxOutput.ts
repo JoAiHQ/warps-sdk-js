@@ -86,9 +86,26 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     if (!warp.output || action.type !== 'contract') {
       return { values: { string: stringValues, native: nativeValues, mapped: {} }, output }
     }
-    const needsAbi = Object.values(warp.output).some((resultPath) => resultPath.includes('out') || resultPath.includes('event'))
+
+    const defaultOutValue = tx.hash
+    const setBareOutValue = (resultName: string) => {
+      output[resultName] = defaultOutValue
+      stringValues.push(String(defaultOutValue))
+      nativeValues.push(defaultOutValue)
+    }
+
+    const needsAbi = Object.values(warp.output).some(
+      (resultPath) => resultPath.startsWith('event.') || resultPath.startsWith('out.') || resultPath.startsWith('out[')
+    )
+
     if (!needsAbi) {
       for (const [resultName, resultPath] of Object.entries(warp.output)) {
+        if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
+
+        if (resultPath === 'out') {
+          setBareOutValue(resultName)
+          continue
+        }
         output[resultName] = resultPath
       }
       return {
@@ -115,6 +132,10 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
       if (resultPath.startsWith('input.')) {
         output[resultName] = resultPath
+        continue
+      }
+      if (resultPath === 'out') {
+        setBareOutValue(resultName)
         continue
       }
       const currentActionIndex = parseOutputOutIndex(resultPath)

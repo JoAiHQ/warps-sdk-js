@@ -485,6 +485,41 @@ describe('Result Helpers', () => {
       expect(output.SECOND_OUT).toBeNull()
     })
 
+    it('returns bare out value without requiring ABI', async () => {
+      const action = {
+        type: 'contract',
+        label: 'test',
+        description: 'test',
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww',
+        func: 'delegate',
+        args: [],
+        gasLimit: 1000000,
+      } as WarpContractAction
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tx = new TransactionOnNetwork({
+        hash: 'tx-hash-out-only',
+        sender,
+        function: 'delegate',
+        nonce: 1n,
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [action],
+        output: {
+          RESULT: 'out',
+        },
+      } as Warp
+
+      const { values, output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.RESULT).toBe('tx-hash-out-only')
+      expect(values.string).toContain('tx-hash-out-only')
+    })
+
     it('throws when out. outputs are requested and parseExecute fails (multiple writeLog events)', async () => {
       const httpMock = setupHttpMock()
       httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
