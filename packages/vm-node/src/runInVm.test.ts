@@ -69,8 +69,8 @@ describe('runInVm', () => {
     expect(result).toBe('500')
   })
 
-  it('should access out alongside previous outputs', async () => {
-    const code = '() => out.value + PREVIOUS'
+  it('should access previous outputs through results', async () => {
+    const code = '() => out.value + results.PREVIOUS'
     const context = { out: { value: 10 }, PREVIOUS: 5 }
 
     const result = await runInVm(code, context)
@@ -91,6 +91,18 @@ describe('runInVm', () => {
 
     const result = await runInVm(code, context)
     expect(result).toBe(14)
+  })
+
+  it('should handle dotted keys in results without crashing', async () => {
+    const code = '() => Number(out.balance) + Number(inputs.value) + (results["asset.token"] === "EGLD" ? 1 : 0)'
+    const context = {
+      out: { balance: '1000' },
+      inputs: { value: '2' },
+      'asset.token': 'EGLD',
+    }
+
+    const result = await runInVm(code, context)
+    expect(result).toBe(1003)
   })
 
   it('should throw error for invalid code', async () => {

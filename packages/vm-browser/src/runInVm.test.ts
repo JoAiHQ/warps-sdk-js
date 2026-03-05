@@ -262,6 +262,29 @@ describe('runInVm', () => {
     })
   })
 
+  it('should build worker script with explicit out and inputs context', async () => {
+    const code = '() => Number(out.balance) + Number(inputs.value)'
+    const results = {
+      out: { balance: '1000' },
+      inputs: { value: '2' },
+      'asset.token': 'EGLD',
+    }
+
+    const promise = runInVm(code, results)
+    setTimeout(() => {
+      mockWorker.onmessage({ data: { result: 1002 } })
+    }, 0)
+    await promise
+
+    const blobArg = (global.Blob as jest.Mock).mock.calls[0][0] as string[]
+    const script = blobArg.join('')
+    expect(script).toContain("'out'")
+    expect(script).toContain("'inputs'")
+    expect(script).toContain('results.out')
+    expect(script).toContain('results.inputs')
+    expect(script).not.toContain('contextKeys')
+  })
+
   it('should post message with results', async () => {
     const code = '(results) => results.value * 2'
     const results = { value: 5 }

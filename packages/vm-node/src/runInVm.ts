@@ -23,20 +23,14 @@ async function getVM2(): Promise<typeof import('vm2')> {
 export const runInVm = async (code: string, results: any): Promise<any> => {
   try {
     const { VM } = await getVM2()
-    const vm = new VM({ timeout: 2000, sandbox: { results, ...results }, eval: false, wasm: false })
-
-    // Handle arrow function syntax: () => { return ... }
-    if (code.trim().startsWith('(') && code.includes('=>')) {
-      return vm.run(`(${code})(results)`)
-    }
-
-    // Handle regular function syntax: function() { return ... }
-    if (code.trim().startsWith('function')) {
-      return vm.run(`(${code})(results)`)
-    }
-
-    // Handle direct expression: results.value * 2
-    return vm.run(`(${code})`)
+    const vm = new VM({
+      timeout: 2000,
+      sandbox: { results, out: results?.out, inputs: results?.inputs },
+      eval: false,
+      wasm: false,
+    })
+    const isFunctionCode = (code.trim().startsWith('(') && code.includes('=>')) || code.trim().startsWith('function')
+    return vm.run(isFunctionCode ? `(${code})(results)` : `(${code})`)
   } catch (e: any) {
     if (e?.message?.includes('The optional dependency "vm2" is not installed')) {
       throw e
