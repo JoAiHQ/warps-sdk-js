@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 3.4.1
+
+### Patch Changes
+
+- 1fb5758: Share transform input context construction in core helpers and expose resolved inputs (`inputs`) to output transform context.
+
 ## 3.4.0
 
 ### Minor Changes

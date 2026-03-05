@@ -1,5 +1,13 @@
 # @joai/warps-vm-browser
 
+## 1.0.2
+
+### Patch Changes
+
+- 842cc3e: Harden transform VM context injection by exposing explicit `results`, `out`, and `inputs` variables, avoiding dynamic top-level key injection issues.
+- Updated dependencies [1fb5758]
+  - @joai/warps@3.4.1
+
 ## 1.0.1
 
 ### Patch Changes

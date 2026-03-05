@@ -1,13 +1,13 @@
 {
   "name": "@joai/warps-vm-browser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "types": "dist/runInVm.d.ts",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@joai/warps": "^3.0.0"
+    "@joai/warps": "^3.4.1"
   },
   "license": "MIT",
   "scripts": {
