@@ -101,3 +101,36 @@ export function buildMappedOutput(inputs: ResolvedInput[], serializer: WarpSeria
   })
   return mapped
 }
+
+export function buildInputsContext(
+  inputs: ResolvedInput[],
+  serializer: WarpSerializer,
+  currentIndex?: number,
+  currentInput?: ResolvedInput
+): Record<string, any> {
+  const context: Record<string, any> = {}
+  const maxIndex = currentIndex !== undefined ? currentIndex : inputs.length
+
+  const addInput = (resolvedInput?: ResolvedInput) => {
+    if (!resolvedInput?.value) return
+    const key = resolvedInput.input.as || resolvedInput.input.name
+    const [, nativeValue] = serializer.stringToNative(resolvedInput.value)
+    context[key] = nativeValue
+    if (resolvedInput.input.type !== 'asset' || typeof nativeValue !== 'object' || nativeValue === null) return
+    const asset = nativeValue as { identifier?: string; amount?: bigint }
+    if ('identifier' in asset && 'amount' in asset) {
+      const identifier = String(asset.identifier)
+      context[`${key}.token`] = identifier
+      context[`${key}.identifier`] = identifier
+      context[`${key}.amount`] = String(asset.amount)
+    }
+  }
+
+  for (let i = 0; i < maxIndex; i++) {
+    addInput(inputs[i])
+  }
+
+  addInput(currentInput)
+
+  return context
+}

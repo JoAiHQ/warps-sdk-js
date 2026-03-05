@@ -1,6 +1,6 @@
 import type { ResolvedInput } from '../types'
 import { WarpSerializer } from '../WarpSerializer'
-import { buildMappedOutput, buildNestedPayload, mergeNestedPayload, toInputPayloadValue } from './payload'
+import { buildInputsContext, buildMappedOutput, buildNestedPayload, mergeNestedPayload, toInputPayloadValue } from './payload'
 
 describe('buildNestedPayload', () => {
   it('should handle flat payload structure (no position prefix)', () => {
@@ -266,5 +266,37 @@ describe('buildMappedOutput', () => {
         },
       },
     })
+  })
+})
+
+describe('buildInputsContext', () => {
+  const serializer = new WarpSerializer()
+
+  it('builds context with aliases and asset helper keys', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'Amount', type: 'uint256', source: 'field' }, value: 'uint256:42' },
+      { input: { name: 'Asset', as: 'asset', type: 'asset', source: 'field' }, value: 'asset:EGLD|1000000000000000000' },
+    ]
+
+    const context = buildInputsContext(inputs, serializer)
+
+    expect(context.Amount).toBe(42n)
+    expect(context.asset).toEqual({ identifier: 'EGLD', amount: 1000000000000000000n })
+    expect(context['asset.token']).toBe('EGLD')
+    expect(context['asset.amount']).toBe('1000000000000000000')
+    expect(context['asset.identifier']).toBe('EGLD')
+  })
+
+  it('respects currentIndex and includes currentInput when provided', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'A', type: 'uint256', source: 'field' }, value: 'uint256:1' },
+      { input: { name: 'B', type: 'uint256', source: 'field' }, value: 'uint256:2' },
+    ]
+    const currentInput: ResolvedInput = { input: { name: 'C', type: 'uint256', source: 'field' }, value: 'uint256:3' }
+
+    const context = buildInputsContext(inputs, serializer, 1, currentInput)
+
+    expect(context).toEqual({ A: 1n, C: 3n })
+    expect(context.B).toBeUndefined()
   })
 })

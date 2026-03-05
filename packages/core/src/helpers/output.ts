@@ -4,7 +4,7 @@ import { WarpExecutionOutput } from '../types/output'
 import { WarpLogger } from '../WarpLogger'
 import { WarpSerializer } from '../WarpSerializer'
 import { getWarpActionByIndex } from './general'
-import { buildMappedOutput } from './payload'
+import { buildInputsContext, buildMappedOutput } from './payload'
 
 const extractOutputValues = (
   warp: Warp,
@@ -73,7 +73,7 @@ export const evaluateOutputCommon = async (
   if (!warp.output) return baseOutput
   let output = { ...baseOutput }
   output = evaluateInputOutput(output, warp, actionIndex, inputs, serializer)
-  output = await evaluateTransformOutput(warp, output, rawOutput, config.transform?.runner || null)
+  output = await evaluateTransformOutput(warp, output, rawOutput, inputs, serializer, config.transform?.runner || null)
   return output
 }
 
@@ -102,6 +102,8 @@ const evaluateTransformOutput = async (
   warp: Warp,
   baseOutput: WarpExecutionOutput,
   rawOutput: any,
+  inputs: ResolvedInput[],
+  serializer: WarpSerializer,
   transformRunner: TransformRunner | null
 ): Promise<WarpExecutionOutput> => {
   if (!warp.output) return baseOutput
@@ -115,13 +117,15 @@ const evaluateTransformOutput = async (
     throw new Error('Transform output is defined but no transform runner is configured. Provide a runner via config.transform.runner.')
   }
 
-  // Context now includes 'out' containing the raw response
-  const context: Record<string, any> = { ...modifiable, out: rawOutput }
+  const context: Record<string, any> = {
+    ...modifiable,
+    out: rawOutput,
+    inputs: buildInputsContext(inputs, serializer),
+  }
 
   for (const { key, code } of transforms) {
     try {
       modifiable[key] = await transformRunner!.run(code, context)
-      // Update context for subsequent transforms (if they depend on each other)
       context[key] = modifiable[key]
     } catch (err) {
       WarpLogger.error(`Transform error for Warp '${warp.name}' with output '${key}':`, err)

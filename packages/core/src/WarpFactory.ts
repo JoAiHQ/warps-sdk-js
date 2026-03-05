@@ -1,6 +1,6 @@
 import { WarpChainName, WarpConstants } from './constants'
 import { findWarpAdapterForChain, getWarpActionByIndex, getWarpPrimaryAction, shiftBigintBy, splitInput } from './helpers'
-import { extractResolvedInputValues } from './helpers/payload'
+import { extractResolvedInputValues, buildInputsContext } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 import {
   ChainAdapter,
@@ -262,7 +262,7 @@ export class WarpFactory {
           )
         }
 
-        const inputsContext = this.buildInputContext(inputs, index, resolved)
+        const inputsContext = buildInputsContext(inputs, this.serializer, index, resolved)
         const transformedValue = await transformRunner.run(code, inputsContext)
 
         if (transformedValue === null || transformedValue === undefined) {
@@ -277,77 +277,6 @@ export class WarpFactory {
     }
 
     return results
-  }
-
-  /**
-   * Builds a context object containing all previous evaluated inputs for use in transform modifiers.
-   *
-   * The context object provides access to inputs by their `as` field (if present) or `name` field.
-   * For asset-type inputs, additional properties are available:
-   * - `{key}` - The full asset object with `identifier` and `amount` properties
-   * - `{key}.token` - The asset identifier as a string
-   * - `{key}.amount` - The asset amount as a string
-   * - `{key}.identifier` - Alias for `{key}.token`
-   *
-   * @example
-   * // Given inputs:
-   * // - { name: 'Asset', as: 'asset', type: 'asset', value: 'asset:ETH|1000000000000000000' }
-   * // - { name: 'Amount', type: 'uint256', value: 'uint256:500' }
-   *
-   * // The context will be:
-   * {
-   *   asset: { identifier: 'ETH', amount: 1000000000000000000n },
-   *   'asset.token': 'ETH',
-   *   'asset.amount': '1000000000000000000',
-   *   'asset.identifier': 'ETH',
-   *   Amount: 500n
-   * }
-   *
-   * // Usage in transform modifier:
-   * // "modifier": "transform:(inputs) => inputs.asset?.identifier === 'ETH' ? {...} : inputs.asset"
-   *
-   * @param inputs - Array of all resolved inputs
-   * @param currentIndex - Index of the current input being processed
-   * @param currentInput - The current input being transformed (optional, included in context)
-   * @returns Context object with all previous inputs accessible by name/as
-   */
-  private buildInputContext(inputs: ResolvedInput[], currentIndex: number, currentInput?: ResolvedInput): Record<string, any> {
-    const inputsObj: Record<string, any> = {}
-
-    for (let i = 0; i < currentIndex; i++) {
-      const resolvedInput = inputs[i]
-      if (!resolvedInput.value) continue
-
-      const key = resolvedInput.input.as || resolvedInput.input.name
-      const [, nativeValue] = this.serializer.stringToNative(resolvedInput.value)
-      inputsObj[key] = nativeValue
-
-      if (resolvedInput.input.type === 'asset' && typeof nativeValue === 'object' && nativeValue !== null) {
-        const asset = nativeValue as { identifier?: string; amount?: bigint }
-        if ('identifier' in asset && 'amount' in asset) {
-          inputsObj[`${key}.token`] = String(asset.identifier)
-          inputsObj[`${key}.amount`] = String(asset.amount)
-          inputsObj[`${key}.identifier`] = String(asset.identifier)
-        }
-      }
-    }
-
-    if (currentInput && currentInput.value) {
-      const key = currentInput.input.as || currentInput.input.name
-      const [, nativeValue] = this.serializer.stringToNative(currentInput.value)
-      inputsObj[key] = nativeValue
-
-      if (currentInput.input.type === 'asset' && typeof nativeValue === 'object' && nativeValue !== null) {
-        const asset = nativeValue as { identifier?: string; amount?: bigint }
-        if ('identifier' in asset && 'amount' in asset) {
-          inputsObj[`${key}.token`] = String(asset.identifier)
-          inputsObj[`${key}.amount`] = String(asset.amount)
-          inputsObj[`${key}.identifier`] = String(asset.identifier)
-        }
-      }
-    }
-
-    return inputsObj
   }
 
   public async preprocessInput(chain: WarpChainName, input: string): Promise<string> {

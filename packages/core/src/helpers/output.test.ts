@@ -303,4 +303,40 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     expect(result.STATUS).toBe('success')
     expect(result.RAW_VALUE).toBe(42)
   })
+
+  it('should expose resolved inputs in transform context', async () => {
+    const warp = {
+      ...createMockWarp(),
+      output: {
+        TOKEN: 'transform: (context) => context.inputs["asset.token"]',
+        AMOUNT: 'transform: (context) => context.inputs["asset.amount"]',
+        IDENTIFIER: 'transform: (context) => context.inputs.asset.identifier',
+      },
+    }
+
+    const baseOutput = {}
+    const rawOutput = {}
+    const inputs = [
+      {
+        input: { name: 'Asset', as: 'asset', type: 'asset', source: 'field' },
+        value: 'asset:EGLD|1000000000000000000',
+      },
+    ] as any
+
+    const runner = {
+      run: async (code: string, context: any) => {
+        if (code.includes('context.inputs["asset.token"]')) return context.inputs['asset.token']
+        if (code.includes('context.inputs["asset.amount"]')) return context.inputs['asset.amount']
+        if (code.includes('context.inputs.asset.identifier')) return context.inputs.asset.identifier
+        return null
+      },
+    }
+
+    const config = createMockConfig({ transform: { runner } })
+    const result = await evaluateOutputCommon(warp, baseOutput, rawOutput, 0, inputs, new WarpSerializer(), config)
+
+    expect(result.TOKEN).toBe('EGLD')
+    expect(result.AMOUNT).toBe('1000000000000000000')
+    expect(result.IDENTIFIER).toBe('EGLD')
+  })
 })
