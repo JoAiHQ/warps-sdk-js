@@ -304,6 +304,39 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     expect(result.RAW_VALUE).toBe(42)
   })
 
+  it('should support array transforms when out is an object with data array', async () => {
+    const warp = {
+      ...createMockWarp(),
+      output: {
+        TOTAL: 'transform: (context) => context.out.reduce((sum, item) => sum + item.value, 0)',
+        COUNT: 'transform: (context) => context.out.length',
+        FIRST: 'transform: (context) => context.out[0].value',
+        RAW_COUNT: 'transform: (context) => context.out.data.length',
+      },
+    }
+
+    const baseOutput = {}
+    const rawOutput = { data: [{ value: 2 }, { value: 3 }] }
+
+    const runner = {
+      run: async (code: string, context: any) => {
+        if (code.includes('context.out.reduce')) return context.out.reduce((sum: number, item: any) => sum + item.value, 0)
+        if (code.includes('context.out.length')) return context.out.length
+        if (code.includes('context.out[0].value')) return context.out[0]?.value
+        if (code.includes('context.out.data.length')) return context.out.data.length
+        return null
+      },
+    }
+
+    const config = createMockConfig({ transform: { runner } })
+    const result = await evaluateOutputCommon(warp, baseOutput, rawOutput, 0, [], new WarpSerializer(), config)
+
+    expect(result.TOTAL).toBe(5)
+    expect(result.COUNT).toBe(2)
+    expect(result.FIRST).toBe(2)
+    expect(result.RAW_COUNT).toBe(2)
+  })
+
   it('should expose resolved inputs in transform context', async () => {
     const warp = {
       ...createMockWarp(),

@@ -1,7 +1,7 @@
 import { Warp } from '@joai/warps'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-compat.js'
-import { registerAppTool, registerAppResource } from '@modelcontextprotocol/ext-apps/server'
+import { RESOURCE_MIME_TYPE, registerAppTool, registerAppResource } from '@modelcontextprotocol/ext-apps/server'
 import { z } from 'zod'
 import { convertMcpArgsToWarpInputs } from './helpers/execution'
 import { interpolatePromptWithArgs } from './helpers/prompts'
@@ -38,6 +38,11 @@ const buildPromptArgsSchema = (prompt: WarpMcpPrompt): Record<string, z.ZodTypeA
     schema[arg.name] = argSchema
   }
   return schema
+}
+
+const isMcpAppResource = (uri: string, mimeType?: string): boolean => {
+  if (uri.startsWith('ui://')) return true
+  return mimeType?.includes('profile=mcp-app') ?? false
 }
 
 export const createMcpServerFromWarps = (
@@ -83,19 +88,25 @@ export const createMcpServerFromWarps = (
     }
 
     if (resource) {
-      if (resource.mimeType?.includes('profile=mcp-app')) {
+      if (isMcpAppResource(resource.uri, resource.mimeType)) {
+        const appMeta = resource.meta as Record<string, unknown> | undefined
+        const mimeType = resource.mimeType || RESOURCE_MIME_TYPE
         registerAppResource(
           server,
           resource.name || resource.uri,
           resource.uri,
-          { description: resource.description },
+          {
+            description: resource.description,
+            mimeType,
+            ...(appMeta && { _meta: appMeta }),
+          },
           async () => {
             const content: { uri: string; text: string; mimeType?: string; _meta?: Record<string, unknown> } = {
               uri: resource.uri,
               text: resource.content || '',
-              mimeType: resource.mimeType,
+              mimeType,
             }
-            if (resource.meta) content._meta = resource.meta as Record<string, unknown>
+            if (appMeta) content._meta = appMeta
             return { contents: [content] }
           }
         )

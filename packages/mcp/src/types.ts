@@ -10,9 +10,11 @@ export type JsonSchema = Record<string, unknown>
 export type ToolInputSchema = Record<string, z.ZodTypeAny> | JsonSchema | undefined
 export type ToolOutputSchema = JsonSchema | undefined
 
+export type WarpAppToolVisibility = 'model' | 'app'
+
 export type WarpAppUiMeta = {
   resourceUri?: string
-  visibility?: string[]
+  visibility?: WarpAppToolVisibility[]
 }
 
 export type WarpAppResourceUiMeta = {
@@ -22,14 +24,19 @@ export type WarpAppResourceUiMeta = {
     frameDomains?: string[]
     baseUriDomains?: string[]
   }
-  permissions?: ('camera' | 'microphone' | 'geolocation' | 'clipboard')[]
+  permissions?: {
+    camera?: Record<string, never>
+    microphone?: Record<string, never>
+    geolocation?: Record<string, never>
+    clipboardWrite?: Record<string, never>
+  }
   domain?: string
   prefersBorder?: boolean
 }
 
 export type ToolMeta = {
   ui?: WarpAppUiMeta
-  [key: string]: string | number | boolean | null | WarpAppUiMeta | undefined
+  [key: string]: unknown
 }
 
 export type ResourceMeta = {
@@ -75,8 +82,9 @@ export type WarpMcpCapabilities = {
 
 export type WarpMcpToolArgs = Record<string, unknown>
 export type WarpMcpToolResult = {
-  structuredContent?: any
+  structuredContent?: Record<string, unknown>
   content: Array<{ type: 'text'; text: string }>
+  isError?: boolean
   _meta?: ToolMeta
 }
 

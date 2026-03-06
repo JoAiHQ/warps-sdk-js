@@ -119,7 +119,7 @@ const evaluateTransformOutput = async (
 
   const context: Record<string, any> = {
     ...modifiable,
-    out: rawOutput,
+    out: normalizeTransformOut(rawOutput),
     inputs: buildInputsContext(inputs, serializer),
   }
 
@@ -135,6 +135,14 @@ const evaluateTransformOutput = async (
   }
 
   return modifiable
+}
+
+const normalizeTransformOut = (rawOutput: any): any => {
+  if (!rawOutput || typeof rawOutput !== 'object' || Array.isArray(rawOutput)) return rawOutput
+  if (!Array.isArray(rawOutput.data)) return rawOutput
+  const arr: any = [...rawOutput.data]
+  arr.data = rawOutput.data
+  return arr
 }
 
 export const extractPromptOutput = async (
