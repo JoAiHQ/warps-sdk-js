@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 5.1.0
+
+### Minor Changes
+
+- 0dab057: MCP apps support: upgraded ext-apps to 1.1.2, improved app resource registration with metadata and mime type handling, refined types (permissions as object, typed tool visibility, stricter ToolMeta index signature), removed OpenAI-specific defaults.
+
 ## 5.0.0
 
 ### Patch Changes
