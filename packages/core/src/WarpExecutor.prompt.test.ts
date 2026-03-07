@@ -1,4 +1,4 @@
-import { WarpChainName } from './constants'
+import { WarpChainName, WarpPlatformName } from './constants'
 import { createMockAdapter, createMockWarp } from './test-utils/sharedMocks'
 import { Warp, WarpClientConfig } from './types'
 import { WarpExecutor } from './WarpExecutor'
@@ -244,6 +244,121 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(execution.status).toBe('success')
     // PROMPT should be null (as defined), not the default prompt value
     expect(execution.output.PROMPT).toBeNull()
+  })
+
+  it('should resolve platform-specific prompt for macos', async () => {
+    const macosConfig: WarpClientConfig = { ...config, platform: WarpPlatformName.Macos }
+    const macosExecutor = new WarpExecutor(macosConfig, adapters, handlers)
+
+    const platformWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Open App',
+          prompt: {
+            macos: '/open -a "{{APP}}"',
+            linux: '/xdg-open {{APP}}',
+            windows: '/start "" "{{APP}}"',
+          },
+          inputs: [{ name: 'App', as: 'APP', type: 'string', source: 'field', required: true }],
+        },
+      ],
+    }
+
+    const result = await macosExecutor.execute(platformWarp, ['string:Safari'])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].output.PROMPT).toBe('/open -a "Safari"')
+  })
+
+  it('should resolve platform-specific prompt for linux', async () => {
+    const linuxConfig: WarpClientConfig = { ...config, platform: WarpPlatformName.Linux }
+    const linuxExecutor = new WarpExecutor(linuxConfig, adapters, handlers)
+
+    const platformWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Open App',
+          prompt: {
+            macos: '/open -a "{{APP}}"',
+            linux: '/xdg-open {{APP}}',
+            windows: '/start "" "{{APP}}"',
+          },
+          inputs: [{ name: 'App', as: 'APP', type: 'string', source: 'field', required: true }],
+        },
+      ],
+    }
+
+    const result = await linuxExecutor.execute(platformWarp, ['string:firefox'])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].output.PROMPT).toBe('/xdg-open firefox')
+  })
+
+  it('should resolve platform-specific prompt for windows', async () => {
+    const windowsConfig: WarpClientConfig = { ...config, platform: WarpPlatformName.Windows }
+    const windowsExecutor = new WarpExecutor(windowsConfig, adapters, handlers)
+
+    const platformWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Open App',
+          prompt: {
+            macos: '/open -a "{{APP}}"',
+            linux: '/xdg-open {{APP}}',
+            windows: '/start "" "{{APP}}"',
+          },
+          inputs: [{ name: 'App', as: 'APP', type: 'string', source: 'field', required: true }],
+        },
+      ],
+    }
+
+    const result = await windowsExecutor.execute(platformWarp, ['string:notepad'])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].output.PROMPT).toBe('/start "" "notepad"')
+  })
+
+  it('should still work with plain string prompt when platform is set', async () => {
+    const macosConfig: WarpClientConfig = { ...config, platform: WarpPlatformName.Macos }
+    const macosExecutor = new WarpExecutor(macosConfig, adapters, handlers)
+
+    const plainPromptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Plain Prompt',
+          prompt: '/echo hello',
+        },
+      ],
+    }
+
+    const result = await macosExecutor.execute(plainPromptWarp, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].output.PROMPT).toBe('/echo hello')
+  })
+
+  it('should throw when platform-keyed prompt is used without platform in config', async () => {
+    const noPlatformConfig: WarpClientConfig = { ...config }
+    const noPlatformExecutor = new WarpExecutor(noPlatformConfig, adapters, handlers)
+
+    const platformWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Open App',
+          prompt: { macos: '/open -a "test"', linux: '/xdg-open test' },
+        },
+      ],
+    }
+
+    const result = await noPlatformExecutor.execute(platformWarp, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].status).toBe('error')
   })
 
   it('should handle errors during prompt action execution', async () => {

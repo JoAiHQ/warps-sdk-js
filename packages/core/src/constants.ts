@@ -16,6 +16,14 @@ export enum WarpChainName {
   Near = 'near',
 }
 
+export enum WarpPlatformName {
+  Macos = 'macos',
+  Linux = 'linux',
+  Windows = 'windows',
+}
+
+export const WarpPlatforms = Object.values(WarpPlatformName)
+
 export const EvmWalletChainNames: WarpChainName[] = [
   WarpChainName.Ethereum,
   WarpChainName.Base,

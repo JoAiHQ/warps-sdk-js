@@ -8,6 +8,7 @@ import {
   getWarpPrimaryAction,
   isWarpActionAutoExecute,
   replacePlaceholdersInWhenExpression,
+  resolvePlatformValue,
 } from './helpers'
 import { extractPromptOutput } from './helpers/output'
 import { buildHttpRequest } from './helpers/http'
@@ -614,8 +615,10 @@ export class WarpExecutor {
         resolvedInputs = await this.factory.getModifiedInputs(actionResolved)
       }
 
+      const platformPrompt = resolvePlatformValue(preparedAction.prompt, this.config.platform)
+
       const interpolatedPrompt = interpolator.applyInputs(
-        preparedAction.prompt,
+        platformPrompt,
         resolvedInputs,
         this.factory.getSerializer(),
         primaryResolvedInputs

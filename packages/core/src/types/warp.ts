@@ -1,9 +1,11 @@
-import { WarpChainName } from '../constants'
+import { WarpChainName, WarpPlatformName } from '../constants'
 import { WarpAlerts } from './alerts'
 import { WarpChainAsset, WarpChainAssetValue } from './chain'
 import { ChainAdapter } from './config'
 import { WarpTheme } from './general'
 import { WarpText } from './i18n'
+
+export type WarpPlatformValue<T> = T | Partial<Record<WarpPlatformName, T>>
 
 export type WarpExplorerName = string
 
@@ -170,7 +172,7 @@ export type WarpPromptAction = {
   type: WarpActionType
   label: WarpText
   description?: WarpText | null
-  prompt: string
+  prompt: WarpPlatformValue<string>
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean

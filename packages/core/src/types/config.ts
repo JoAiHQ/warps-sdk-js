@@ -1,4 +1,4 @@
-import { WarpChainName } from '../constants'
+import { WarpChainName, WarpPlatformName } from '../constants'
 import { WarpAbiContents } from './abi'
 import { WarpBrand } from './brand'
 import { ClientCacheConfig } from './cache'
@@ -50,6 +50,7 @@ export type WarpProviderConfig = {
 
 export type WarpClientConfig = {
   env: WarpChainEnv
+  platform?: WarpPlatformName
   clientUrl?: string
   currentUrl?: string
   vars?: Record<string, string | number>
