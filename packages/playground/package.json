@@ -1,6 +1,6 @@
 {
   "name": "@warps/playground",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "Playground for testing Warps SDK",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
     "play": "ts-node playground.ts"
   },
   "dependencies": {
-    "@joai/warps": "3.4.1",
+    "@joai/warps": "3.5.0",
     "@joai/warps-adapter-evm": "1.0.0",
     "@joai/warps-adapter-fastset": "1.0.0",
-    "@joai/warps-mcp": "5.1.0",
+    "@joai/warps-mcp": "6.0.0",
     "@joai/warps-adapter-near": "1.0.0",
     "@joai/warps-adapter-multiversx": "1.2.3",
     "@joai/warps-adapter-solana": "1.0.0",
