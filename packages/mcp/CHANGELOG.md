@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 7.0.1
+
+### Patch Changes
+
+- 87e48dc: Fix prompt action type error by resolving platform-specific values
+
 ## 7.0.0
 
 ### Patch Changes
