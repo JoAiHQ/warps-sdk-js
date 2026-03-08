@@ -1,4 +1,4 @@
-import { Warp, WarpActionInput, WarpClientConfig, WarpPromptAction } from '@joai/warps'
+import { Warp, WarpActionInput, WarpClientConfig, WarpPromptAction, resolvePlatformValue } from '@joai/warps'
 import { WarpMcpPrompt, WarpMcpPromptArgument } from '../types'
 import { extractTextOrUndefined } from './warps'
 
@@ -57,6 +57,6 @@ export const convertPromptActionToPrompt = (
     name,
     description,
     arguments: args.length > 0 ? args : undefined,
-    prompt: action.prompt,
+    prompt: resolvePlatformValue(action.prompt, config.platform),
   }
 }
