@@ -9,6 +9,7 @@ import {
     parseWarpQueryStringToObject,
 } from './helpers'
 import { ChainAdapter, Warp, WarpBrand, WarpCacheConfig, WarpClientConfig, WarpRegistryInfo } from './types'
+import { WarpResolver } from './types/resolver'
 import { WarpInterpolator } from './WarpInterpolator'
 import { WarpLogger } from './WarpLogger'
 
@@ -34,7 +35,8 @@ export type DetectionResultFromHtml = {
 export class WarpLinkDetecter {
   constructor(
     private config: WarpClientConfig,
-    private adapters: ChainAdapter[]
+    private adapters: ChainAdapter[],
+    private resolver?: WarpResolver
   ) {}
 
   isValid(url: string): boolean {
@@ -73,28 +75,48 @@ export class WarpLinkDetecter {
       let registryInfo: WarpRegistryInfo | null = null
       let brand: WarpBrand | null = null
 
-      const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
-
       const queryString = urlOrId.startsWith(WarpConstants.HttpProtocolPrefix)
         ? extractQueryStringFromUrl(urlOrId)
         : extractQueryStringFromIdentifier(identifierResult.identifier)
 
-      if (type === 'hash') {
-        warp = await adapter.builder().createFromTransactionHash(identifierBase, cache)
-        const result = await adapter.registry.getInfoByHash(identifierBase, cache)
-        registryInfo = result.registryInfo
-        brand = result.brand
-      } else if (type === 'alias') {
-        const result = await adapter.registry.getInfoByAlias(identifierBase, cache)
-        registryInfo = result.registryInfo
-        brand = result.brand
-        if (result.registryInfo) {
-          warp = await adapter.builder().createFromTransactionHash(result.registryInfo.hash, cache)
+      if (this.resolver) {
+        // Use the resolver for warp resolution
+        let result = null
+
+        if (type === 'hash') {
+          result = await this.resolver.getByHash(identifierBase, cache)
+        } else if (type === 'alias') {
+          const fullKey = `${identifierResult.chain}:${identifierBase}`
+          result = await this.resolver.getByAlias(fullKey, cache)
+            || await this.resolver.getByAlias(identifierBase, cache)
+        }
+
+        if (result) {
+          warp = result.warp
+          registryInfo = result.registryInfo
+          brand = result.brand
+        }
+      } else {
+        // Fallback to direct chain adapter resolution (backwards compat)
+        const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
+
+        if (type === 'hash') {
+          warp = await adapter.builder().createFromTransactionHash(identifierBase, cache)
+          const result = await adapter.registry.getInfoByHash(identifierBase, cache)
+          registryInfo = result.registryInfo
+          brand = result.brand
+        } else if (type === 'alias') {
+          const result = await adapter.registry.getInfoByAlias(identifierBase, cache)
+          registryInfo = result.registryInfo
+          brand = result.brand
+          if (result.registryInfo) {
+            warp = await adapter.builder().createFromTransactionHash(result.registryInfo.hash, cache)
+          }
         }
       }
 
       if (warp && warp.meta) {
-        modifyWarpMetaIdentifier(warp, adapter.chainInfo.name, registryInfo, identifierResult.identifier)
+        modifyWarpMetaIdentifier(warp, identifierResult.chain, registryInfo, identifierResult.identifier)
         warp.meta.query = queryString ? parseWarpQueryStringToObject(queryString) : null
       }
 
@@ -102,7 +124,7 @@ export class WarpLinkDetecter {
         return emptyResult
       }
 
-      const warpChain = warp.chain || adapter.chainInfo.name
+      const warpChain = warp.chain || identifierResult.chain
       const warpAdapter = findWarpAdapterForChain(warpChain, this.adapters)
       const preparedWarp = await new WarpInterpolator(this.config, warpAdapter, this.adapters).apply(warp)
 

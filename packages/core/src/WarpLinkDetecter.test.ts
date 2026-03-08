@@ -1,6 +1,7 @@
 import { WarpChainName } from './constants'
 import { createMockAdapter, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
 import { Warp, WarpBrand, WarpClientConfig, WarpRegistryInfo } from './types'
+import { WarpResolver, WarpResolverResult } from './types/resolver'
 import { WarpLinkDetecter } from './WarpLinkDetecter'
 
 jest.mock('./WarpBuilder')
@@ -318,5 +319,100 @@ describe('WarpLinkDetecter', () => {
     expect(result.match).toBe(true)
     expect(result.chain).toBe('ethereum')
     expect(result.warp).toBeDefined()
+  })
+})
+
+describe('WarpLinkDetecter with resolver', () => {
+  const mockResolverResult: WarpResolverResult = {
+    warp: {
+      ...mockWarp,
+      meta: { chain: 'multiversx' as WarpChainName, identifier: '@multiversx:test-alias', query: null, hash: 'abc123', creator: 'erd1...', createdAt: '2024-01-01' },
+    } as Warp,
+    registryInfo: {
+      hash: 'abc123',
+      alias: 'test-alias',
+      trust: 'verified' as const,
+      owner: null,
+      createdAt: null,
+      upgradedAt: null,
+      brand: null,
+      upgrade: null,
+    },
+    brand: null,
+  }
+
+  let mockResolver: WarpResolver
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockResolver = {
+      getByAlias: jest.fn().mockResolvedValue(null),
+      getByHash: jest.fn().mockResolvedValue(null),
+    }
+  })
+
+  it('resolves alias via resolver', async () => {
+    ;(mockResolver.getByAlias as jest.Mock).mockResolvedValue(mockResolverResult)
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    const result = await link.detect('https://anyclient.com?warp=test-alias')
+
+    expect(result.match).toBe(true)
+    expect(result.warp).toBeDefined()
+    expect(result.registryInfo?.alias).toBe('test-alias')
+    expect(result.registryInfo?.trust).toBe('verified')
+    // Should try full key first, then alias-only
+    expect(mockResolver.getByAlias).toHaveBeenCalledWith('multiversx:test-alias', undefined)
+  })
+
+  it('resolves hash via resolver', async () => {
+    const hash64 = 'a'.repeat(64)
+    const hashResult: WarpResolverResult = {
+      ...mockResolverResult,
+      warp: {
+        ...mockResolverResult.warp,
+        meta: { ...mockResolverResult.warp.meta!, hash: hash64 },
+      } as Warp,
+      registryInfo: { ...mockResolverResult.registryInfo!, hash: hash64 },
+    }
+    ;(mockResolver.getByHash as jest.Mock).mockResolvedValue(hashResult)
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    const result = await link.detect(`https://anyclient.com?warp=hash:${hash64}`)
+
+    expect(result.match).toBe(true)
+    expect(result.warp).toBeDefined()
+    expect(mockResolver.getByHash).toHaveBeenCalledWith(hash64, undefined)
+    // Should NOT use adapter registry
+    expect(mockAdapter.registry.getInfoByHash).not.toHaveBeenCalled()
+  })
+
+  it('returns no match when resolver returns null', async () => {
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    const result = await link.detect('https://anyclient.com?warp=unknown-alias')
+
+    expect(result.match).toBe(false)
+    expect(result.warp).toBeNull()
+  })
+
+  it('falls back to alias-only when full key not found', async () => {
+    ;(mockResolver.getByAlias as jest.Mock)
+      .mockResolvedValueOnce(null) // full key lookup fails
+      .mockResolvedValueOnce(mockResolverResult) // alias-only succeeds
+
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    const result = await link.detect('https://anyclient.com?warp=test-alias')
+
+    expect(result.match).toBe(true)
+    expect(mockResolver.getByAlias).toHaveBeenCalledTimes(2)
+    expect(mockResolver.getByAlias).toHaveBeenNthCalledWith(1, 'multiversx:test-alias', undefined)
+    expect(mockResolver.getByAlias).toHaveBeenNthCalledWith(2, 'test-alias', undefined)
+  })
+
+  it('does not call adapter when resolver is provided', async () => {
+    ;(mockResolver.getByAlias as jest.Mock).mockResolvedValue(mockResolverResult)
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    await link.detect('https://anyclient.com?warp=test-alias')
+
+    expect(mockAdapter.registry.getInfoByAlias).not.toHaveBeenCalled()
+    expect(mockAdapter.registry.getInfoByHash).not.toHaveBeenCalled()
   })
 })

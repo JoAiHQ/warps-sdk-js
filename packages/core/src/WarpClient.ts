@@ -2,6 +2,8 @@ import { findWarpAdapterForChain, getNextInfo, getWarpInfoFromIdentifier, getWar
 import { resolveWarpText } from './helpers/i18n'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
+import { WarpChainResolver } from './WarpChainResolver'
+import { WarpCompositeResolver } from './WarpCompositeResolver'
 import { WarpChainName } from './constants'
 import {
     AdapterWarpDataLoader,
@@ -23,6 +25,7 @@ import {
     WarpClientConfig,
 } from './types'
 import { WarpText } from './types/i18n'
+import { WarpResolver } from './types/resolver'
 import { ExecutionHandlers, WarpExecutor } from './WarpExecutor'
 import { WarpFactory } from './WarpFactory'
 import { WarpIndex } from './WarpIndex'
@@ -31,20 +34,32 @@ import { DetectionResult, WarpLinkDetecter } from './WarpLinkDetecter'
 
 type WarpClientOptions = {
   chains: ChainAdapterFactory[]
+  resolver?: WarpResolver
 }
 
 export class WarpClient {
   public readonly chains: ChainAdapter[]
+  private readonly resolver: WarpResolver
 
   constructor(
     private readonly config: WarpClientConfig,
     private readonly options: WarpClientOptions
   ) {
     this.chains = options.chains.map((factory) => factory(this.config))
+    this.resolver = options.resolver ?? this.buildDefaultResolver()
+  }
+
+  private buildDefaultResolver(): WarpResolver {
+    const chainResolvers = this.chains.map((adapter) => new WarpChainResolver(adapter))
+    return new WarpCompositeResolver(chainResolvers)
   }
 
   getConfig(): WarpClientConfig {
     return this.config
+  }
+
+  getResolver(): WarpResolver {
+    return this.resolver
   }
 
   createExecutor(handlers?: ExecutionHandlers): WarpExecutor {
@@ -52,7 +67,7 @@ export class WarpClient {
   }
 
   async detectWarp(urlOrId: string, cache?: WarpCacheConfig): Promise<DetectionResult> {
-    const detecter = new WarpLinkDetecter(this.config, this.chains)
+    const detecter = new WarpLinkDetecter(this.config, this.chains, this.resolver)
     return detecter.detect(urlOrId, cache)
   }
 

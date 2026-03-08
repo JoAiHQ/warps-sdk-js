@@ -4,9 +4,9 @@ export type WarpRegistryInfo = {
   hash: string
   alias: string | null
   trust: WarpTrustStatus
-  owner: string
-  createdAt: number
-  upgradedAt: number
+  owner: string | null
+  createdAt: number | null
+  upgradedAt: number | null
   brand: string | null
   upgrade: string | null
 }

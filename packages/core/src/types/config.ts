@@ -2,6 +2,7 @@ import { WarpChainName, WarpPlatformName } from '../constants'
 import { WarpAbiContents } from './abi'
 import { WarpBrand } from './brand'
 import { ClientCacheConfig } from './cache'
+export type { ClientCacheConfig }
 import { WarpChainAccount, WarpChainAction, WarpChainAsset } from './chain'
 import { WarpChainEnv, WarpTheme } from './general'
 import { WarpLocale } from './i18n'
