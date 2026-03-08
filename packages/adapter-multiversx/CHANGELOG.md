@@ -1,5 +1,12 @@
 # @joai/warps-adapter-multiversx
 
+## 1.2.4
+
+### Patch Changes
+
+- Updated dependencies [9ed23b2]
+  - @joai/warps@4.0.0
+
 ## 1.2.3
 
 ### Patch Changes

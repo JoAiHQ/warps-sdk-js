@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-wallet-privy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Privy wallet provider for multiple chains - Node.js compatible, no React dependencies",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -34,6 +34,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@joai/warps": "^3.0.0"
+    "@joai/warps": "^4.0.0"
   }
 }

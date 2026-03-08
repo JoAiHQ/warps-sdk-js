@@ -1,5 +1,12 @@
 # @joai/warps-wallet-gaupa
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [9ed23b2]
+  - @joai/warps@4.0.0
+
 ## 1.0.1
 
 ### Patch Changes
