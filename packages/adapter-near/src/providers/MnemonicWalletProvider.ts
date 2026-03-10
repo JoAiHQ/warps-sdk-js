@@ -12,11 +12,10 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
-import { keyToImplicitAddress, type KeyPairString } from '@near-js/crypto'
 import * as bip39 from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import bs58 from 'bs58'
-import { KeyPair } from 'near-api-js'
+import { keyToImplicitAddress, KeyPair, type KeyPairString } from 'near-api-js'
 
 export class MnemonicWalletProvider implements WalletProvider {
   static readonly PROVIDER_NAME: WarpWalletProvider = 'mnemonic'
