@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+
+### Patch Changes
+
+- Publish the Solana adapter updates that remove the SPL Token dependency chain and clarify the token program helper implementation.
+
 ## 1.0.1
 
 ### Patch Changes

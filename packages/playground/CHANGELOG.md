@@ -1,5 +1,12 @@
 # @warps/playground
 
+## 1.0.29
+
+### Patch Changes
+
+- Updated dependencies
+  - @joai/warps-adapter-solana@1.0.2
+
 ## 1.0.28
 
 ### Patch Changes
