@@ -10,6 +10,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  skipNodeModulesBundle: true,
+  noExternal: ['near-api-js'],
   external: ['@scure/bip39'],
 })
