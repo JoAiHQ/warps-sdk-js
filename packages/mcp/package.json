@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-mcp",
-  "version": "7.0.1",
+  "version": "8.0.0",
   "description": "MCP adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -43,6 +43,6 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "@joai/warps": "^4.0.0"
+    "@joai/warps": "^4.1.0"
   }
 }
