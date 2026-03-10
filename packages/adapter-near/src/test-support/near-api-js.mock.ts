@@ -62,3 +62,5 @@ export const utils = {
     formatNearAmount: (amount: string) => amount,
   },
 }
+
+export const keyToImplicitAddress = (publicKey: string) => 'test.near'
