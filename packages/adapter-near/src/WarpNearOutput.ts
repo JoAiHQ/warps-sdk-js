@@ -19,7 +19,7 @@ import {
   WarpExecutionOutput,
   WarpNativeValue,
 } from '@joai/warps'
-import { connect, keyStores } from 'near-api-js'
+import { createNearProvider } from './near'
 import { WarpNearSerializer } from './WarpNearSerializer'
 
 export class WarpNearOutput implements AdapterWarpOutput {
@@ -37,7 +37,6 @@ export class WarpNearOutput implements AdapterWarpOutput {
     this.nearConfig = {
       networkId: this.config.env === 'mainnet' ? 'mainnet' : this.config.env === 'testnet' ? 'testnet' : 'testnet',
       nodeUrl: providerConfig.url,
-      keyStore: new keyStores.InMemoryKeyStore(),
     }
     this.cache = new WarpCache(config.env, config.cache)
   }
@@ -117,8 +116,11 @@ export class WarpNearOutput implements AdapterWarpOutput {
     resolvedInputs: string[] = []
   ): Promise<WarpActionExecutionResult> {
     try {
-      const near = await connect(this.nearConfig)
-      const txStatus = await (near.connection.provider as any).txStatus(hash, this.nearConfig.networkId)
+      const provider = createNearProvider(this.nearConfig)
+      const txStatus = await provider.viewTransactionStatus({
+        txHash: hash,
+        accountId: this.nearConfig.networkId,
+      })
 
       if (!txStatus) {
         return this.createFailedExecution(warp, actionIndex, resolvedInputs)
@@ -202,8 +204,11 @@ export class WarpNearOutput implements AdapterWarpOutput {
     txHash: string
   ): Promise<{ status: 'pending' | 'confirmed' | 'failed'; blockNumber?: number; gasUsed?: bigint }> {
     try {
-      const near = await connect(this.nearConfig)
-      const txStatus = await (near.connection.provider as any).txStatus(txHash, this.nearConfig.networkId)
+      const provider = createNearProvider(this.nearConfig)
+      const txStatus = await provider.viewTransactionStatus({
+        txHash: txHash,
+        accountId: this.nearConfig.networkId,
+      })
 
       if (!txStatus) {
         return { status: 'pending' }
@@ -223,8 +228,11 @@ export class WarpNearOutput implements AdapterWarpOutput {
 
   async getTransactionReceipt(txHash: string): Promise<any> {
     try {
-      const near = await connect(this.nearConfig)
-      const txStatus = await (near.connection.provider as any).txStatus(txHash, this.nearConfig.networkId)
+      const provider = createNearProvider(this.nearConfig)
+      const txStatus = await provider.viewTransactionStatus({
+        txHash: txHash,
+        accountId: this.nearConfig.networkId,
+      })
 
       if (!txStatus) {
         return null

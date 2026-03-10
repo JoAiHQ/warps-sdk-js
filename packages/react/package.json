@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-react",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "type": "module",
   "types": "./src/index.tsx",
   "exports": {
@@ -17,18 +17,18 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@joai/warps": "4.0.0"
+    "@joai/warps": "4.1.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.3",
     "eslint-config-custom": "0.0.1",
-    "react": "^19.2.3",
+    "react": "^19.2.4",
     "tsconfig": "*",
     "typescript": "^5.9.3"
   },

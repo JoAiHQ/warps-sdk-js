@@ -11,9 +11,16 @@ import {
   WarpClientConfig,
   WarpDataLoaderOptions,
 } from '@joai/warps'
-import { connect, keyStores } from 'near-api-js'
 import { WarpNearConstants } from './constants'
+import { createNearAccount, createNearProvider } from './near'
 import { findKnownTokenById, getKnownTokensForChain } from './tokens'
+
+type NearFtMetadata = {
+  name?: string
+  symbol?: string
+  decimals?: number
+  icon?: string
+}
 
 export class WarpNearDataLoader implements AdapterWarpDataLoader {
   private cache: WarpCache
@@ -29,16 +36,13 @@ export class WarpNearDataLoader implements AdapterWarpDataLoader {
     this.nearConfig = {
       networkId: this.config.env === 'mainnet' ? 'mainnet' : this.config.env === 'testnet' ? 'testnet' : 'testnet',
       nodeUrl: providerConfig.url,
-      keyStore: new keyStores.InMemoryKeyStore(),
     }
   }
 
   async getAccount(address: string): Promise<WarpChainAccount> {
     try {
-      const near = await connect(this.nearConfig)
-      const account = await near.account(address)
-      const balance = await account.getAccountBalance()
-      const balanceBigInt = BigInt(balance.total)
+      const account = createNearAccount(this.nearConfig, address)
+      const balanceBigInt = (await account.getState()).balance.total
 
       return {
         chain: this.chain.name,
@@ -60,9 +64,8 @@ export class WarpNearDataLoader implements AdapterWarpDataLoader {
 
       for (const token of knownTokens) {
         try {
-          const near = await connect(this.nearConfig)
-          const accountObj = await near.account(address)
-          const balance = await accountObj.viewFunction({
+          const accountObj = createNearAccount(this.nearConfig, address)
+          const balance = await accountObj.callFunction<string>({
             contractId: token.identifier,
             methodName: 'ft_balance_of',
             args: { account_id: address },
@@ -112,9 +115,8 @@ export class WarpNearDataLoader implements AdapterWarpDataLoader {
       }
 
       try {
-        const near = await connect(this.nearConfig)
-        const account = await near.account(identifier)
-        const metadata = await account.viewFunction({
+        const account = createNearAccount(this.nearConfig, identifier)
+        const metadata = await account.callFunction<NearFtMetadata>({
           contractId: identifier,
           methodName: 'ft_metadata',
           args: {},
@@ -153,16 +155,18 @@ export class WarpNearDataLoader implements AdapterWarpDataLoader {
 
   async getAction(identifier: string, awaitCompleted = false): Promise<WarpChainAction | null> {
     try {
-      const near = await connect(this.nearConfig)
-      const txStatus = await (near.connection.provider as any).txStatus(identifier, this.nearConfig.networkId)
+      const provider = createNearProvider(this.nearConfig)
+      const txStatus = await provider.viewTransactionStatus({
+        txHash: identifier,
+        accountId: this.nearConfig.networkId,
+      })
 
       if (!txStatus) return null
 
       const statusObj = txStatus.status as any
       const isSuccess = statusObj && ('SuccessValue' in statusObj || 'SuccessReceiptId' in statusObj)
       const status = isSuccess ? 'success' : 'failed'
-      const transaction = txStatus.transaction
-      const receipt = txStatus.receipts?.[0]
+      const transaction = txStatus.transaction as any
 
       const sender = transaction.signer_id
       const receiver = transaction.receiver_id

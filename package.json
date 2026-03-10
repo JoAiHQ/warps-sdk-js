@@ -13,19 +13,24 @@
     "play": "turbo run build && npx tsx packages/playground/playground.ts"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
-    "@typescript-eslint/parser": "^8.52.0",
-    "eslint": "^9.39.2",
+    "@changesets/cli": "^2.30.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "eslint": "^10.0.3",
     "eslint-config-custom": "0.0.1",
-    "prettier": "^3.7.4",
-    "ts-json-schema-generator": "^2.4.0",
+    "prettier": "^3.8.1",
+    "ts-json-schema-generator": "^2.9.0",
     "ts-node": "^10.9.2",
-    "turbo": "^2.7.3"
+    "turbo": "^2.8.15"
   },
   "name": "warp-sdk-js",
-  "packageManager": "npm@11.7.0",
+  "packageManager": "npm@11.11.0",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "ajv": "8.18.0",
+    "axios": "1.13.6",
+    "qs": "6.15.0"
+  }
 }

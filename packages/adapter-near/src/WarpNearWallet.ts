@@ -9,10 +9,10 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
-import { connect, keyStores } from 'near-api-js'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
 import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
+import { createNearSigningAccount } from './near'
 
 export class WarpNearWallet implements AdapterWarpWallet {
   private nearConfig: any
@@ -29,7 +29,6 @@ export class WarpNearWallet implements AdapterWarpWallet {
     this.nearConfig = {
       networkId: this.config.env === 'mainnet' ? 'mainnet' : this.config.env === 'testnet' ? 'testnet' : 'testnet',
       nodeUrl: providerConfig.url,
-      keyStore: new keyStores.InMemoryKeyStore(),
     }
     this.walletProvider = this.createProvider()
     this.initializeCache()
@@ -40,14 +39,12 @@ export class WarpNearWallet implements AdapterWarpWallet {
     if (!this.walletProvider) throw new Error('No wallet provider available')
     if (this.walletProvider instanceof ReadOnlyWalletProvider) throw new Error(`Wallet (${this.chain.name}) is read-only`)
 
-    const accountId = this.getAddress()
-    if (!accountId) throw new Error('No account ID available')
-
     if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
+      const accountId = this.getAddress()
+      if (!accountId) throw new Error('No account ID available')
+
       const keyPair = this.walletProvider.getKeyPairInstance()
-      await this.nearConfig.keyStore.setKey(this.nearConfig.networkId, accountId, keyPair)
-      const near = await connect(this.nearConfig)
-      const account = await near.account(accountId)
+      const account = createNearSigningAccount(this.nearConfig, accountId, keyPair)
 
       if (tx.signature) {
         return tx
@@ -65,7 +62,7 @@ export class WarpNearWallet implements AdapterWarpWallet {
       }
     }
 
-    throw new Error('Wallet provider does not support signing transactions')
+    return await this.walletProvider.signTransaction(tx)
   }
 
   async signTransactions(txs: WarpAdapterGenericTransaction[]): Promise<WarpAdapterGenericTransaction[]> {
@@ -87,18 +84,16 @@ export class WarpNearWallet implements AdapterWarpWallet {
     if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction object')
     if (!this.walletProvider) throw new Error('No wallet provider available')
 
-    const accountId = this.getAddress()
-    if (!accountId) throw new Error('No account ID available')
-
     if (tx.transactionHash) {
       return tx.transactionHash
     }
 
     if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
+      const accountId = this.getAddress()
+      if (!accountId) throw new Error('No account ID available')
+
       const keyPair = this.walletProvider.getKeyPairInstance()
-      await this.nearConfig.keyStore.setKey(this.nearConfig.networkId, accountId, keyPair)
-      const near = await connect(this.nearConfig)
-      const account = await near.account(accountId)
+      const account = createNearSigningAccount(this.nearConfig, accountId, keyPair)
 
       const result = await account.signAndSendTransaction({
         receiverId: tx.receiverId,
@@ -108,7 +103,7 @@ export class WarpNearWallet implements AdapterWarpWallet {
       return result.transaction.hash
     }
 
-    throw new Error('Wallet provider does not support sending transactions')
+    throw new Error('Remote wallet provider must return transactionHash for NEAR transactions')
   }
 
   async sendTransactions(txs: WarpAdapterGenericTransaction[]): Promise<string[]> {

@@ -13,8 +13,8 @@ import {
   WarpExecutable,
   WarpQueryAction,
 } from '@joai/warps'
-import { connect, keyStores } from 'near-api-js'
 import { WarpNearConstants } from './constants'
+import { createNearAccount } from './near'
 import { WarpNearOutput } from './WarpNearOutput'
 import { WarpNearSerializer } from './WarpNearSerializer'
 
@@ -33,7 +33,6 @@ export class WarpNearExecutor implements AdapterWarpExecutor {
     this.nearConfig = {
       networkId: this.config.env === 'mainnet' ? 'mainnet' : this.config.env === 'testnet' ? 'testnet' : 'testnet',
       nodeUrl: providerConfig.url,
-      keyStore: new keyStores.InMemoryKeyStore(),
     }
     this.output = new WarpNearOutput(config, this.chain)
   }
@@ -200,9 +199,8 @@ export class WarpNearExecutor implements AdapterWarpExecutor {
       const nativeArgs = executable.args.map((arg) => this.serializer.coreSerializer.stringToNative(arg)[1])
       const args = nativeArgs.length > 0 ? nativeArgs : {}
 
-      const near = await connect(this.nearConfig)
-      const account = await near.account(queryAddress)
-      const result = await account.viewFunction({
+      const account = createNearAccount(this.nearConfig, queryAddress)
+      const result = await account.callFunction({
         contractId: queryAddress,
         methodName: action.func,
         args,

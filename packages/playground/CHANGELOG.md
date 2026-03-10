@@ -1,5 +1,15 @@
 # @warps/playground
 
+## 1.0.28
+
+### Patch Changes
+
+- Updated dependencies [3bea31e]
+  - @joai/warps@4.1.0
+  - @joai/warps-adapter-near@1.0.2
+  - @joai/warps-adapter-sui@1.0.2
+  - @joai/warps-mcp@8.0.0
+
 ## 1.0.27
 
 ### Patch Changes

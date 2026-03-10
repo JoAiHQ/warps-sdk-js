@@ -21,6 +21,7 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@joai/warps$': '<rootDir>/../core/src/index.ts',
+    '^near-api-js$': '<rootDir>/src/test-support/near-api-js.mock.ts',
     '^@scure/bip39/wordlists/(.*)\\.js$': '@scure/bip39/wordlists/$1.js',
     '^@scure/bip39/wordlists/(.*)$': '@scure/bip39/wordlists/$1.js',
   },

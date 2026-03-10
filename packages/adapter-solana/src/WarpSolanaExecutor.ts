@@ -1,4 +1,3 @@
-import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { ComputeBudgetProgram, Connection, MessageV0, PublicKey, SystemProgram, TransactionInstruction, VersionedTransaction } from '@solana/web3.js'
 import {
   AdapterWarpExecutor,
@@ -16,6 +15,12 @@ import {
   WarpQueryAction,
 } from '@joai/warps'
 import { WarpSolanaConstants } from './constants'
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from './tokenProgram'
 import { WarpSolanaOutput } from './WarpSolanaOutput'
 import { WarpSolanaSerializer } from './WarpSolanaSerializer'
 

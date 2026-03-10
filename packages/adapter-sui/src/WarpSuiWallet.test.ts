@@ -2,6 +2,7 @@ import { WarpChainInfo, WarpChainName } from '@joai/warps'
 import { WarpSuiWallet } from './WarpSuiWallet'
 
 describe('WarpSuiWallet', () => {
+  const customProviderName = 'remoteSigner'
   let wallet: WarpSuiWallet
   let config: any
   let chain: WarpChainInfo
@@ -155,6 +156,172 @@ describe('WarpSuiWallet', () => {
         },
       }
       expect(() => new WarpSuiWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
+    })
+  })
+
+  describe('custom wallet provider', () => {
+    it('uses custom provider for transaction objects with sign method', async () => {
+      const remoteSigner = {
+        getAddress: jest.fn(async () => '0x123'),
+        getPublicKey: jest.fn(async () => null),
+        signTransaction: jest.fn(async (tx: any) => ({ ...tx, bytes: 'AQID', signature: 'remote-signature' })),
+        signMessage: jest.fn(async () => 'signature'),
+        importFromMnemonic: jest.fn(),
+        importFromPrivateKey: jest.fn(),
+        export: jest.fn(),
+        generate: jest.fn(),
+      }
+
+      const remoteWallet = new WarpSuiWallet(
+        {
+          env: 'testnet',
+          user: {
+            wallets: {
+              [chain.name]: {
+                provider: customProviderName,
+                address: '0x123',
+                externalId: 'wallet-sui-1',
+              },
+            },
+          },
+          walletProviders: {
+            [chain.name]: {
+              [customProviderName]: () => remoteSigner as any,
+            },
+          },
+        } as any,
+        chain
+      )
+      remoteWallet['client'] = {
+        signAndExecuteTransaction: jest.fn().mockResolvedValue({ digest: 'mock-digest' }),
+        executeTransactionBlock: jest.fn().mockResolvedValue({ digest: 'mock-digest' }),
+      } as any
+
+      const txWithSignMethod = { sign: jest.fn() }
+      const signed = await remoteWallet.signTransaction(txWithSignMethod as any)
+
+      expect(remoteSigner.signTransaction).toHaveBeenCalledWith(txWithSignMethod)
+      expect((signed as any).signature).toBe('remote-signature')
+    })
+
+    it('returns remote transactionHash directly', async () => {
+      const remoteWallet = new WarpSuiWallet(
+        {
+          env: 'testnet',
+          user: {
+            wallets: {
+              [chain.name]: {
+                provider: customProviderName,
+                address: '0x123',
+                externalId: 'wallet-sui-1',
+              },
+            },
+          },
+          walletProviders: {
+            [chain.name]: {
+              [customProviderName]: () =>
+                ({
+                  getAddress: async () => '0x123',
+                  getPublicKey: async () => null,
+                  signTransaction: async (tx: any) => tx,
+                  signMessage: async () => 'sig',
+                  importFromMnemonic: async () => ({}),
+                  importFromPrivateKey: async () => ({}),
+                  export: async () => ({}),
+                  generate: async () => ({}),
+                }) as any,
+            },
+          },
+        } as any,
+        chain
+      )
+
+      await expect(remoteWallet.sendTransaction({ transactionHash: 'remote-digest' })).resolves.toBe('remote-digest')
+    })
+
+    it('executes bytes+signature payload from remote signer', async () => {
+      const executeTransactionBlock = jest.fn().mockResolvedValue({ digest: 'remote-digest' })
+      const remoteWallet = new WarpSuiWallet(
+        {
+          env: 'testnet',
+          user: {
+            wallets: {
+              [chain.name]: {
+                provider: customProviderName,
+                address: '0x123',
+                externalId: 'wallet-sui-1',
+              },
+            },
+          },
+          walletProviders: {
+            [chain.name]: {
+              [customProviderName]: () =>
+                ({
+                  getAddress: async () => '0x123',
+                  getPublicKey: async () => null,
+                  signTransaction: async (tx: any) => tx,
+                  signMessage: async () => 'sig',
+                  importFromMnemonic: async () => ({}),
+                  importFromPrivateKey: async () => ({}),
+                  export: async () => ({}),
+                  generate: async () => ({}),
+                }) as any,
+            },
+          },
+        } as any,
+        chain
+      )
+      remoteWallet['client'] = {
+        signAndExecuteTransaction: jest.fn().mockResolvedValue({ digest: 'local-digest' }),
+        executeTransactionBlock,
+      } as any
+
+      const digest = await remoteWallet.sendTransaction({ bytes: 'AQID', signature: 'remote-signature' })
+
+      expect(digest).toBe('remote-digest')
+      expect(executeTransactionBlock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          transactionBlock: 'AQID',
+          signature: ['remote-signature'],
+        })
+      )
+    })
+
+    it('rejects unsigned transaction payloads for remote providers', async () => {
+      const remoteWallet = new WarpSuiWallet(
+        {
+          env: 'testnet',
+          user: {
+            wallets: {
+              [chain.name]: {
+                provider: customProviderName,
+                address: '0x123',
+                externalId: 'wallet-sui-1',
+              },
+            },
+          },
+          walletProviders: {
+            [chain.name]: {
+              [customProviderName]: () =>
+                ({
+                  getAddress: async () => '0x123',
+                  getPublicKey: async () => null,
+                  signTransaction: async (tx: any) => tx,
+                  signMessage: async () => 'sig',
+                  importFromMnemonic: async () => ({}),
+                  importFromPrivateKey: async () => ({}),
+                  export: async () => ({}),
+                  generate: async () => ({}),
+                }) as any,
+            },
+          },
+        } as any,
+        chain
+      )
+
+      await expect(remoteWallet.sendTransaction({ sign: jest.fn() })).rejects.toThrow(
+        'Remote wallet provider must return signed payload (bytes + signature) or transactionHash for Sui transactions'
+      )
     })
   })
 })
