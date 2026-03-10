@@ -26,8 +26,8 @@
   ],
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "jest-fetch-mock": "^3.0.3",
     "ts-jest": "^29.4.6",
     "tsup": "^8.5.1",
@@ -37,8 +37,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@x402/core": "^2.1.0",
-    "ajv": "^8.17.1",
+    "@x402/core": "^2.6.0",
+    "ajv": "^8.18.0",
     "protobufjs": "^8.0.0",
     "qr-code-styling": "^1.9.2"
   }

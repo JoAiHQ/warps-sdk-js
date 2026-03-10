@@ -20,12 +20,12 @@
     "@joai/warps-adapter-sui": "1.0.1",
     "@joai/warps-vm-node": "1.0.3",
     "@joai/warps-wallet-coinbase": "1.0.1",
-    "@x402/core": "^2.1.0",
-    "@x402/evm": "^2.1.0",
+    "@x402/core": "^2.6.0",
+    "@x402/evm": "^2.6.0",
     "ethers": "^6.16.0"
   },
   "devDependencies": {
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
