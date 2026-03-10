@@ -15,7 +15,12 @@ import {
   WarpQueryAction,
 } from '@joai/warps'
 import { WarpSolanaConstants } from './constants'
-import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from './splToken'
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from './tokenProgram'
 import { WarpSolanaOutput } from './WarpSolanaOutput'
 import { WarpSolanaSerializer } from './WarpSolanaSerializer'
 

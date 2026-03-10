@@ -15,7 +15,7 @@ import {
 } from '@joai/warps'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { WarpSolanaConstants } from './constants'
-import { getMint } from './splToken'
+import { getMint } from './tokenProgram'
 import { findKnownTokenById, getKnownTokensForChain } from './tokens'
 
 export class WarpSolanaDataLoader implements AdapterWarpDataLoader {

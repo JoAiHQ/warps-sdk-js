@@ -4,6 +4,10 @@ import { WarpSolanaConstants } from './constants'
 const MINT_SIZE = 82
 const TOKEN_TRANSFER_INSTRUCTION = 3
 
+// We only need a small, stable subset of the SPL Token program surface.
+// Keeping these protocol-level helpers local avoids pulling browser-hostile transitive deps
+// while keeping the adapter logic explicit and test-covered.
+
 export const TOKEN_PROGRAM_ID = new PublicKey(WarpSolanaConstants.Programs.TokenProgram)
 export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 

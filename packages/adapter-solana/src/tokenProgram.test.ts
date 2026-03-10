@@ -7,9 +7,9 @@ import {
   getAssociatedTokenAddressSync,
   getMint,
   TOKEN_PROGRAM_ID,
-} from './splToken'
+} from './tokenProgram'
 
-describe('splToken helpers', () => {
+describe('tokenProgram helpers', () => {
   afterEach(() => {
     jest.restoreAllMocks()
   })
