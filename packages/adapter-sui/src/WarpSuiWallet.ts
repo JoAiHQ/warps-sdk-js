@@ -45,9 +45,14 @@ export class WarpSuiWallet implements AdapterWarpWallet {
     if (!this.walletProvider) throw new Error('No wallet provider available')
     if (this.walletProvider instanceof ReadOnlyWalletProvider) throw new Error(`Wallet (${this.chain.name}) is read-only`)
 
-    // If it's a Transaction object with a sign method, return it as-is
-    // It will be signed and executed together in sendTransaction
-    if (tx && typeof tx === 'object' && 'sign' in tx && typeof tx.sign === 'function') {
+    // It will be signed and executed together in sendTransaction for local key providers.
+    if (
+      (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) &&
+      tx &&
+      typeof tx === 'object' &&
+      'sign' in tx &&
+      typeof tx.sign === 'function'
+    ) {
       return tx
     }
 
@@ -70,6 +75,22 @@ export class WarpSuiWallet implements AdapterWarpWallet {
     await this.waitUntilInitialized() // Ensure cache is initialized
     if (!tx || typeof tx !== 'object') throw new Error('Invalid transaction object')
 
+    if (tx.transactionHash) {
+      return tx.transactionHash
+    }
+
+    // If transaction has bytes and signature, it's already signed - execute it.
+    if (tx && typeof tx === 'object' && 'bytes' in tx && 'signature' in tx) {
+      const result = await this.client.executeTransactionBlock({
+        transactionBlock: tx.bytes,
+        signature: Array.isArray(tx.signature) ? tx.signature : [tx.signature],
+        options: { showEffects: true, showEvents: true },
+      })
+      return result.digest
+    }
+
+    if (!this.walletProvider) throw new Error('No wallet provider available')
+
     if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
       const keypair = (this.walletProvider as any).getKeypairInstance()
 
@@ -83,26 +104,12 @@ export class WarpSuiWallet implements AdapterWarpWallet {
         return result.digest
       }
 
-      // If transaction has bytes and signature, it's already signed - execute it
-      if (tx && typeof tx === 'object' && 'bytes' in tx && 'signature' in tx) {
-        try {
-          const result = await this.client.executeTransactionBlock({
-            transactionBlock: tx.bytes,
-            signature: Array.isArray(tx.signature) ? tx.signature : [tx.signature],
-            options: { showEffects: true, showEvents: true },
-          })
-          return result.digest
-        } catch (error: any) {
-          throw error
-        }
-      }
-
       throw new Error(
         `Transaction must be a Transaction object or have bytes and signature. Got: ${typeof tx}, has sign: ${tx && typeof tx === 'object' && 'sign' in tx}, has bytes: ${tx && typeof tx === 'object' && 'bytes' in tx}, has signature: ${tx && typeof tx === 'object' && 'signature' in tx}`
       )
     }
 
-    throw new Error('Wallet provider does not support sending transactions')
+    throw new Error('Remote wallet provider must return signed payload (bytes + signature) or transactionHash for Sui transactions')
   }
 
   async sendTransactions(txs: WarpAdapterGenericTransaction[]): Promise<string[]> {

@@ -156,33 +156,59 @@ export class WarpSolanaWallet implements AdapterWarpWallet {
   }
 
   private resolveTransaction(tx: WarpAdapterGenericTransaction): VersionedTransaction {
-    if (tx instanceof VersionedTransaction) {
-      if (tx.version === undefined || tx.version === 'legacy') {
-        throw new Error('Transaction must be a VersionedTransaction (v0), not legacy')
-      }
-      return tx
-    }
+    const directVersionedTransaction = this.asVersionedTransaction(tx)
+    if (directVersionedTransaction) return directVersionedTransaction
 
     if (tx instanceof Transaction) {
       throw new Error('Legacy Transaction format is not supported. All transactions must use VersionedTransaction (v0).')
     }
 
-    if (tx.transaction instanceof VersionedTransaction) {
-      if (tx.transaction.version === undefined || tx.transaction.version === 'legacy') {
-        throw new Error('Transaction must be a VersionedTransaction (v0), not legacy')
-      }
-      return tx.transaction
-    }
+    const nestedTransaction = tx.transaction
+    const nestedVersionedTransaction = this.asVersionedTransaction(nestedTransaction)
+    if (nestedVersionedTransaction) return nestedVersionedTransaction
 
-    if (tx.transaction instanceof Transaction) {
+    if (nestedTransaction instanceof Transaction) {
       throw new Error('Legacy Transaction format is not supported. All transactions must use VersionedTransaction (v0).')
     }
 
-    if (!tx.transaction) {
+    const serializedTransaction = this.toSerializedTransactionBytes(nestedTransaction)
+    if (serializedTransaction) {
+      try {
+        return this.asVersionedTransactionOrThrow(VersionedTransaction.deserialize(serializedTransaction))
+      } catch {
+        throw new Error('Invalid serialized transaction format. Expected a VersionedTransaction payload.')
+      }
+    }
+
+    if (!nestedTransaction) {
       throw new Error('Transaction must be signed before sending')
     }
 
     throw new Error('Invalid transaction format - only VersionedTransaction is supported')
+  }
+
+  private asVersionedTransaction(tx: unknown): VersionedTransaction | null {
+    if (!(tx instanceof VersionedTransaction)) return null
+    return this.asVersionedTransactionOrThrow(tx)
+  }
+
+  private asVersionedTransactionOrThrow(tx: VersionedTransaction): VersionedTransaction {
+    if (tx.version === undefined || tx.version === 'legacy') {
+      throw new Error('Transaction must be a VersionedTransaction (v0), not legacy')
+    }
+    return tx
+  }
+
+  private toSerializedTransactionBytes(value: unknown): Uint8Array | null {
+    if (value instanceof Uint8Array) return value
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) return new Uint8Array(value)
+    if (Array.isArray(value) && value.every((byte) => Number.isInteger(byte) && byte >= 0 && byte <= 255)) {
+      return Uint8Array.from(value)
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      return Uint8Array.from(Buffer.from(value.trim(), 'base64'))
+    }
+    return null
   }
 
   private async shouldSkipPreflight(transaction: VersionedTransaction): Promise<boolean> {

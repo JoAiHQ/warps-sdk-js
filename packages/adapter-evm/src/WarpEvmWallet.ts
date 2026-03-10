@@ -8,8 +8,10 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
+import { toClientEvmSigner } from '@x402/evm'
 import { registerExactEvmScheme } from '@x402/evm/exact/client'
 import { ethers } from 'ethers'
+import { createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { SupportedEvmChainIds } from './constants'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
@@ -155,7 +157,12 @@ export class WarpEvmWallet implements AdapterWarpWallet {
     const wallet = getInstance()
     if (!wallet || !wallet.privateKey) throw new Error('Wallet instance does not have private key')
 
-    const signer = privateKeyToAccount(wallet.privateKey as `0x${string}`)
+    const signer = toClientEvmSigner(
+      privateKeyToAccount(wallet.privateKey as `0x${string}`),
+      createPublicClient({
+        transport: http(getProviderConfig(this.config, this.chain.name, this.config.env, this.chain.defaultApiUrl).url),
+      })
+    )
     const handlers: Record<string, () => void> = {}
 
     for (const chainId of SupportedEvmChainIds) {

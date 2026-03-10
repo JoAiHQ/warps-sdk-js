@@ -1,4 +1,5 @@
 import { WarpChainInfo, WarpChainName } from '@joai/warps'
+import { VersionedTransaction } from '@solana/web3.js'
 import { WarpSolanaWallet } from './WarpSolanaWallet'
 
 describe('WarpSolanaWallet', () => {
@@ -195,6 +196,62 @@ describe('WarpSolanaWallet', () => {
         },
       }
       expect(() => new WarpSolanaWallet(cfg, chain)).not.toThrow('Unsupported wallet provider')
+    })
+  })
+
+  describe('serialized signed transactions', () => {
+    it('sends serialized versioned transaction bytes returned by a remote signer', async () => {
+      const mockVersionedTransaction = {
+        version: 0,
+        signatures: [new Uint8Array([1])],
+        serialize: jest.fn(() => new Uint8Array([9, 8, 7])),
+      } as unknown as VersionedTransaction
+
+      const deserializeSpy = jest.spyOn(VersionedTransaction, 'deserialize').mockReturnValue(mockVersionedTransaction)
+      const sendRawTransaction = jest.fn().mockResolvedValue('11111111111111111111111111111111')
+      wallet['connection'] = {
+        sendRawTransaction,
+        simulateTransaction: jest.fn().mockResolvedValue({ value: { err: null } }),
+      } as any
+
+      await expect(wallet.sendTransaction({ transaction: [1, 2, 3] })).resolves.toBe('11111111111111111111111111111111')
+
+      expect(deserializeSpy).toHaveBeenCalledWith(Uint8Array.from([1, 2, 3]))
+      expect(sendRawTransaction).toHaveBeenCalledWith(new Uint8Array([9, 8, 7]), {
+        skipPreflight: false,
+        maxRetries: 3,
+        preflightCommitment: 'confirmed',
+      })
+
+      deserializeSpy.mockRestore()
+    })
+
+    it('sends base64-encoded versioned transaction payloads returned by a remote signer', async () => {
+      const mockVersionedTransaction = {
+        version: 0,
+        signatures: [new Uint8Array([1])],
+        serialize: jest.fn(() => new Uint8Array([4, 5, 6])),
+      } as unknown as VersionedTransaction
+
+      const deserializeSpy = jest.spyOn(VersionedTransaction, 'deserialize').mockReturnValue(mockVersionedTransaction)
+      const sendRawTransaction = jest.fn().mockResolvedValue('22222222222222222222222222222222')
+      wallet['connection'] = {
+        sendRawTransaction,
+        simulateTransaction: jest.fn().mockResolvedValue({ value: { err: null } }),
+      } as any
+
+      await expect(wallet.sendTransaction({ transaction: Buffer.from([1, 2, 3]).toString('base64') })).resolves.toBe(
+        '22222222222222222222222222222222'
+      )
+
+      expect(deserializeSpy).toHaveBeenCalledWith(Uint8Array.from([1, 2, 3]))
+      expect(sendRawTransaction).toHaveBeenCalledWith(new Uint8Array([4, 5, 6]), {
+        skipPreflight: false,
+        maxRetries: 3,
+        preflightCommitment: 'confirmed',
+      })
+
+      deserializeSpy.mockRestore()
     })
   })
 })
