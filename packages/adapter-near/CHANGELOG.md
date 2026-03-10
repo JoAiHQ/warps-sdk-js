@@ -1,5 +1,11 @@
 # @joai/warps-adapter-near
 
+## 1.0.3
+
+### Patch Changes
+
+- b97bc93: Bundle near-api-js to fix ERR_PACKAGE_PATH_NOT_EXPORTED in CommonJS environments caused by the ESM-only update of near-api-js v7.
+
 ## 1.0.2
 
 ### Patch Changes

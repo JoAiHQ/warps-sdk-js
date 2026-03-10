@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-near",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "NEAR adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
