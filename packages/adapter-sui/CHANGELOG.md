@@ -1,5 +1,11 @@
 # @joai/warps-adapter-sui
 
+## 1.2.0
+
+### Minor Changes
+
+- df8dafb: Remove on-chain registry from Sui adapter. Sui has no deployed on-chain registry, so the adapter now uses the fallback registry (e.g. GitHub resolver) like Solana and Near adapters. This eliminates noisy errors on devnet/mainnet and simplifies the codebase.
+
 ## 1.1.0
 
 ### Minor Changes
