@@ -153,6 +153,10 @@ export class CoinbaseWalletProvider implements WalletProvider {
     }
   }
 
+  async delete(externalId: string): Promise<void> {
+    throw new Error('CoinbaseWalletProvider: delete() is not supported. Use Coinbase dashboard to manage wallets.')
+  }
+
   async generate(): Promise<WarpWalletDetails> {
     try {
       const name = this.getAccountName()

@@ -77,6 +77,10 @@ export class GaupaWalletProvider implements WalletProvider {
     throw new Error('GaupaWalletProvider: export() is not supported. Private keys are managed by Gaupa and cannot be exported.')
   }
 
+  async delete(externalId: string): Promise<void> {
+    throw new Error('GaupaWalletProvider: delete() is not supported. Wallets are managed by Gaupa.')
+  }
+
   async generate(): Promise<WarpWalletDetails> {
     if (!this.config.user?.email) throw new Error('GaupaWalletProvider: Email is required to generate a wallet')
     try {

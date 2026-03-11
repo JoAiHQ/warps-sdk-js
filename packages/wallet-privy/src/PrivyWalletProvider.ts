@@ -61,4 +61,8 @@ export class PrivyWalletProvider implements WalletProvider {
   async generate(): Promise<WarpWalletDetails> {
     throw new Error('PrivyWalletProvider: generate not supported - Privy manages wallets externally')
   }
+
+  async delete(externalId: string): Promise<void> {
+    throw new Error('PrivyWalletProvider: delete not supported - Privy manages wallets externally')
+  }
 }
