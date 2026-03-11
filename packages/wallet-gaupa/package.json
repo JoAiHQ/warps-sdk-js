@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-wallet-gaupa",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Gaupa wallet provider for multiple chains",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -34,6 +34,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@joai/warps": "^4.0.0"
+    "@joai/warps": "^4.3.0"
   }
 }

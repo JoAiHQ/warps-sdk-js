@@ -1,5 +1,22 @@
 # @joai/warps-wallet-coinbase
 
+## 1.1.0
+
+### Minor Changes
+
+- 1f9c145: Add wallet `delete` method to `WalletProvider` and `AdapterWarpWallet` interfaces.
+  - `WalletProvider.delete(externalId)` — deletes a wallet by its external ID
+  - `AdapterWarpWallet.delete(provider, externalId)` — delegates to the correct provider
+  - `RemoteWalletProvider` sends a `POST` to the configured delete endpoint (default `/v1/wallets/delete`)
+  - Local providers (Mnemonic, PrivateKey, ReadOnly) remove the wallet from the client config
+  - Cloud providers (Gaupa, Privy, Coinbase) throw "not supported" as they manage wallets externally
+  - Added `removeWarpWalletFromConfig` helper to core
+
+### Patch Changes
+
+- Updated dependencies [1f9c145]
+  - @joai/warps@4.3.0
+
 ## 1.0.1
 
 ### Patch Changes

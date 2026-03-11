@@ -1,5 +1,20 @@
 # @warps/playground
 
+## 1.0.32
+
+### Patch Changes
+
+- Updated dependencies [1f9c145]
+  - @joai/warps@4.3.0
+  - @joai/warps-wallet-coinbase@1.1.0
+  - @joai/warps-adapter-multiversx@1.3.0
+  - @joai/warps-adapter-evm@1.1.0
+  - @joai/warps-adapter-solana@1.1.0
+  - @joai/warps-adapter-fastset@1.1.0
+  - @joai/warps-adapter-near@1.1.0
+  - @joai/warps-adapter-sui@1.1.0
+  - @joai/warps-mcp@10.0.0
+
 ## 1.0.31
 
 ### Patch Changes

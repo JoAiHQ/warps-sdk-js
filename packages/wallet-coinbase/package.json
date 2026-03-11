@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-wallet-coinbase",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Coinbase Server Wallet v2 provider for multiple chains",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -35,6 +35,6 @@
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.45.0",
-    "@joai/warps": "^4.0.0"
+    "@joai/warps": "^4.3.0"
   }
 }

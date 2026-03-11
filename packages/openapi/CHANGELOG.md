@@ -1,5 +1,12 @@
 # @joai/warps-openapi
 
+## 6.0.0
+
+### Patch Changes
+
+- Updated dependencies [1f9c145]
+  - @joai/warps@4.3.0
+
 ## 5.0.0
 
 ### Patch Changes
