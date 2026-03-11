@@ -229,6 +229,7 @@ export interface AdapterWarpWallet {
   importFromPrivateKey(privateKey: string): Promise<WarpWalletDetails>
   export(provider: WarpWalletProvider): Promise<WarpWalletDetails>
   generate(provider: WarpWalletProvider): Promise<WarpWalletDetails>
+  delete(provider: WarpWalletProvider, externalId: string): Promise<void>
   getAddress(): string | null
   getPublicKey(): string | null
   registerX402Handlers?(client: unknown): Promise<Record<string, () => void>>

@@ -10,6 +10,7 @@ export interface WalletProvider {
   importFromPrivateKey(privateKey: string): Promise<WarpWalletDetails>
   export(): Promise<WarpWalletDetails>
   generate(): Promise<WarpWalletDetails>
+  delete(externalId: string): Promise<void>
 }
 
 export type WalletProviderFactory = (config: WarpClientConfig, chain: WarpChainInfo) => WalletProvider | null

@@ -63,6 +63,12 @@ export const setWarpWalletInConfig = (config: WarpClientConfig, chain: WarpChain
   config.user.wallets[chain] = wallet
 }
 
+export const removeWarpWalletFromConfig = (config: WarpClientConfig, chain: WarpChainName): void => {
+  if (config.user?.wallets) {
+    delete config.user.wallets[chain]
+  }
+}
+
 export const normalizeMnemonic = (mnemonic: string | undefined | null): string => {
   if (!mnemonic) throw new Error('Mnemonic is required')
   return typeof mnemonic === 'string' ? mnemonic.trim() : String(mnemonic).trim()

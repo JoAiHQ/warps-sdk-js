@@ -281,6 +281,7 @@ export const createMockAdapter = (chainName: WarpChainName = WarpChainName.Multi
     export: async (provider: WarpWalletProvider) => Promise.resolve({ provider, address: 'mock-address' }),
     getPublicKey: () => 'mock-public-key',
     generate: async (provider: WarpWalletProvider) => Promise.resolve({ provider, address: 'mock-address' }),
+    delete: async (_provider: WarpWalletProvider, _externalId: string) => Promise.resolve(),
   },
 })
 
