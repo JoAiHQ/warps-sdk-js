@@ -14,7 +14,6 @@ import { WarpSuiDataLoader } from './WarpSuiDataLoader'
 import { WarpSuiExecutor } from './WarpSuiExecutor'
 import { WarpSuiExplorer } from './WarpSuiExplorer'
 import { WarpSuiOutput } from './WarpSuiOutput'
-import { WarpSuiRegistry } from './WarpSuiRegistry'
 import { WarpSuiSerializer } from './WarpSuiSerializer'
 import { WarpSuiWallet } from './WarpSuiWallet'
 
@@ -29,6 +28,7 @@ export const NativeTokenSui: WarpChainAsset = {
 
 function createSuiAdapter(chainName: WarpChainName, chainInfos: Record<WarpChainEnv, WarpChainInfo>): ChainAdapterFactory {
   return (config: WarpClientConfig, fallback?: ChainAdapter) => {
+    if (!fallback) throw new Error(`${chainName} adapter requires a fallback adapter`)
     const chainInfo = chainInfos[config.env]
     if (!chainInfo) throw new Error(`SuiAdapter: chain info not found for chain ${chainName}`)
 
@@ -38,7 +38,7 @@ function createSuiAdapter(chainName: WarpChainName, chainInfos: Record<WarpChain
       executor: new WarpSuiExecutor(config, chainInfo),
       output: new WarpSuiOutput(config, chainInfo),
       serializer: new WarpSuiSerializer(),
-      registry: new WarpSuiRegistry(config, chainInfo),
+      registry: fallback.registry,
       explorer: new WarpSuiExplorer(config, chainInfo),
       abiBuilder: () => new WarpSuiAbiBuilder(config, chainInfo),
       brandBuilder: () => new WarpSuiBrandBuilder(config, chainInfo),
