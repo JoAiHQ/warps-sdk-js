@@ -30,7 +30,7 @@ export class UniswapService {
     const cacheKey = `uniswap:token:${this.chainId}:${normalizedAddress}`
 
     // Check cache first
-    const cachedToken = this.cache.get<UniswapToken>(cacheKey)
+    const cachedToken = await this.cache.get<UniswapToken>(cacheKey)
     if (cachedToken) {
       return cachedToken
     }
@@ -46,10 +46,10 @@ export class UniswapService {
 
       // Cache the result (including null results to avoid repeated fetches)
       if (token) {
-        this.cache.set(cacheKey, token, CacheTtl.OneHour)
+        await this.cache.set(cacheKey, token, CacheTtl.OneHour)
       } else {
         // Cache null results for a shorter time to allow for new tokens
-        this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
+        await this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
       }
 
       return token
@@ -69,7 +69,7 @@ export class UniswapService {
     const cacheKey = `uniswap:metadata:${this.chainId}:${normalizedAddress}`
 
     // Check cache first
-    const cachedMetadata = this.cache.get<{
+    const cachedMetadata = await this.cache.get<{
       name: string
       symbol: string
       decimals: number
@@ -82,7 +82,7 @@ export class UniswapService {
     const token = await this.findToken(address)
     if (!token) {
       // Cache null result to avoid repeated lookups
-      this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
+      await this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
       return null
     }
 
@@ -94,7 +94,7 @@ export class UniswapService {
     }
 
     // Cache the metadata result
-    this.cache.set(cacheKey, metadata, CacheTtl.OneHour)
+    await this.cache.set(cacheKey, metadata, CacheTtl.OneHour)
     return metadata
   }
 
@@ -103,7 +103,7 @@ export class UniswapService {
     const cacheKey = `uniswap:bridge:${this.chainId}:${normalizedAddress}`
 
     // Check cache first
-    const cachedBridgeInfo = this.cache.get<Record<string, string>>(cacheKey)
+    const cachedBridgeInfo = await this.cache.get<Record<string, string>>(cacheKey)
     if (cachedBridgeInfo !== null) {
       return cachedBridgeInfo
     }
@@ -111,7 +111,7 @@ export class UniswapService {
     const token = await this.findToken(address)
     if (!token?.extensions?.bridgeInfo) {
       // Cache null result to avoid repeated lookups
-      this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
+      await this.cache.set(cacheKey, null, CacheTtl.OneMinute * 5)
       return null
     }
 
@@ -121,7 +121,7 @@ export class UniswapService {
     }
 
     // Cache the bridge info result
-    this.cache.set(cacheKey, bridgeInfo, CacheTtl.OneHour)
+    await this.cache.set(cacheKey, bridgeInfo, CacheTtl.OneHour)
     return bridgeInfo
   }
 }

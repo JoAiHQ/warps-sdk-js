@@ -79,7 +79,7 @@ export class WarpGitHubResolver implements WarpResolver {
     const cacheKey = `${MANIFEST_CACHE_KEY}:${env}`
 
     if (this.cache) {
-      const cached = this.cache.get<{ warps: ManifestEntry[] }>(cacheKey)
+      const cached = await this.cache.get<{ warps: ManifestEntry[] }>(cacheKey)
       if (cached) {
         this.manifest = cached
         this.buildIndexes()
@@ -102,7 +102,7 @@ export class WarpGitHubResolver implements WarpResolver {
 
       if (this.cache) {
         const ttl = Math.round((this.config?.refreshInterval ?? DEFAULT_REFRESH_INTERVAL) / 1000)
-        this.cache.set(cacheKey, this.manifest, ttl)
+        await this.cache.set(cacheKey, this.manifest, ttl)
       }
     } catch (error) {
       WarpLogger.error('WarpGitHubResolver: failed to fetch manifest', error)

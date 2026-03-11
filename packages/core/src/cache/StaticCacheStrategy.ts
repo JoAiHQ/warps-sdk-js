@@ -8,7 +8,7 @@ import { valueReviver } from './helpers'
 
 type CacheEntry<T> = {
   value: T
-  expiresAt: number
+  expiresAt: number | null
 }
 
 export class StaticCacheStrategy implements CacheStrategy {
@@ -30,9 +30,9 @@ export class StaticCacheStrategy implements CacheStrategy {
     }
   }
 
-  get<T>(key: string): T | null {
+  async get<T>(key: string): Promise<T | null> {
     const entry = this.cache.get(key)
-    if (!entry || Date.now() > entry.expiresAt) {
+    if (!entry || (entry.expiresAt !== null && Date.now() > entry.expiresAt)) {
       if (entry) {
         this.cache.delete(key)
       }
@@ -41,17 +41,25 @@ export class StaticCacheStrategy implements CacheStrategy {
     return entry.value
   }
 
-  set<T>(key: string, value: T, ttl: number): void {
-    const expiresAt = Date.now() + ttl * 1000
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null
     const entry: CacheEntry<T> = { value, expiresAt }
     this.cache.set(key, entry)
   }
 
-  forget(key: string): void {
+  async delete(key: string): Promise<void> {
     this.cache.delete(key)
   }
 
-  clear(): void {
+  async keys(pattern?: string): Promise<string[]> {
+    const allKeys = Array.from(this.cache.keys())
+    if (!pattern) return allKeys
+
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$')
+    return allKeys.filter((key) => regex.test(key))
+  }
+
+  async clear(): Promise<void> {
     this.cache.clear()
   }
 }

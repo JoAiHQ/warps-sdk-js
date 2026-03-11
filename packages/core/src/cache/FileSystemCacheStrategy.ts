@@ -7,7 +7,7 @@ import { valueReviver, valueReplacer } from './helpers'
 
 type CacheEntry<T> = {
   value: T
-  expiresAt: number
+  expiresAt: number | null
 }
 
 export class FileSystemCacheStrategy implements CacheStrategy {
@@ -31,7 +31,7 @@ export class FileSystemCacheStrategy implements CacheStrategy {
     return join(this.cacheDir, `${safeKey}.json`)
   }
 
-  get<T>(key: string): T | null {
+  async get<T>(key: string): Promise<T | null> {
     try {
       const filePath = this.getFilePath(key)
       if (!existsSync(filePath)) return null
@@ -39,7 +39,7 @@ export class FileSystemCacheStrategy implements CacheStrategy {
       const data = readFileSync(filePath, 'utf-8')
       const entry: CacheEntry<T> = JSON.parse(data, valueReviver)
 
-      if (Date.now() > entry.expiresAt) {
+      if (entry.expiresAt !== null && Date.now() > entry.expiresAt) {
         unlinkSync(filePath)
         return null
       }
@@ -50,16 +50,16 @@ export class FileSystemCacheStrategy implements CacheStrategy {
     }
   }
 
-  set<T>(key: string, value: T, ttl: number): void {
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
     const entry: CacheEntry<T> = {
       value,
-      expiresAt: Date.now() + ttl * 1000,
+      expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : null,
     }
     const filePath = this.getFilePath(key)
     writeFileSync(filePath, JSON.stringify(entry, valueReplacer), 'utf-8')
   }
 
-  forget(key: string): void {
+  async delete(key: string): Promise<void> {
     try {
       const filePath = this.getFilePath(key)
       if (existsSync(filePath)) {
@@ -70,7 +70,21 @@ export class FileSystemCacheStrategy implements CacheStrategy {
     }
   }
 
-  clear(): void {
+  async keys(pattern?: string): Promise<string[]> {
+    try {
+      const files = readdirSync(this.cacheDir)
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => file.slice(0, -5))
+      if (!pattern) return files
+
+      const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$')
+      return files.filter((file) => regex.test(file))
+    } catch {
+      return []
+    }
+  }
+
+  async clear(): Promise<void> {
     try {
       const files = readdirSync(this.cacheDir)
       files.forEach((file: string) => {

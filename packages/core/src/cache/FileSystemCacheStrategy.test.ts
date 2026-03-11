@@ -31,54 +31,52 @@ describe('FileSystemCacheStrategy', () => {
     expect(existsSync(cacheDir)).toBe(true)
   })
 
-  it('should set and get a value', () => {
-    strategy.set('foo', 'bar', 10)
-    expect(strategy.get('foo')).toBe('bar')
+  it('should set and get a value', async () => {
+    await strategy.set('foo', 'bar', 10)
+    await expect(strategy.get('foo')).resolves.toBe('bar')
   })
 
-  it('should return null for non-existent keys', () => {
-    expect(strategy.get('nonexistent')).toBeNull()
+  it('should return null for non-existent keys', async () => {
+    await expect(strategy.get('nonexistent')).resolves.toBeNull()
   })
 
-  it('should forget a value', () => {
-    strategy.set('foo', 'bar', 10)
-    strategy.forget('foo')
-    expect(strategy.get('foo')).toBeNull()
+  it('should delete a value', async () => {
+    await strategy.set('foo', 'bar', 10)
+    await strategy.delete('foo')
+    await expect(strategy.get('foo')).resolves.toBeNull()
   })
 
-  it('should not affect other keys when forgetting', () => {
-    strategy.set('foo', 'bar', 10)
-    strategy.set('baz', 'qux', 10)
-    strategy.forget('foo')
-    expect(strategy.get('foo')).toBeNull()
-    expect(strategy.get('baz')).toBe('qux')
+  it('should not affect other keys when deleting', async () => {
+    await strategy.set('foo', 'bar', 10)
+    await strategy.set('baz', 'qux', 10)
+    await strategy.delete('foo')
+    await expect(strategy.get('foo')).resolves.toBeNull()
+    await expect(strategy.get('baz')).resolves.toBe('qux')
   })
 
-  it('should clear all values', () => {
-    strategy.set('foo', 'bar', 10)
-    strategy.set('baz', 'qux', 10)
-    strategy.clear()
-    expect(strategy.get('foo')).toBeNull()
-    expect(strategy.get('baz')).toBeNull()
+  it('should clear all values', async () => {
+    await strategy.set('foo', 'bar', 10)
+    await strategy.set('baz', 'qux', 10)
+    await strategy.clear()
+    await expect(strategy.get('foo')).resolves.toBeNull()
+    await expect(strategy.get('baz')).resolves.toBeNull()
   })
 
-  it('should expire values after TTL', (done) => {
-    strategy.set('foo', 'bar', 1) // 1 second TTL
-    expect(strategy.get('foo')).toBe('bar')
-    setTimeout(() => {
-      expect(strategy.get('foo')).toBeNull()
-      done()
-    }, 1100)
+  it('should expire values after TTL', async () => {
+    await strategy.set('foo', 'bar', 1)
+    await expect(strategy.get('foo')).resolves.toBe('bar')
+    await new Promise((resolve) => setTimeout(resolve, 1100))
+    await expect(strategy.get('foo')).resolves.toBeNull()
   })
 
-  it('should handle BigInt values', () => {
+  it('should handle BigInt values', async () => {
     const bigValue = BigInt('12345678901234567890')
-    strategy.set('bigint', bigValue, 10)
-    const retrieved = strategy.get<bigint>('bigint')
+    await strategy.set('bigint', bigValue, 10)
+    const retrieved = await strategy.get<bigint>('bigint')
     expect(retrieved).toBe(bigValue)
   })
 
-  it('should handle complex objects', () => {
+  it('should handle complex objects', async () => {
     const obj = {
       string: 'test',
       number: 42,
@@ -86,31 +84,31 @@ describe('FileSystemCacheStrategy', () => {
       nested: { value: 'nested' },
       array: [1, 2, 3],
     }
-    strategy.set('complex', obj, 10)
-    const retrieved = strategy.get<typeof obj>('complex')
+    await strategy.set('complex', obj, 10)
+    const retrieved = await strategy.get<typeof obj>('complex')
     expect(retrieved).toEqual(obj)
   })
 
-  it('should sanitize keys to be filesystem-safe', () => {
-    strategy.set('key/with/slashes', 'value1', 10)
-    strategy.set('key:with:colons', 'value2', 10)
-    strategy.set('key with spaces', 'value3', 10)
-    expect(strategy.get('key/with/slashes')).toBe('value1')
-    expect(strategy.get('key:with:colons')).toBe('value2')
-    expect(strategy.get('key with spaces')).toBe('value3')
+  it('should sanitize keys to be filesystem-safe', async () => {
+    await strategy.set('key/with/slashes', 'value1', 10)
+    await strategy.set('key:with:colons', 'value2', 10)
+    await strategy.set('key with spaces', 'value3', 10)
+    await expect(strategy.get('key/with/slashes')).resolves.toBe('value1')
+    await expect(strategy.get('key:with:colons')).resolves.toBe('value2')
+    await expect(strategy.get('key with spaces')).resolves.toBe('value3')
   })
 
-  it('should use default cache directory when not provided', () => {
+  it('should use default cache directory when not provided', async () => {
     const defaultStrategy = new FileSystemCacheStrategy('devnet')
     expect(defaultStrategy).toBeDefined()
-    defaultStrategy.clear()
+    await defaultStrategy.clear()
   })
 
-  it('should handle errors gracefully when reading invalid files', () => {
+  it('should handle errors gracefully when reading invalid files', async () => {
     // Create an invalid JSON file
     const invalidPath = join(cacheDir, 'invalid.json')
     require('fs').writeFileSync(invalidPath, 'invalid json')
     // Should not throw, just return null
-    expect(() => strategy.get('invalid')).not.toThrow()
+    await expect(strategy.get('invalid')).resolves.toBeNull()
   })
 })

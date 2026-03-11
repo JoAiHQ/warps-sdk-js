@@ -32,6 +32,7 @@ export class WarpCache {
   }
 
   private selectStrategy(env: WarpChainEnv, config?: ClientCacheConfig): CacheStrategy {
+    if (config?.adapter) return config.adapter
     if (config?.type === 'localStorage') return new LocalStorageCacheStrategy(env, config)
     if (config?.type === 'memory') return new MemoryCacheStrategy(env, config)
     if (config?.type === 'static') return new StaticCacheStrategy(env, config)
@@ -43,19 +44,23 @@ export class WarpCache {
     return new MemoryCacheStrategy(env, config)
   }
 
-  set<T>(key: string, value: T, ttl: number): void {
-    this.strategy.set(key, value, ttl)
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    await this.strategy.set(key, value, ttlSeconds)
   }
 
-  get<T>(key: string): T | null {
-    return this.strategy.get(key)
+  async get<T>(key: string): Promise<T | null> {
+    return await this.strategy.get(key)
   }
 
-  forget(key: string): void {
-    this.strategy.forget(key)
+  async delete(key: string): Promise<void> {
+    await this.strategy.delete(key)
   }
 
-  clear(): void {
-    this.strategy.clear()
+  async keys(pattern?: string): Promise<string[]> {
+    return await this.strategy.keys(pattern)
+  }
+
+  async clear(): Promise<void> {
+    await this.strategy.clear()
   }
 }

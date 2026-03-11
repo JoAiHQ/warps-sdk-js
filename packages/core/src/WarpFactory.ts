@@ -43,8 +43,8 @@ export class WarpFactory {
     return this.serializer
   }
 
-  getResolvedInputsFromCache(env: WarpChainEnv, warpHash: string | undefined, actionIndex: number): string[] {
-    const cachedInputs = this.cache.get<ResolvedInput[]>(WarpCacheKey.WarpExecutable(env, warpHash || '', actionIndex)) || []
+  async getResolvedInputsFromCache(env: WarpChainEnv, warpHash: string | undefined, actionIndex: number): Promise<string[]> {
+    const cachedInputs = (await this.cache.get<ResolvedInput[]>(WarpCacheKey.WarpExecutable(env, warpHash || '', actionIndex))) || []
     return extractResolvedInputValues(cachedInputs)
   }
 
@@ -126,7 +126,7 @@ export class WarpFactory {
       resolvedInputs: modifiedInputs,
     }
 
-    this.cache.set(
+    await this.cache.set(
       WarpCacheKey.WarpExecutable(this.config.env, preparedWarp.meta?.hash || '', actionIndex),
       executable.resolvedInputs,
       CacheTtl.OneWeek

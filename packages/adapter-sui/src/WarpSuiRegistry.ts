@@ -181,7 +181,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
     cacheConfig?: WarpCacheConfig
   ): Promise<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }> {
     const cacheKey = WarpCacheKey.RegistryInfo(this.config.env, alias)
-    const cached = cacheConfig ? this.cache.get<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }>(cacheKey) : null
+    const cached = cacheConfig ? await this.cache.get<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }>(cacheKey) : null
     if (cached) {
       WarpLogger.info(`WarpSuiRegistry (getInfoByAlias): RegistryInfo found in cache: ${alias}`)
       return cached
@@ -191,7 +191,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
       const infoView = res ? res : null
       const registryInfo = infoView ? toTypedRegistryInfo(infoView) : null
       const brand = registryInfo?.brand ? await this.fetchBrand(registryInfo.brand, cacheConfig) : null
-      if (cacheConfig && cacheConfig.ttl) this.cache.set(cacheKey, { registryInfo, brand }, cacheConfig.ttl)
+      if (cacheConfig && cacheConfig.ttl) await this.cache.set(cacheKey, { registryInfo, brand }, cacheConfig.ttl)
       return { registryInfo, brand }
     } catch (error) {
       WarpLogger.error('WarpSuiRegistry (getInfoByAlias):', error)
@@ -201,7 +201,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
 
   async getInfoByHash(hash: string, cache?: WarpCacheConfig): Promise<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }> {
     const cacheKey = WarpCacheKey.RegistryInfo(this.config.env, hash)
-    const cached = cache ? this.cache.get<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }>(cacheKey) : null
+    const cached = cache ? await this.cache.get<{ registryInfo: WarpRegistryInfo | null; brand: WarpBrand | null }>(cacheKey) : null
     if (cached) {
       WarpLogger.info(`WarpSuiRegistry (getInfoByHash): RegistryInfo found in cache: ${hash}`)
       return cached
@@ -211,7 +211,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
       const infoView = res ? res : null
       const registryInfo = infoView ? toTypedRegistryInfo(infoView) : null
       const brand = registryInfo?.brand ? await this.fetchBrand(registryInfo.brand, cache) : null
-      if (cache && cache.ttl) this.cache.set(cacheKey, { registryInfo, brand }, cache.ttl)
+      if (cache && cache.ttl) await this.cache.set(cacheKey, { registryInfo, brand }, cache.ttl)
       return { registryInfo, brand }
     } catch (error) {
       WarpLogger.error('WarpSuiRegistry (getInfoByHash):', error)
@@ -221,7 +221,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
 
   async getUserWarpRegistryInfos(user?: string): Promise<WarpRegistryInfo[]> {
     const cacheKey = `sui:registry:user:${user || this.userWallet}`
-    const cached = this.cache.get<WarpRegistryInfo[]>(cacheKey)
+    const cached = await this.cache.get<WarpRegistryInfo[]>(cacheKey)
     if (cached) {
       WarpLogger.info(`WarpSuiRegistry (getUserWarpRegistryInfos): RegistryInfos found in cache for user: ${user || this.userWallet}`)
       return cached
@@ -231,7 +231,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
       if (!userAddress) throw new Error('WarpRegistry: user address not set')
       const res = await this.client.call(toRegistryMoveTarget(this.config.env, 'get_user_warps'), [userAddress])
       const registryInfos = Array.isArray(res) ? res.map(toTypedRegistryInfo) : []
-      if (user) this.cache.set(cacheKey, registryInfos, 300)
+      if (user) await this.cache.set(cacheKey, registryInfos, 300)
       return registryInfos
     } catch (error) {
       WarpLogger.error('WarpSuiRegistry (getUserWarpRegistryInfos):', error)
@@ -241,7 +241,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
 
   async getUserBrands(user?: string): Promise<WarpBrand[]> {
     const cacheKey = `sui:registry:user:brands:${user || this.userWallet}`
-    const cached = this.cache.get<WarpBrand[]>(cacheKey)
+    const cached = await this.cache.get<WarpBrand[]>(cacheKey)
     if (cached) {
       WarpLogger.info(`WarpSuiRegistry (getUserBrands): Brands found in cache for user: ${user || this.userWallet}`)
       return cached
@@ -253,7 +253,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
       if (!Array.isArray(res)) return []
       const brands = await Promise.all(res.map((hash: string) => this.fetchBrand(hash)))
       const filteredBrands = brands.filter((b) => b !== null) as WarpBrand[]
-      if (user) this.cache.set(cacheKey, filteredBrands, 300)
+      if (user) await this.cache.set(cacheKey, filteredBrands, 300)
       return filteredBrands
     } catch (error) {
       WarpLogger.error('WarpSuiRegistry (getUserBrands):', error)
@@ -263,7 +263,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
 
   async fetchBrand(hash: string, cacheConfig?: WarpCacheConfig): Promise<WarpBrand | null> {
     const cacheKey = WarpCacheKey.Brand(this.config.env, hash)
-    const cached = cacheConfig ? this.cache.get<WarpBrand>(cacheKey) : null
+    const cached = cacheConfig ? await this.cache.get<WarpBrand>(cacheKey) : null
     if (cached) {
       WarpLogger.info(`WarpSuiRegistry (fetchBrand): Brand found in cache: ${hash}`)
       return cached
@@ -297,7 +297,7 @@ export class WarpSuiRegistry implements AdapterWarpRegistry {
         creator: tx.transaction && tx.transaction.data && tx.transaction.data.sender ? tx.transaction.data.sender : undefined,
         createdAt: tx.timestampMs ? new Date(Number(tx.timestampMs)).toISOString() : undefined,
       }
-      if (cacheConfig && cacheConfig.ttl) this.cache.set(cacheKey, brandData, cacheConfig.ttl)
+      if (cacheConfig && cacheConfig.ttl) await this.cache.set(cacheKey, brandData, cacheConfig.ttl)
       return brandData as WarpBrand
     } catch (error) {
       WarpLogger.error('WarpSuiRegistry (fetchBrand):', error)

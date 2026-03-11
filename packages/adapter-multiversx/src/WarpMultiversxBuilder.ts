@@ -66,7 +66,7 @@ export class WarpMultiversxBuilder extends WarpBuilder implements AdapterWarpBui
     const cacheKey = WarpCacheKey.Warp(this.config.env, hash)
 
     if (cache) {
-      const cached = this.cache.get<Warp>(cacheKey)
+      const cached = await this.cache.get<Warp>(cacheKey)
       if (cached) {
         WarpLogger.info(`WarpBuilder (createFromTransactionHash): Warp found in cache: ${hash}`)
         return cached
@@ -81,7 +81,7 @@ export class WarpMultiversxBuilder extends WarpBuilder implements AdapterWarpBui
       const warp = await this.createFromTransaction(tx)
 
       if (cache && cache.ttl && warp) {
-        this.cache.set(cacheKey, warp, cache.ttl)
+        await this.cache.set(cacheKey, warp, cache.ttl)
       }
 
       return warp

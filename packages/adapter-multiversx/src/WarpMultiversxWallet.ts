@@ -40,17 +40,17 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     if (this.walletProvider instanceof ReadOnlyWalletProvider) throw new Error(`Wallet (${this.chain.name}) is read-only`)
 
     if (this.walletProvider instanceof PrivateKeyWalletProvider || this.walletProvider instanceof MnemonicWalletProvider) {
-      const account = this.walletProvider.getAccountInstance()
+        const account = this.walletProvider.getAccountInstance()
       if (castedTx.nonce === 0n) {
         const nonceOnNetwork = await this.entry.recallAccountNonce(account.address)
-        const nonceInCache = this.cache.get<number>(`nonce:${account.address.toBech32()}`) || 0
+        const nonceInCache = (await this.cache.get<number>(`nonce:${account.address.toBech32()}`)) || 0
         const highestNonce = BigInt(Math.max(nonceInCache, Number(nonceOnNetwork)))
         castedTx.nonce = highestNonce
       }
     } else if (castedTx.nonce === 0n && this.cachedAddress) {
       const address = Address.newFromBech32(this.cachedAddress)
       const nonceOnNetwork = await this.entry.recallAccountNonce(address)
-      const nonceInCache = this.cache.get<number>(`nonce:${this.cachedAddress}`) || 0
+      const nonceInCache = (await this.cache.get<number>(`nonce:${this.cachedAddress}`)) || 0
       const highestNonce = BigInt(Math.max(nonceInCache, Number(nonceOnNetwork)))
       castedTx.nonce = highestNonce
     }
@@ -86,7 +86,7 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
 
     const senderAddress = castedTx.sender
     const newNonce = Number(castedTx.nonce) + 1
-    this.cache.set(`nonce:${senderAddress}`, newNonce, CacheTtl.OneMinute)
+    await this.cache.set(`nonce:${senderAddress}`, newNonce, CacheTtl.OneMinute)
 
     return txHash
   }

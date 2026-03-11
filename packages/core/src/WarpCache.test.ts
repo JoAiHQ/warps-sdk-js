@@ -18,7 +18,7 @@ describe('WarpCache', () => {
       let cache: any
       let testDir: string | undefined
 
-      beforeEach(() => {
+      beforeEach(async () => {
         if (type === 'filesystem') {
           const testCacheRoot = resolve(process.cwd(), '.test-cache')
           if (!existsSync(testCacheRoot)) {
@@ -36,7 +36,7 @@ describe('WarpCache', () => {
         } else {
           cache = new WarpCache('devnet', { type: type as WarpCacheType })
         }
-        cache.clear()
+        await cache.clear()
       })
 
       afterEach(() => {
@@ -55,29 +55,29 @@ describe('WarpCache', () => {
         }
       })
 
-      it('should set and get a value', () => {
-        cache.set('foo', 'bar', 10)
-        expect(cache.get('foo')).toBe('bar')
+      it('should set and get a value', async () => {
+        await cache.set('foo', 'bar', 10)
+        await expect(cache.get('foo')).resolves.toBe('bar')
       })
 
-      it('should forget a value', () => {
-        cache.set('foo', 'bar', 10)
-        cache.forget('foo')
-        expect(cache.get('foo')).toBeNull()
+      it('should delete a value', async () => {
+        await cache.set('foo', 'bar', 10)
+        await cache.delete('foo')
+        await expect(cache.get('foo')).resolves.toBeNull()
       })
 
-      it('should not affect other keys when forgetting', () => {
-        cache.set('foo', 'bar', 10)
-        cache.set('baz', 'qux', 10)
-        cache.forget('foo')
-        expect(cache.get('foo')).toBeNull()
-        expect(cache.get('baz')).toBe('qux')
+      it('should not affect other keys when deleting', async () => {
+        await cache.set('foo', 'bar', 10)
+        await cache.set('baz', 'qux', 10)
+        await cache.delete('foo')
+        await expect(cache.get('foo')).resolves.toBeNull()
+        await expect(cache.get('baz')).resolves.toBe('qux')
       })
 
-      it('should handle BigInt values', () => {
+      it('should handle BigInt values', async () => {
         const bigValue = BigInt('12345678901234567890')
-        cache.set('bigint', bigValue, 10)
-        const retrieved = cache.get('bigint')
+        await cache.set('bigint', bigValue, 10)
+        const retrieved = await cache.get('bigint')
         expect(retrieved).toBe(bigValue)
       })
     })

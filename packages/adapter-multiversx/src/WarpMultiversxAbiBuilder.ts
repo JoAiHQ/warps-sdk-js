@@ -84,7 +84,7 @@ export class WarpMultiversxAbiBuilder implements AdapterWarpAbiBuilder {
     const cacheKey = WarpCacheKey.WarpAbi(this.config.env, hash)
 
     if (cache) {
-      const cached = this.cache.get<WarpAbi>(cacheKey)
+      const cached = await this.cache.get<WarpAbi>(cacheKey)
       if (cached) {
         WarpLogger.info(`WarpAbiBuilder (createFromTransactionHash): Warp abi found in cache: ${hash}`)
         return cached
@@ -99,7 +99,7 @@ export class WarpMultiversxAbiBuilder implements AdapterWarpAbiBuilder {
       const abi = await this.createFromTransaction(tx)
 
       if (cache && cache.ttl && abi) {
-        this.cache.set(cacheKey, abi, cache.ttl)
+        await this.cache.set(cacheKey, abi, cache.ttl)
       }
 
       return abi

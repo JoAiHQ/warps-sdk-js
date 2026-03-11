@@ -236,7 +236,7 @@ export class WarpExecutor {
           const currentActionIndex = index + 1
 
           if (!chainAction) {
-            const resolvedInputs = this.factory.getResolvedInputsFromCache(this.config.env, warp.meta?.hash, currentActionIndex)
+            const resolvedInputs = await this.factory.getResolvedInputsFromCache(this.config.env, warp.meta?.hash, currentActionIndex)
 
             const errorResult: WarpActionExecutionResult = {
               status: 'error',

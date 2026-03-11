@@ -4,7 +4,7 @@ import { CacheStrategy } from './CacheStrategy'
 
 type CacheEntry<T> = {
   value: T
-  expiresAt: number
+  expiresAt: number | null
 }
 
 export class MemoryCacheStrategy implements CacheStrategy {
@@ -12,11 +12,11 @@ export class MemoryCacheStrategy implements CacheStrategy {
 
   constructor(env: WarpChainEnv, config?: ClientCacheConfig) {}
 
-  get<T>(key: string): T | null {
+  async get<T>(key: string): Promise<T | null> {
     const entry = MemoryCacheStrategy.cache.get(key)
     if (!entry) return null
 
-    if (Date.now() > entry.expiresAt) {
+    if (entry.expiresAt !== null && Date.now() > entry.expiresAt) {
       MemoryCacheStrategy.cache.delete(key)
       return null
     }
@@ -24,16 +24,24 @@ export class MemoryCacheStrategy implements CacheStrategy {
     return entry.value as T
   }
 
-  set<T>(key: string, value: T, ttl: number): void {
-    const expiresAt = Date.now() + ttl * 1000
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+    const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null
     MemoryCacheStrategy.cache.set(key, { value, expiresAt })
   }
 
-  forget(key: string): void {
+  async delete(key: string): Promise<void> {
     MemoryCacheStrategy.cache.delete(key)
   }
 
-  clear(): void {
+  async keys(pattern?: string): Promise<string[]> {
+    const allKeys = Array.from(MemoryCacheStrategy.cache.keys())
+    if (!pattern) return allKeys
+
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$')
+    return allKeys.filter((key) => regex.test(key))
+  }
+
+  async clear(): Promise<void> {
     MemoryCacheStrategy.cache.clear()
   }
 }

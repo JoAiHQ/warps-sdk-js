@@ -5,7 +5,7 @@ import { valueReviver, valueReplacer } from './helpers'
 
 type CacheEntry<T> = {
   value: T
-  expiresAt: number
+  expiresAt: number | null
 }
 
 export class LocalStorageCacheStrategy implements CacheStrategy {
@@ -19,13 +19,13 @@ export class LocalStorageCacheStrategy implements CacheStrategy {
     return `${this.prefix}:${key}`
   }
 
-  get<T>(key: string): T | null {
+  async get<T>(key: string): Promise<T | null> {
     try {
       const entryStr = localStorage.getItem(this.getKey(key))
       if (!entryStr) return null
 
       const entry: CacheEntry<T> = JSON.parse(entryStr, valueReviver)
-      if (Date.now() > entry.expiresAt) {
+      if (entry.expiresAt !== null && Date.now() > entry.expiresAt) {
         localStorage.removeItem(this.getKey(key))
         return null
       }
@@ -36,19 +36,32 @@ export class LocalStorageCacheStrategy implements CacheStrategy {
     }
   }
 
-  set<T>(key: string, value: T, ttl: number): void {
+  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
     const entry: CacheEntry<T> = {
       value,
-      expiresAt: Date.now() + ttl * 1000,
+      expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : null,
     }
     localStorage.setItem(this.getKey(key), JSON.stringify(entry, valueReplacer))
   }
 
-  forget(key: string): void {
+  async delete(key: string): Promise<void> {
     localStorage.removeItem(this.getKey(key))
   }
 
-  clear(): void {
+  async keys(pattern?: string): Promise<string[]> {
+    const allKeys = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key?.startsWith(this.prefix + ':')) continue
+      allKeys.push(key.slice(this.prefix.length + 1))
+    }
+    if (!pattern) return allKeys
+
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$')
+    return allKeys.filter((key) => regex.test(key))
+  }
+
+  async clear(): Promise<void> {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       if (key?.startsWith(this.prefix)) {

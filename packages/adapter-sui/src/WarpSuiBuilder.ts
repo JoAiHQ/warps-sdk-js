@@ -55,7 +55,7 @@ export class WarpSuiBuilder extends WarpBuilder implements AdapterWarpBuilder {
   async createFromNetwork(id: string, cache?: WarpCacheConfig): Promise<Warp | null> {
     const cacheKey = `sui:warp:${id}`
     if (cache) {
-      const cached = this.cache.get<Warp>(cacheKey)
+      const cached = await this.cache.get<Warp>(cacheKey)
       if (cached) return cached
     }
     try {
@@ -66,7 +66,7 @@ export class WarpSuiBuilder extends WarpBuilder implements AdapterWarpBuilder {
       if (!info || !Object.prototype.hasOwnProperty.call(info, 'hash') || !info.hash) return null
       const warp = this.createFromRaw(info)
       if (cache && cache.ttl && warp) {
-        this.cache.set(cacheKey, warp, cache.ttl)
+        await this.cache.set(cacheKey, warp, cache.ttl)
       }
       return warp
     } catch {

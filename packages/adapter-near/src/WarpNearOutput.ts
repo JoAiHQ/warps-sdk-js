@@ -46,7 +46,8 @@ export class WarpNearOutput implements AdapterWarpOutput {
     actionIndex: WarpActionIndex,
     tx: WarpAdapterGenericRemoteTransaction
   ): Promise<WarpActionExecutionResult> {
-    const inputs: ResolvedInput[] = this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex)) ?? []
+    const inputs: ResolvedInput[] =
+      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
     const resolvedInputs = extractResolvedInputValues(inputs)
 
     if (!tx) {

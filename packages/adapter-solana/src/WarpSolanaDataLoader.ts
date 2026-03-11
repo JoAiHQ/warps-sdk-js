@@ -80,7 +80,7 @@ export class WarpSolanaDataLoader implements AdapterWarpDataLoader {
       }
 
       const cacheKey = WarpCacheKey.Asset(this.config.env, this.chain.name, identifier)
-      const cachedAsset = this.cache.get<WarpChainAsset>(cacheKey)
+      const cachedAsset = await this.cache.get<WarpChainAsset>(cacheKey)
       if (cachedAsset) {
         return cachedAsset
       }
@@ -112,7 +112,7 @@ export class WarpSolanaDataLoader implements AdapterWarpDataLoader {
         logoUrl: metadata.logoUrl,
       }
 
-      this.cache.set(cacheKey, asset, CacheTtl.OneHour)
+      await this.cache.set(cacheKey, asset, CacheTtl.OneHour)
 
       return asset
     } catch (error) {

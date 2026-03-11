@@ -51,7 +51,8 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     tx: WarpAdapterGenericRemoteTransaction
   ): Promise<WarpActionExecutionResult> {
     // Restore inputs via cache as transactions are broadcasted and processed asynchronously
-    const inputs: ResolvedInput[] = this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex)) ?? []
+    const inputs: ResolvedInput[] =
+      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
 
     const output = await this.extractContractOutput(warp, actionIndex, tx, inputs)
     const messages = applyOutputToMessages(warp, output.output, this.config)

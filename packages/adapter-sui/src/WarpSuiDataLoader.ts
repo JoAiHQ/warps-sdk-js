@@ -66,7 +66,7 @@ export class WarpSuiDataLoader implements AdapterWarpDataLoader {
 
   async getAsset(identifier: string): Promise<WarpChainAsset | null> {
     const cacheKey = WarpCacheKey.Asset(this.config.env, this.chain.name, identifier)
-    const cachedAsset = this.cache.get<WarpChainAsset>(cacheKey)
+    const cachedAsset = await this.cache.get<WarpChainAsset>(cacheKey)
     if (cachedAsset) return cachedAsset
 
     const local = findKnownTokenById(identifier)
@@ -92,7 +92,7 @@ export class WarpSuiDataLoader implements AdapterWarpDataLoader {
         decimals: metadata?.decimals || 9,
         logoUrl: metadata?.iconUrl || '',
       }
-      this.cache.set(cacheKey, asset, CacheTtl.OneHour)
+      await this.cache.set(cacheKey, asset, CacheTtl.OneHour)
       return asset
     } catch (error) {
       // If token metadata is not found, return null

@@ -44,7 +44,8 @@ export class WarpEvmOutput implements AdapterWarpOutput {
     tx: WarpAdapterGenericRemoteTransaction
   ): Promise<WarpActionExecutionResult> {
     // Restore inputs via cache as transactions are broadcasted and processed asynchronously
-    const inputs: ResolvedInput[] = this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex)) ?? []
+    const inputs: ResolvedInput[] =
+      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
     const resolvedInputs = extractResolvedInputValues(inputs)
 
     if (!tx) {
