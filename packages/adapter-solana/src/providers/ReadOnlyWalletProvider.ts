@@ -1,5 +1,5 @@
 import { WalletProvider, WarpWalletDetails } from '@joai/warps'
-import { getWarpWalletAddressFromConfig, WarpChainInfo, WarpClientConfig } from '@joai/warps'
+import { getWarpWalletAddressFromConfig, removeWarpWalletFromConfig, WarpChainInfo, WarpClientConfig } from '@joai/warps'
 
 export class ReadOnlyWalletProvider implements WalletProvider {
   constructor(
@@ -43,5 +43,9 @@ export class ReadOnlyWalletProvider implements WalletProvider {
   async generate(): Promise<WarpWalletDetails> {
     const address = getWarpWalletAddressFromConfig(this.config, this.chain.name)
     throw new Error(`Wallet can not be used for signing: ${address}`)
+  }
+
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
   }
 }

@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import {
   getWarpWalletMnemonicFromConfig,
   getWarpWalletPrivateKeyFromConfig,
+  removeWarpWalletFromConfig,
   setWarpWalletInConfig,
   WarpChainInfo,
   WarpClientConfig,
@@ -106,6 +107,10 @@ export class PrivateKeyWalletProvider implements WalletProvider {
       privateKey: wallet.privateKey,
       mnemonic: null,
     }
+  }
+
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
   }
 
   private getWallet(): ethers.Wallet {

@@ -111,6 +111,11 @@ export class WarpMultiversxWallet implements AdapterWarpWallet {
     return await walletProvider.generate()
   }
 
+  async delete(provider: WarpWalletProvider, externalId: string): Promise<void> {
+    const walletProvider = this.createProviderForOperation(provider)
+    await walletProvider.delete(externalId)
+  }
+
   getAddress(): string | null {
     return this.cachedAddress
   }

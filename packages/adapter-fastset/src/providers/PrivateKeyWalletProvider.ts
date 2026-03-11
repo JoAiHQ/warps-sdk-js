@@ -2,6 +2,7 @@ import { WalletProvider, WarpWalletDetails, WarpWalletProvider } from '@joai/war
 import {
   getWarpWalletMnemonicFromConfig,
   getWarpWalletPrivateKeyFromConfig,
+  removeWarpWalletFromConfig,
   setWarpWalletInConfig,
   WarpChainInfo,
   WarpClientConfig,
@@ -113,6 +114,10 @@ export class PrivateKeyWalletProvider implements WalletProvider {
       privateKey: uint8ArrayToHex(privateKey),
       mnemonic: null,
     }
+  }
+
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
   }
 
   private getPrivateKey(): Uint8Array {

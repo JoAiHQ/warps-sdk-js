@@ -2,6 +2,7 @@ import { Keypair, Transaction, VersionedTransaction } from '@solana/web3.js'
 import {
   getWarpWalletMnemonicFromConfig,
   getWarpWalletPrivateKeyFromConfig,
+  removeWarpWalletFromConfig,
   setWarpWalletInConfig,
   WalletProvider,
   WarpChainInfo,
@@ -137,6 +138,10 @@ export class SolanaWalletProvider implements WalletProvider {
       privateKey: bs58.encode(keypair.secretKey),
       mnemonic: null,
     }
+  }
+
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
   }
 
   private getKeypair(): Keypair {

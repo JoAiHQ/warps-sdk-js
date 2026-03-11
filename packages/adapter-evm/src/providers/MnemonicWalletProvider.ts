@@ -7,6 +7,7 @@ import {
   getWarpWalletPrivateKeyFromConfig,
   normalizeAndValidateMnemonic,
   normalizeMnemonic,
+  removeWarpWalletFromConfig,
   setWarpWalletInConfig,
   validateMnemonicLength,
   WarpChainInfo,
@@ -118,6 +119,9 @@ export class MnemonicWalletProvider implements WalletProvider {
     }
   }
 
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
+  }
 
   private getWallet(): ethers.Wallet {
     if (this.wallet) return this.wallet

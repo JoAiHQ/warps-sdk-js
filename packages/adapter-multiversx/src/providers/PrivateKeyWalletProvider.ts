@@ -4,6 +4,7 @@ import {
   getWarpWalletAddressFromConfig,
   getWarpWalletMnemonicFromConfig,
   getWarpWalletPrivateKeyFromConfig,
+  removeWarpWalletFromConfig,
   setWarpWalletInConfig,
   WarpChainInfo,
   WarpClientConfig,
@@ -113,6 +114,10 @@ export class PrivateKeyWalletProvider implements WalletProvider {
       privateKey: privateKeyHex,
       mnemonic: null,
     }
+  }
+
+  async delete(externalId: string): Promise<void> {
+    removeWarpWalletFromConfig(this.config, this.chain.name)
   }
 
   private getAccount(): Account {
