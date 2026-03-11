@@ -22,6 +22,7 @@ const defaultEndpoints: RemoteWalletProviderEndpoints = {
   generate: '/v1/wallets/generate',
   import: '/v1/wallets/import',
   export: '/v1/wallets/export',
+  delete: '/v1/wallets/delete',
   signTransaction: '/v1/sign/transaction',
   signMessage: '/v1/sign/message',
 }
@@ -82,6 +83,7 @@ const normalizeEndpoints = (endpoints: RemoteWalletProviderEndpoints): RemoteWal
   generate: normalizeEndpointPath(endpoints.generate),
   import: normalizeEndpointPath(endpoints.import),
   export: normalizeEndpointPath(endpoints.export),
+  delete: normalizeEndpointPath(endpoints.delete),
   signTransaction: normalizeEndpointPath(endpoints.signTransaction),
   signMessage: normalizeEndpointPath(endpoints.signMessage),
 })
@@ -232,6 +234,19 @@ export class RemoteWalletProvider implements WalletProvider {
     return await this.requestLifecycleWallet(this.remoteConfig.endpoints.generate, { agentId, chain: this.chain.name }, serviceToken, 'generate')
   }
 
+  async delete(externalId: string): Promise<void> {
+    const serviceToken = await this.resolveServiceToken()
+
+    await this.request(
+      this.remoteConfig.endpoints.delete,
+      { walletId: externalId },
+      {
+        bearer: serviceToken,
+        context: this.createContext('delete', { walletId: externalId }),
+      }
+    )
+  }
+
   private async requestLifecycleWallet(
     path: string,
     payload: Record<string, unknown>,
@@ -325,6 +340,7 @@ export class RemoteWalletProvider implements WalletProvider {
         throw new Error(`RemoteWalletProvider request failed (${response.status}): ${text}`)
       }
 
+      if (response.status === 204) return undefined as T
       return (await response.json()) as T
     } finally {
       clearTimeout(timeout)

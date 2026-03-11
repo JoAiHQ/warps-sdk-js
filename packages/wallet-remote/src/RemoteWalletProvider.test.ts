@@ -567,6 +567,33 @@ describe('RemoteWalletProvider', () => {
     expect(provider).toBeTruthy()
   })
 
+  it('deletes a wallet through the delete endpoint', async () => {
+    const config = createConfig()
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      asResponse({
+        ok: true,
+        status: 204,
+      })
+    )
+
+    const provider = createProvider(config, 'ethereum', {
+      baseUrl: 'https://signer.example',
+      providerName: 'remoteSigner',
+      serviceToken: 'service-token-123',
+    })
+
+    await provider.delete('wallet-1')
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0] as [string, RequestInit]
+
+    expect(url).toBe('https://signer.example/v1/wallets/delete')
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer service-token-123')
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      walletId: 'wallet-1',
+    })
+  })
+
   it('creates a provider factory with a custom provider name', () => {
     const config = createConfig()
 

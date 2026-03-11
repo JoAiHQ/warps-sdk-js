@@ -56,6 +56,7 @@ If you use a custom provider key, pass it as `providerName` or the helper fallba
 - `POST /v1/wallets/generate`
 - `POST /v1/wallets/import`
 - `POST /v1/wallets/export`
+- `POST /v1/wallets/delete`
 - `POST /v1/sign/transaction`
 - `POST /v1/sign/message`
 

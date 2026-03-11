@@ -6,11 +6,12 @@ export type RemoteWalletProviderEndpoints = {
   generate: string
   import: string
   export: string
+  delete: string
   signTransaction: string
   signMessage: string
 }
 
-export type RemoteWalletOperation = 'generate' | 'import' | 'export' | 'signTransaction' | 'signMessage'
+export type RemoteWalletOperation = 'generate' | 'import' | 'export' | 'delete' | 'signTransaction' | 'signMessage'
 
 export type RemoteWalletAccessTokenParams = {
   walletId: string
