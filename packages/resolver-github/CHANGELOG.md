@@ -1,5 +1,11 @@
 # @joai/warps-resolver-github
 
+## 2.0.1
+
+### Patch Changes
+
+- e481582: Allow resolving aliases with a @ prefix in WarpGitHubResolver.
+
 ## 2.0.0
 
 ### Major Changes

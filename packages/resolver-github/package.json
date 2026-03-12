@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-resolver-github",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "GitHub catalog resolver for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
