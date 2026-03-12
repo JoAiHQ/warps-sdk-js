@@ -84,6 +84,23 @@ describe('WarpGitHubResolver', () => {
     expect(result!.warp.name).toBe('Test Warp')
   })
 
+  it('resolves a warp by alias with @ prefix', async () => {
+    const resolver = new WarpGitHubResolver({ env: 'mainnet' })
+    const result = await resolver.getByAlias('@test-warp')
+
+    expect(result).not.toBeNull()
+    expect(result!.warp.name).toBe('Test Warp')
+    expect(result!.registryInfo?.alias).toBe('test-warp')
+  })
+
+  it('resolves a warp by full key with @ prefix', async () => {
+    const resolver = new WarpGitHubResolver({ env: 'mainnet' })
+    const result = await resolver.getByAlias('@multiversx:test-warp')
+
+    expect(result).not.toBeNull()
+    expect(result!.warp.name).toBe('Test Warp')
+  })
+
   it('resolves a warp by hash', async () => {
     const resolver = new WarpGitHubResolver({ env: 'mainnet' })
     const result = await resolver.getByHash('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2')

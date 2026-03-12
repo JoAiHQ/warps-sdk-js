@@ -10,6 +10,7 @@ import {
   WarpRegistryInfo,
   WarpResolver,
   WarpResolverResult,
+  cleanWarpIdentifier,
 } from '@joai/warps'
 type ManifestEntry = {
   key: string
@@ -52,7 +53,8 @@ export class WarpGitHubResolver implements WarpResolver {
 
   async getByAlias(alias: string, cache?: WarpCacheConfig): Promise<WarpResolverResult | null> {
     await this.ensureLoaded()
-    const entry = this.byAlias.get(alias)
+    const cleanAlias = cleanWarpIdentifier(alias)
+    const entry = this.byAlias.get(cleanAlias)
     if (!entry) return null
     return this.toResolverResult(entry)
   }
@@ -122,8 +124,8 @@ export class WarpGitHubResolver implements WarpResolver {
     if (!this.manifest?.warps) return
 
     for (const entry of this.manifest.warps) {
-      if (entry.key) this.byAlias.set(entry.key, entry)
-      if (entry.alias) this.byAlias.set(entry.alias, entry)
+      if (entry.key) this.byAlias.set(cleanWarpIdentifier(entry.key), entry)
+      if (entry.alias) this.byAlias.set(cleanWarpIdentifier(entry.alias), entry)
       if (entry.hash) this.byHash.set(entry.hash, entry)
     }
   }

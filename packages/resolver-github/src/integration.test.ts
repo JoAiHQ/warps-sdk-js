@@ -20,7 +20,6 @@ describe('WarpGitHubResolver Integration', () => {
     expect(result!.registryInfo!.alias).toBe('omniset-deposit-arbitrum')
     expect(result!.brand).not.toBeNull()
     expect(result!.brand!.name).toBe('OmniSet')
-    console.log(`Resolved: ${result!.warp.name} (hash: ${result!.registryInfo!.hash.substring(0, 12)}...)`)
   }, TIMEOUT)
 
   it('resolves by full key (chain:alias)', async () => {
@@ -39,7 +38,6 @@ describe('WarpGitHubResolver Integration', () => {
     const byHash = await resolver.getByHash(byAlias!.registryInfo!.hash)
     expect(byHash).not.toBeNull()
     expect(byHash!.warp.name).toBe(byAlias!.warp.name)
-    console.log(`Hash cross-check passed for: ${byHash!.warp.name}`)
   }, TIMEOUT)
 
   it('returns null for unknown alias', async () => {
@@ -58,7 +56,6 @@ describe('WarpGitHubResolver Integration', () => {
     expect(r2).not.toBeNull()
     expect(r1!.warp.name).toBe(r2!.warp.name)
     // Only 1 fetch should have been made (caching)
-    console.log('Cache test passed — manifest reused across calls')
   }, TIMEOUT)
 
   it('warp has correct meta fields', async () => {
