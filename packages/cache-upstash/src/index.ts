@@ -6,7 +6,7 @@ const DEFAULT_SCAN_COUNT = 500
 const DELETE_BATCH_SIZE = 100
 
 const valueReplacer = (_key: string, value: unknown): unknown => {
-  if (typeof value === 'bigint') return `${BIGINT_PREFIX}${value.toString()}`
+  if (typeof value === 'bigint') return BIGINT_PREFIX + value.toString()
   return value
 }
 
@@ -15,11 +15,6 @@ const valueReviver = (_key: string, value: unknown): unknown => {
     return BigInt(value.slice(BIGINT_PREFIX.length))
   }
   return value
-}
-
-type CacheEntry<T> = {
-  value: T
-  expiresAt: number | null
 }
 
 type UpstashLikeRedis = Pick<Redis, 'get' | 'set'> & {
@@ -54,15 +49,16 @@ class UpstashCacheAdapter implements WarpCacheAdapter {
       throw new Error('Upstash cache requires both url and token when no redis client is provided')
     }
 
-    this.redis = new Redis({ url: options.url, token: options.token })
+    this.redis = new Redis({ url: options.url, token: options.token, automaticDeserialization: false })
   }
 
   async get<T>(key: string): Promise<T | null> {
     const raw = await this.redis.get<string>(this.getRemoteKey(assertCacheKey(key)))
     if (raw == null) return null
+
     try {
       return JSON.parse(raw, valueReviver) as T
-    } catch (error) {
+    } catch {
       throw new Error(`Failed to deserialize cache entry for key "${key}"`)
     }
   }

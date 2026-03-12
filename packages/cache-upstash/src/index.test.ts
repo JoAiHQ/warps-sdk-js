@@ -30,6 +30,7 @@ class FakeRedis {
     const regex = new RegExp(`^${pattern.split('*').map(escapeRegExp).join('.*')}$`)
     return Array.from(this.store.keys()).filter((key) => regex.test(key))
   }
+
 }
 
 const escapeRegExp = (value: string): string => value.replace(/[|\\{}()[\]^$+?.]/g, '\\$&')
