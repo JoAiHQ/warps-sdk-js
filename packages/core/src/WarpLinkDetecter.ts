@@ -69,6 +69,14 @@ export class WarpLinkDetecter {
       return emptyResult
     }
 
+    WarpLogger.info('Warp detect parse', {
+      input: urlOrId,
+      chain: identifierResult.chain,
+      type: identifierResult.type,
+      identifier: identifierResult.identifier,
+      identifierBase: identifierResult.identifierBase,
+    })
+
     try {
       const { type, identifierBase } = identifierResult
       let warp: Warp | null = null
@@ -127,6 +135,17 @@ export class WarpLinkDetecter {
       const warpChain = warp.chain || identifierResult.chain
       const warpAdapter = findWarpAdapterForChain(warpChain, this.adapters)
       const preparedWarp = await new WarpInterpolator(this.config, warpAdapter, this.adapters).apply(warp)
+
+      WarpLogger.info('Warp detect resolved', {
+        input: urlOrId,
+        requestedChain: identifierResult.chain,
+        resolvedChain: warpChain,
+        requestedType: type,
+        requestedIdentifier: identifierResult.identifier,
+        resolvedIdentifier: preparedWarp.meta?.identifier ?? warp.meta?.identifier ?? null,
+        alias: registryInfo?.alias ?? null,
+        hash: registryInfo?.hash ?? null,
+      })
 
       return { match: true, url: urlOrId, warp: preparedWarp, chain: warpChain, registryInfo, brand }
     } catch (e) {
