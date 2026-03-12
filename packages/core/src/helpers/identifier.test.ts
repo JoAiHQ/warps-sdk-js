@@ -76,8 +76,8 @@ describe('isEqualWarpIdentifier', () => {
 
 describe('createWarpIdentifier', () => {
   it('creates alias identifier with @ prefix and no alias type', () => {
-    const result = createWarpIdentifier(WarpChainName.Sui, 'alias', 'mywarp')
-    expect(result).toBe('@sui:mywarp')
+    const result = createWarpIdentifier(null, 'alias', 'mywarp')
+    expect(result).toBe('@mywarp')
   })
 
   it('creates identifier with hash type', () => {
@@ -86,18 +86,22 @@ describe('createWarpIdentifier', () => {
   })
 
   it('creates alias identifier with different chain', () => {
-    const result = createWarpIdentifier(WarpChainName.Ethereum, 'alias', 'mywarp')
-    expect(result).toBe('@ethereum:mywarp')
+    const result = createWarpIdentifier(null, 'alias', 'mywarp')
+    expect(result).toBe('@mywarp')
   })
 
   it('creates alias identifier with empty identifier', () => {
-    const result = createWarpIdentifier(WarpChainName.Sui, 'alias', '')
-    expect(result).toBe('@sui:')
+    const result = createWarpIdentifier(null, 'alias', '')
+    expect(result).toBe('@')
   })
 
   it('removes @ prefix from identifier if present', () => {
-    const result = createWarpIdentifier(WarpChainName.Sui, 'alias', '@mywarp')
-    expect(result).toBe('@sui:mywarp')
+    const result = createWarpIdentifier(null, 'alias', '@mywarp')
+    expect(result).toBe('@mywarp')
+  })
+
+  it('requires chain for hash identifiers', () => {
+    expect(() => createWarpIdentifier(null, 'hash', 'abc123def456')).toThrow('Chain is required for hash warp identifiers')
   })
 })
 
@@ -803,4 +807,3 @@ describe('getWarpIdentifierWithQuery', () => {
     expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp?msg=hello+world')
   })
 })
-

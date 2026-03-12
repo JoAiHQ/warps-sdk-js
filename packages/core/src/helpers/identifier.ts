@@ -12,10 +12,13 @@ export const isEqualWarpIdentifier = (identifier1: string | null | undefined, id
   return cleanWarpIdentifier(identifier1) === cleanWarpIdentifier(identifier2)
 }
 
-export const createWarpIdentifier = (chain: WarpChainName, type: WarpIdentifierType, identifier: string) => {
+export const createWarpIdentifier = (chain: WarpChainName | null, type: WarpIdentifierType, identifier: string) => {
   const cleanIdentifier = cleanWarpIdentifier(identifier)
   if (type === WarpConstants.IdentifierType.Alias) {
-    return WarpConstants.IdentifierAliasMarker + chain + WarpConstants.IdentifierParamSeparator + cleanIdentifier
+    return WarpConstants.IdentifierAliasMarker + cleanIdentifier
+  }
+  if (!chain) {
+    throw new Error('Chain is required for hash warp identifiers')
   }
   return chain + WarpConstants.IdentifierParamSeparator + type + WarpConstants.IdentifierParamSeparator + cleanIdentifier
 }

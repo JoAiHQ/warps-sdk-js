@@ -139,6 +139,6 @@ export class WarpLinkDetecter {
 const modifyWarpMetaIdentifier = (warp: Warp, chain: WarpChainName, registryInfo: WarpRegistryInfo | null, identifier: string) => {
   if (!warp.meta) return
   warp.meta.identifier = registryInfo?.alias
-    ? createWarpIdentifier(chain, 'alias', registryInfo.alias)
+    ? createWarpIdentifier(null, 'alias', registryInfo.alias)
     : createWarpIdentifier(chain, 'hash', registryInfo?.hash ?? identifier)
 }
