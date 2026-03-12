@@ -1,5 +1,11 @@
 # @joai/warps-cache-upstash
 
+## 0.2.1
+
+### Patch Changes
+
+- 27bfe43: Disable Upstash automatic deserialization in the cache adapter so cached JSON values are always parsed consistently by the SDK.
+
 ## 0.2.0
 
 ### Minor Changes
