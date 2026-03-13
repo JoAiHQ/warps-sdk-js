@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.4.0
+
+### Minor Changes
+
+- 34dabea: Add `brandSlug`, `brandName`, and `brandLogo` fields to `WarpSearchHit` so consumers can display brand identity directly from search results without an extra fetch.
+
 ## 4.3.1
 
 ### Patch Changes
