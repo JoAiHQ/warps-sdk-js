@@ -136,17 +136,6 @@ export class WarpLinkDetecter {
       const warpAdapter = findWarpAdapterForChain(warpChain, this.adapters)
       const preparedWarp = await new WarpInterpolator(this.config, warpAdapter, this.adapters).apply(warp)
 
-      WarpLogger.info('Warp detect resolved', {
-        input: urlOrId,
-        requestedChain: identifierResult.chain,
-        resolvedChain: warpChain,
-        requestedType: type,
-        requestedIdentifier: identifierResult.identifier,
-        resolvedIdentifier: preparedWarp.meta?.identifier ?? warp.meta?.identifier ?? null,
-        alias: registryInfo?.alias ?? null,
-        hash: registryInfo?.hash ?? null,
-      })
-
       return { match: true, url: urlOrId, warp: preparedWarp, chain: warpChain, registryInfo, brand }
     } catch (e) {
       WarpLogger.error('Error detecting warp link', e)
