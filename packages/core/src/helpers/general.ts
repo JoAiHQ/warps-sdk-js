@@ -1,5 +1,5 @@
 import { WarpProtocolVersions } from '../config'
-import { WarpChainName } from '../constants'
+import { WarpChainName, WarpConstants } from '../constants'
 import { ChainAdapter, ProtocolName, Warp, WarpAction, WarpActionType } from '../types'
 
 export const findWarpAdapterForChain = (chain: WarpChainName, adapters: ChainAdapter[]): ChainAdapter => {
@@ -93,6 +93,19 @@ export const replacePlaceholdersInWhenExpression = (expression: string, bag: Rec
     }
     return String(value)
   })
+}
+
+export const doesWarpRequireWallet = (warp: Warp): { required: boolean; chain: WarpChainName | null } => {
+  const required = warp.actions.some((action) => {
+    if ((['transfer', 'contract'] as WarpActionType[]).includes(action.type)) return true
+    return (action.inputs ?? []).some(
+      (input) =>
+        input.source === WarpConstants.Source.UserWallet ||
+        input.default === `{{${WarpConstants.Globals.UserWallet.Placeholder}}}` ||
+        input.default === `{{${WarpConstants.Globals.UserWalletPublicKey.Placeholder}}}`
+    )
+  })
+  return { required, chain: required ? (warp.chain ?? null) : null }
 }
 
 export const evaluateWhenCondition = (expression: string): boolean => {

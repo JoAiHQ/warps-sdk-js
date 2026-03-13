@@ -1,6 +1,6 @@
 import { WarpChainName } from '../constants'
 import { Warp, WarpAction, WarpActionType, WarpMeta } from '../types'
-import { evaluateWhenCondition, getWarpPrimaryAction, isWarpActionAutoExecute, replacePlaceholders } from './general'
+import { doesWarpRequireWallet, evaluateWhenCondition, getWarpPrimaryAction, isWarpActionAutoExecute, replacePlaceholders } from './general'
 
 describe('getWarpPrimaryAction', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
@@ -291,6 +291,77 @@ describe('isWarpActionAutoExecute', () => {
 
       expect(isWarpActionAutoExecute(collectAction, warp)).toBe(true)
     })
+  })
+})
+
+describe('doesWarpRequireWallet', () => {
+  const makeWarp = (actionTypes: WarpActionType[], chain?: WarpChainName): Warp => ({
+    protocol: 'warp:1.0.0',
+    name: 'test-warp',
+    title: 'Test',
+    description: null,
+    chain,
+    actions: actionTypes.map((type) => ({ type, label: type })),
+  })
+
+  it('returns required=true and chain for a transfer action', () => {
+    const result = doesWarpRequireWallet(makeWarp(['transfer'], WarpChainName.Multiversx))
+    expect(result).toEqual({ required: true, chain: WarpChainName.Multiversx })
+  })
+
+  it('returns required=true and chain for a contract action', () => {
+    const result = doesWarpRequireWallet(makeWarp(['contract'], WarpChainName.Ethereum))
+    expect(result).toEqual({ required: true, chain: WarpChainName.Ethereum })
+  })
+
+  it('returns required=true when mixed with non-wallet actions', () => {
+    const result = doesWarpRequireWallet(makeWarp(['query', 'transfer'], WarpChainName.Base))
+    expect(result).toEqual({ required: true, chain: WarpChainName.Base })
+  })
+
+  it('returns required=false and chain=null for a query-only warp', () => {
+    const result = doesWarpRequireWallet(makeWarp(['query']))
+    expect(result).toEqual({ required: false, chain: null })
+  })
+
+  it('returns required=false and chain=null for a collect-only warp', () => {
+    const result = doesWarpRequireWallet(makeWarp(['collect']))
+    expect(result).toEqual({ required: false, chain: null })
+  })
+
+  it('returns required=false and chain=null for a link-only warp', () => {
+    const result = doesWarpRequireWallet(makeWarp(['link']))
+    expect(result).toEqual({ required: false, chain: null })
+  })
+
+  it('returns required=false and chain=null for an empty actions array', () => {
+    const result = doesWarpRequireWallet(makeWarp([]))
+    expect(result).toEqual({ required: false, chain: null })
+  })
+
+  it('returns chain=null when warp has no chain and requires wallet', () => {
+    const result = doesWarpRequireWallet(makeWarp(['transfer']))
+    expect(result).toEqual({ required: true, chain: null })
+  })
+
+  it('returns required=true for a collect action with source user:wallet input', () => {
+    const warp: Warp = { ...makeWarp(['collect'], WarpChainName.Multiversx), actions: [{ type: 'collect', label: 'Collect', inputs: [{ name: 'Address', type: 'address', source: 'user:wallet', required: true }] }] }
+    expect(doesWarpRequireWallet(warp)).toEqual({ required: true, chain: WarpChainName.Multiversx })
+  })
+
+  it('returns required=true for a collect action with {{USER_WALLET}} default', () => {
+    const warp: Warp = { ...makeWarp(['collect'], WarpChainName.Multiversx), actions: [{ type: 'collect', label: 'Collect', inputs: [{ name: 'Address', type: 'address', source: 'field', default: '{{USER_WALLET}}', required: true }] }] }
+    expect(doesWarpRequireWallet(warp)).toEqual({ required: true, chain: WarpChainName.Multiversx })
+  })
+
+  it('returns required=true for a query action with {{USER_WALLET_PUBLICKEY}} default', () => {
+    const warp: Warp = { ...makeWarp(['query'], WarpChainName.Ethereum), actions: [{ type: 'query', label: 'Query', inputs: [{ name: 'Key', type: 'string', source: 'field', default: '{{USER_WALLET_PUBLICKEY}}' }] }] }
+    expect(doesWarpRequireWallet(warp)).toEqual({ required: true, chain: WarpChainName.Ethereum })
+  })
+
+  it('returns required=false for a collect action with a regular field input', () => {
+    const warp: Warp = { ...makeWarp(['collect']), actions: [{ type: 'collect', label: 'Collect', inputs: [{ name: 'Address', type: 'address', source: 'field', required: true }] }] }
+    expect(doesWarpRequireWallet(warp)).toEqual({ required: false, chain: null })
   })
 })
 
