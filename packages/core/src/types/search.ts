@@ -15,6 +15,9 @@ export type WarpSearchHit = {
   title: string
   description: string
   preview: string
+  brandSlug: string | null
+  brandName: string | null
+  brandLogo: string | null
   status: string
   category: string
   featured: boolean
