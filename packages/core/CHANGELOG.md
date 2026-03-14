@@ -1,5 +1,22 @@
 # @joai/warps
 
+## 4.6.0
+
+### Minor Changes
+
+- 86dc49d: Add `getRequiredAssetIds` and `checkWarpAssetBalance` helpers for pre-flight wallet balance checks.
+
+  `getRequiredAssetIds(warp, chainInfo)` returns the asset identifiers a warp's primary action requires the wallet to hold. Gates on contract/transfer action types and inspects input positions (`value`, `transfer`) and the `asset` input type.
+
+  `checkWarpAssetBalance(warp, address, chain, adapters)` verifies the wallet holds all required assets before execution. Returns false if any required asset has zero balance, true if no assets are needed or on network error (non-fatal).
+
+- 23c79c0: Add warp mini-app primitives: `WarpStateAction`, `WarpMountAction`, `WarpUnmountAction`, and `WarpTrigger` types.
+
+  These enable stateful mini-apps (games, polls, quizzes) to be expressed as warps:
+  - `state` action: read/write/clear room-scoped key-value state
+  - `mount`/`unmount` actions: activate/deactivate message trigger listeners per room
+  - `trigger` field on `Warp`: declares the message pattern a warp listens for when mounted
+
 ## 4.5.1
 
 ### Patch Changes
