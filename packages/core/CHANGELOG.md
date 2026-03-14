@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.5.1
+
+### Patch Changes
+
+- 3041233: Interpolate input values into success message templates for unhandled collect warps
+
 ## 4.5.0
 
 ### Minor Changes
