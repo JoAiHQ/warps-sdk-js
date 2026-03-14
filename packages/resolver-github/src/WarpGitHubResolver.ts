@@ -37,6 +37,12 @@ export type WarpGitHubResolverConfig = {
 const DEFAULT_REFRESH_INTERVAL = 5 * 60 * 1000
 const MANIFEST_CACHE_KEY = 'github-manifest'
 
+const MANIFEST_BRANCH: Record<WarpChainEnv, string> = {
+  devnet: 'dev',
+  testnet: 'test',
+  mainnet: 'main',
+}
+
 export class WarpGitHubResolver implements WarpResolver {
   private manifest: { warps: ManifestEntry[] } | null = null
   private byAlias: Map<string, ManifestEntry> = new Map()
@@ -114,7 +120,8 @@ export class WarpGitHubResolver implements WarpResolver {
   private getManifestUrl(): string {
     if (this.config?.manifestUrl) return this.config.manifestUrl
     const env = this.config?.env ?? 'mainnet'
-    return `https://raw.githubusercontent.com/JoAiHQ/warps/main/catalog/${env}/manifest.json`
+    const branch = MANIFEST_BRANCH[env]
+    return `https://raw.githubusercontent.com/JoAiHQ/warps/${branch}/catalog/${env}/manifest.json`
   }
 
   private buildIndexes(): void {
