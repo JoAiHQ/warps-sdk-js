@@ -147,7 +147,7 @@ describe('WarpGitHubResolver', () => {
     await resolver.getByAlias('test-warp')
 
     expect(fetch).toHaveBeenCalledWith(
-      'https://raw.githubusercontent.com/JoAiHQ/warps/main/catalog/devnet/manifest.json'
+      'https://raw.githubusercontent.com/JoAiHQ/warps/dev/catalog/devnet/manifest.json'
     )
   })
 

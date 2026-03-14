@@ -67,6 +67,6 @@ describe('WarpGitHubResolver Integration', () => {
     expect(result!.warp.meta!.chain).toBe('arbitrum')
     expect(result!.warp.meta!.hash).toBeTruthy()
     expect(result!.warp.meta!.creator).toBe('github:JoAiHQ/warps')
-    expect(result!.warp.meta!.identifier).toBe('@arbitrum:omniset-deposit-arbitrum')
+    expect(result!.warp.meta!.identifier).toBe('@omniset-deposit-arbitrum')
   }, TIMEOUT)
 })
