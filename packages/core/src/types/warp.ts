@@ -45,6 +45,7 @@ export type Warp = {
   bot?: string
   preview?: string
   vars?: Record<WarpVarPlaceholder, string>
+  trigger?: WarpTrigger
   actions: WarpAction[]
   next?: string
   output?: Record<WarpOutputName, WarpResulutionPath>
@@ -65,11 +66,47 @@ export type WarpMeta = {
   createdAt: string
 }
 
-export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpLinkAction | WarpMcpAction | WarpPromptAction
+export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction
 
 export type WarpActionIndex = number
 
-export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'link' | 'mcp' | 'prompt'
+export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount'
+
+export type WarpTrigger =
+  | { type: 'message'; pattern: string }
+
+export type WarpStateAction = {
+  type: 'state'
+  label?: WarpText
+  op: 'read' | 'write' | 'clear'
+  store: string
+  keys?: string[]
+  data?: Record<string, any>
+  inputs?: WarpActionInput[]
+  primary?: boolean
+  auto?: boolean
+  when?: string
+}
+
+export type WarpMountAction = {
+  type: 'mount'
+  label?: WarpText
+  warp: string
+  inputs?: WarpActionInput[]
+  primary?: boolean
+  auto?: boolean
+  when?: string
+}
+
+export type WarpUnmountAction = {
+  type: 'unmount'
+  label?: WarpText
+  warp: string
+  inputs?: WarpActionInput[]
+  primary?: boolean
+  auto?: boolean
+  when?: string
+}
 
 export type WarpTransferAction = {
   type: WarpActionType
