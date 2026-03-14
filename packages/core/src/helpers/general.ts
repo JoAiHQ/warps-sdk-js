@@ -108,6 +108,7 @@ export const doesWarpRequireWallet = (warp: Warp): { required: boolean; chain: W
   return { required, chain: required ? (warp.chain ?? null) : null }
 }
 
+
 export const evaluateWhenCondition = (expression: string): boolean => {
   if (!expression || typeof expression !== 'string') return true
 

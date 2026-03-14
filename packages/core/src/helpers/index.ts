@@ -18,4 +18,6 @@ export * from './source-identifier'
 export * from './wallet'
 export * from './wallet-cache'
 export * from './wallet-provider'
+export * from './warp-assets'
 export * from './x402'
+

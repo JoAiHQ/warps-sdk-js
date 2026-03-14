@@ -449,3 +449,4 @@ describe('replacePlaceholders', () => {
     expect(replacePlaceholders('id={{ID}}&amount={{AMOUNT}}', { ID: 'abc', AMOUNT: 0 })).toBe('id=abc&amount=0')
   })
 })
+
