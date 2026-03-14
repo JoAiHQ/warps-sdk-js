@@ -1,5 +1,11 @@
 # @joai/warps-resolver-github
 
+## 2.0.2
+
+### Patch Changes
+
+- 5dd8e77: Resolve manifest from the correct branch based on env: devnet → dev, testnet → test, mainnet → main
+
 ## 2.0.1
 
 ### Patch Changes
