@@ -578,7 +578,7 @@ export class WarpExecutor {
       next,
       values,
       output: rawData ? { ...output, _DATA: rawData } : output,
-      messages: applyOutputToMessages(executable.warp, output, this.config),
+      messages: applyOutputToMessages(executable.warp, { ...values.mapped, ...output }, this.config),
       destination: this.getDestinationFromResolvedInputs(executable),
       resolvedInputs,
     }

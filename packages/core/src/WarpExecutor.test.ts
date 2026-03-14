@@ -739,6 +739,32 @@ describe('WarpExecutor', () => {
       )
     })
 
+    it('should interpolate input values into success message template for unhandled collect', async () => {
+      const unhandledWarp = {
+        ...warp,
+        chain: WarpChainName.Multiversx,
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Broadcast',
+            destination: 'joai-broadcast',
+            inputs: [
+              { name: 'Message', as: 'message', type: 'string', source: 'field' as const },
+              { name: 'Room ID', as: 'roomId', type: 'string', source: 'field' as const },
+            ],
+          } as WarpCollectAction,
+        ],
+        messages: { success: { en: 'Broadcast sent: {{message}}' } },
+      }
+
+      const inputs = ['string:Hello world', 'string:room123']
+      const result = await executor.execute(unhandledWarp, inputs)
+      const execution = result.immediateExecutions[0]
+
+      expect(execution.status).toBe('unhandled')
+      expect(execution.messages.success).toBe('Broadcast sent: Hello world')
+    })
+
     it('should return unhandled status when collect action destination is a string without URL', async () => {
       const unhandledWarp = {
         ...warp,
