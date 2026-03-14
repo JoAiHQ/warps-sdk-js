@@ -40,7 +40,7 @@ export const convertWarpToMcpCapabilities = async (warp: Warp, config: WarpClien
       if (mcpAction.destination) {
         tool = convertMcpActionToTool(warp, mcpAction, description, primaryAction.inputs, resource, config)
       }
-    } else if (primaryAction.type !== 'state' && primaryAction.type !== 'mount' && primaryAction.type !== 'unmount') {
+    } else {
       tool = convertActionToTool(warp, primaryAction, description, primaryAction.inputs, resource, config)
     }
   } catch (error) {

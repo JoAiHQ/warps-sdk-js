@@ -1,14 +1,11 @@
 import {
   removeWarpChainPrefix,
   Warp,
+  WarpAction,
   WarpActionInput,
   WarpClientConfig,
-  WarpCollectAction,
-  WarpContractAction,
   WarpMcpAction,
-  WarpQueryAction,
   WarpText,
-  WarpTransferAction,
 } from '@joai/warps'
 import { z } from 'zod'
 import { WarpMcpResource, WarpMcpTool } from '../types'
@@ -111,7 +108,7 @@ export const buildZodInputSchema = (inputs: WarpActionInput[], config: WarpClien
 
 export const convertActionToTool = (
   warp: Warp,
-  action: WarpTransferAction | WarpContractAction | WarpCollectAction | WarpQueryAction,
+  action: WarpAction,
   description: string | undefined,
   primaryActionInputs: WarpActionInput[] | undefined,
   resource: WarpMcpResource | null,

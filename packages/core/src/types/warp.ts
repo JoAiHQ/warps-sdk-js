@@ -77,7 +77,7 @@ export type WarpTrigger =
 
 export type WarpStateAction = {
   type: 'state'
-  label?: WarpText
+  label: WarpText
   description?: WarpText | null
   op: 'read' | 'write' | 'clear'
   store: string
@@ -86,28 +86,31 @@ export type WarpStateAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
+  next?: string
   when?: string
 }
 
 export type WarpMountAction = {
   type: 'mount'
-  label?: WarpText
+  label: WarpText
   description?: WarpText | null
   warp: string
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
+  next?: string
   when?: string
 }
 
 export type WarpUnmountAction = {
   type: 'unmount'
-  label?: WarpText
+  label: WarpText
   description?: WarpText | null
   warp: string
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
+  next?: string
   when?: string
 }
 
