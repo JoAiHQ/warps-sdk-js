@@ -98,6 +98,29 @@ describe('getWarpPrimaryAction', () => {
     })
   })
 
+  describe('state, mount, unmount are not detectable (host-managed)', () => {
+    it.each(['state', 'mount', 'unmount'] as const)('%s falls through to first-action fallback', (type) => {
+      const hostAction = createMockAction(type as any, false, 'Host Action')
+      const warp = createMockWarp([hostAction])
+
+      const result = getWarpPrimaryAction(warp)
+
+      expect(result.action).toBe(hostAction)
+      expect(result.index).toBe(0)
+    })
+
+    it('skips state/mount/unmount when a detectable action is present', () => {
+      const stateAction = createMockAction('state' as any, false, 'Read State')
+      const collectAction = createMockAction('collect', false, 'Collect Data')
+      const warp = createMockWarp([stateAction, collectAction])
+
+      const result = getWarpPrimaryAction(warp)
+
+      expect(result.action).toBe(collectAction)
+      expect(result.index).toBe(1)
+    })
+  })
+
   describe('when only non-detectable actions exist', () => {
     it('should return the first link action when only link actions exist', () => {
       const linkAction = createMockAction('link', false, 'Single Link')

@@ -143,7 +143,7 @@ describe('WarpExecutor — compute action', () => {
 
   it('never calls fetch (no HTTP request)', async () => {
     const mockFetch = jest.fn()
-    global.fetch = mockFetch
+    global.fetch = mockFetch as any
 
     const warp = makeComputeWarp({ inputs: [] })
     await executor.execute(warp, [])

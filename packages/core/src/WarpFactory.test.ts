@@ -917,6 +917,15 @@ describe('WarpFactory', () => {
       expect(result.destination).toBe('https://mcp.example.com')
       expect(result.resolvedInputs).toEqual([])
     })
+
+    it.each(['compute', 'state', 'mount', 'unmount'] as const)('allows %s actions without a destination', async (type) => {
+      const factory = new WarpFactory(testConfig, [createMockAdapter()])
+      const warp: any = {
+        meta: { hash: 'abc' },
+        actions: [{ type, label: type, inputs: [] }],
+      }
+      await expect(factory.createExecutable(warp, 1, [])).resolves.not.toThrow()
+    })
   })
 })
 

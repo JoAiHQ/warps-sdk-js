@@ -1567,3 +1567,35 @@ describe('WarpExecutor', () => {
     })
   })
 })
+
+describe('WarpExecutor — host-managed action types (state, mount, unmount)', () => {
+  const config: WarpClientConfig = {
+    env: 'devnet',
+    user: { wallets: { multiversx: 'erd1...' } },
+    clientUrl: 'https://anyclient.com',
+    currentUrl: 'https://anyclient.com',
+  }
+  const adapter = (() => {
+    const a = createMockAdapter()
+    a.chain = WarpChainName.Multiversx
+    a.prefix = WarpChainName.Multiversx
+    return a
+  })()
+
+  it.each(['state', 'mount', 'unmount'] as const)('%s returns null immediateExecution without calling the chain adapter', async (type) => {
+    const onExecuted = jest.fn()
+    const onActionExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted, onActionExecuted })
+
+    const warp: any = {
+      ...createMockWarp(),
+      chain: WarpChainName.Multiversx,
+      actions: [{ type, label: type }],
+    }
+
+    const result = await executor.execute(warp, [])
+
+    expect(result.immediateExecutions).toHaveLength(0)
+    expect(onActionExecuted).not.toHaveBeenCalled()
+  })
+})
