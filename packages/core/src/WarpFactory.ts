@@ -1,4 +1,6 @@
 import { WarpChainName, WarpConstants } from './constants'
+
+const noDestinationTypes = ['collect', 'compute', 'mcp', 'state', 'mount', 'unmount'] as const
 import { findWarpAdapterForChain, getWarpActionByIndex, getWarpPrimaryAction, shiftBigintBy, splitInput } from './helpers'
 import { extractResolvedInputValues, buildInputsContext } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
@@ -87,7 +89,7 @@ export class WarpFactory {
     const destinationInAction = this.getDestinationFromAction(preparedAction)
     let destination = destinationInput ? (this.serializer.stringToNative(destinationInput)[1] as string) : destinationInAction
     if (destination) destination = interpolator.applyInputs(destination, modifiedInputs, this.serializer, primaryResolvedInputs)
-    if (!destination && action.type !== 'collect' && action.type !== 'mcp')
+    if (!destination && !noDestinationTypes.includes(action.type as any))
       throw new Error('WarpActionExecutor: Destination/Receiver not provided')
 
     let args = this.getPreparedArgs(preparedAction, modifiedInputs)

@@ -184,6 +184,24 @@ export class WarpExecutor {
       return { tx: null, chain: null, immediateExecution: null, executable }
     }
 
+    if (action.type === 'compute') {
+      const result = await this.executeCompute(executable)
+      if (result.status === 'success') {
+        await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: result, tx: null }))
+        return { tx: null, chain: null, immediateExecution: result, executable }
+      } else {
+        const errorMessage = result.output._DATA instanceof Error ? result.output._DATA.message : JSON.stringify(result.output._DATA)
+        this.handlers?.onError?.({ message: errorMessage, result })
+      }
+      return { tx: null, chain: null, immediateExecution: null, executable }
+    }
+
+    if (action.type === 'state' || action.type === 'mount' || action.type === 'unmount') {
+      // These are runtime-handled action types (managed by the host, e.g. cortex).
+      // The SDK has no execution logic for them — skip silently.
+      return { tx: null, chain: null, immediateExecution: null, executable: null }
+    }
+
     if (action.type === 'mcp') {
       const result = await this.executeMcp(executable)
       if (result.status === 'success') {
@@ -309,6 +327,23 @@ export class WarpExecutor {
     )
 
     return this.buildCollectResult(executable, wallet, 'unhandled', values, output)
+  }
+
+  private async executeCompute(executable: WarpExecutable): Promise<WarpActionExecutionResult> {
+    const wallet = getWarpWalletAddressFromConfig(this.config, executable.chain.name)
+    const serializer = this.factory.getSerializer()
+    const payload = buildMappedOutput(executable.resolvedInputs, serializer)
+
+    const { values, output } = await extractCollectOutput(
+      executable.warp,
+      payload,
+      executable.action,
+      executable.resolvedInputs,
+      serializer,
+      this.config
+    )
+
+    return this.buildCollectResult(executable, wallet, 'success', values, output)
   }
 
   private async doHttpRequest(

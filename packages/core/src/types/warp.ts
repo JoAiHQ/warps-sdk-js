@@ -66,11 +66,11 @@ export type WarpMeta = {
   createdAt: string
 }
 
-export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction
+export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpComputeAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction
 
 export type WarpActionIndex = number
 
-export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount'
+export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'compute' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount'
 
 export type WarpTrigger =
   | { type: 'message'; pattern: string }
@@ -167,6 +167,17 @@ export type WarpCollectAction = {
   label: WarpText
   description?: WarpText | null
   destination?: WarpCollectDestination
+  inputs?: WarpActionInput[]
+  primary?: boolean
+  auto?: boolean
+  next?: string
+  when?: string
+}
+
+export type WarpComputeAction = {
+  type: 'compute'
+  label: WarpText
+  description?: WarpText | null
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean

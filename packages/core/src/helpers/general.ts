@@ -23,7 +23,7 @@ export const getWarpPrimaryAction = (warp: Warp): { action: WarpAction; index: n
   const actionWithPrimary = warp.actions.find((action) => action.primary === true)
   if (actionWithPrimary) return { action: actionWithPrimary, index: warp.actions.indexOf(actionWithPrimary) }
 
-  const detectableTypes: WarpActionType[] = ['transfer', 'contract', 'query', 'collect', 'mcp']
+  const detectableTypes: WarpActionType[] = ['transfer', 'contract', 'query', 'collect', 'compute', 'mcp']
   const firstDetectableAction = warp.actions.find((action) => detectableTypes.includes(action.type))
   if (firstDetectableAction) {
     return { action: firstDetectableAction, index: warp.actions.indexOf(firstDetectableAction) }
