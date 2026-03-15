@@ -14,8 +14,26 @@ export class WarpInterpolator {
   ) {}
 
   async apply(warp: Warp, meta: { envs?: Record<string, any>; queries?: Record<string, any> } = {}): Promise<Warp> {
-    const modifiable = this.applyVars(warp, meta)
-    return await this.applyGlobals(modifiable)
+    const withVars = this.applyVars(warp, meta)
+    const withGlobals = await this.applyGlobals(withVars)
+    return meta.envs ? this.applyEnvs(withGlobals, meta.envs) : withGlobals
+  }
+
+  /**
+   * Final substitution pass: replaces any remaining {{key}} placeholders using the
+   * provided envs bag. Values are JSON-safe escaped so any character is safe to embed.
+   * This covers runtime-injected values (e.g. JOAI_MESSAGE_TEXT, state.KEY) that are
+   * not declared in warp.vars and therefore not handled by applyVars.
+   */
+  applyEnvs(warp: Warp, envs: Record<string, any>): Warp {
+    if (!envs || Object.keys(envs).length === 0) return warp
+    let modifiable = JSON.stringify(warp)
+    for (const [key, value] of Object.entries(envs)) {
+      if (value === undefined || value === null) continue
+      const jsonSafeValue = JSON.stringify(String(value)).slice(1, -1)
+      modifiable = modifiable.replace(new RegExp(`\\{\\{${escapeRegExp(key)}\\}\\}`, 'g'), jsonSafeValue)
+    }
+    return JSON.parse(modifiable)
   }
 
   async applyGlobals(warp: Warp): Promise<Warp> {
@@ -189,3 +207,5 @@ export class WarpInterpolator {
     return bag
   }
 }
+
+const escapeRegExp = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

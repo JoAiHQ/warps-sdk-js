@@ -880,6 +880,97 @@ describe('WarpInterpolator applyInputs with primary inputs', () => {
   })
 })
 
+describe('WarpInterpolator applyEnvs', () => {
+  const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+
+  const makeWarpWithWhen = (when: string) => ({
+    ...createMockWarp(),
+    actions: [
+      {
+        type: 'compute' as const,
+        label: 'Test',
+        when,
+        inputs: [],
+      },
+    ],
+  })
+
+  const makeWarpWithModifier = (modifier: string) => ({
+    ...createMockWarp(),
+    actions: [
+      {
+        type: 'compute' as const,
+        label: 'Test',
+        inputs: [{ name: 'x', type: 'bool' as const, source: 'hidden' as const, modifier }],
+      },
+    ],
+  })
+
+  it('substitutes a simple env value into a when condition', () => {
+    const warp = makeWarpWithWhen('{{state.active}} === true')
+    const result = interpolator.applyEnvs(warp, { 'state.active': true })
+    expect((result.actions[0] as any).when).toBe('true === true')
+  })
+
+  it('substitutes env values into input modifiers', () => {
+    const warp = makeWarpWithModifier("transform:() => parseInt('{{JOAI_MESSAGE_TEXT}}') === {{state.secret}}")
+    const result = interpolator.applyEnvs(warp, { JOAI_MESSAGE_TEXT: '3', 'state.secret': 3 })
+    expect((result.actions[0] as any).inputs[0].modifier).toBe("transform:() => parseInt('3') === 3")
+  })
+
+  it('handles dotted keys without treating them as regex wildcards', () => {
+    const warp = makeWarpWithWhen('{{state.active}} === true')
+    const result = interpolator.applyEnvs(warp, { 'state.active': 'yes' })
+    expect((result.actions[0] as any).when).toBe('yes === true')
+  })
+
+  it('JSON-safe escapes backslashes in values to prevent invalid JSON', () => {
+    const warp = makeWarpWithModifier('transform:() => "{{PATH}}"')
+    const result = interpolator.applyEnvs(warp, { PATH: 'C:\\Users\\file' })
+    expect((result.actions[0] as any).inputs[0].modifier).toBe('transform:() => "C:\\Users\\file"')
+  })
+
+  it('leaves unknown placeholders intact', () => {
+    const warp = makeWarpWithWhen('{{unknown}} === true')
+    const result = interpolator.applyEnvs(warp, { other: 'value' })
+    expect((result.actions[0] as any).when).toBe('{{unknown}} === true')
+  })
+
+  it('returns warp unchanged when envs is empty', () => {
+    const warp = makeWarpWithWhen('{{state.active}} === true')
+    const result = interpolator.applyEnvs(warp, {})
+    expect(result).toBe(warp)
+  })
+
+  it('substitutes multiple env keys in a single string', () => {
+    const warp = makeWarpWithModifier('transform:() => {{state.secret}} === parseInt("{{JOAI_MESSAGE_TEXT}}")')
+    const result = interpolator.applyEnvs(warp, { 'state.secret': 4, JOAI_MESSAGE_TEXT: '4' })
+    expect((result.actions[0] as any).inputs[0].modifier).toBe('transform:() => 4 === parseInt("4")')
+  })
+
+  it('skips null and undefined env values', () => {
+    const warp = makeWarpWithWhen('{{KEY}} === true')
+    const result = interpolator.applyEnvs(warp, { KEY: null as any, OTHER: undefined as any })
+    expect((result.actions[0] as any).when).toBe('{{KEY}} === true')
+  })
+
+  it('apply() calls applyEnvs as final pass when meta.envs is provided', async () => {
+    const warp = {
+      ...createMockWarp(),
+      actions: [
+        {
+          type: 'compute' as const,
+          label: 'Test',
+          when: '{{state.active}} === true',
+          inputs: [],
+        },
+      ],
+    }
+    const result = await interpolator.apply(warp, { envs: { 'state.active': true } })
+    expect((result.actions[0] as any).when).toBe('true === true')
+  })
+})
+
 describe('WarpInterpolator chain-specific placeholders', () => {
   beforeEach(async () => {
     await new WarpCache('devnet', { type: 'memory' }).clear()
