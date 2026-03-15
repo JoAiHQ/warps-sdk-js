@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.8.1
+
+### Patch Changes
+
+- 00405f1: fix: when conditions now resolve meta.envs placeholders (e.g. state.active)
+
 ## 4.8.0
 
 ### Minor Changes
