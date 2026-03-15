@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.8.2
+
+### Patch Changes
+
+- 28fbdf8: Fix detectWarp crashing on warps with no matching chain adapter (e.g. MCP warps with chain "none"). Skip interpolation instead of throwing.
+
 ## 4.8.1
 
 ### Patch Changes
