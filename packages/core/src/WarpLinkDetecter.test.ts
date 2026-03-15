@@ -415,4 +415,32 @@ describe('WarpLinkDetecter with resolver', () => {
     expect(mockAdapter.registry.getInfoByAlias).not.toHaveBeenCalled()
     expect(mockAdapter.registry.getInfoByHash).not.toHaveBeenCalled()
   })
+
+  it('resolves warps with no matching chain adapter (e.g. chain "none")', async () => {
+    const chainlessWarp: WarpResolverResult = {
+      warp: {
+        ...mockWarp,
+        chain: 'none',
+        meta: { chain: 'none' as WarpChainName, identifier: 'browser-navigate', query: null, hash: 'abc123', creator: '', createdAt: '' },
+      } as Warp,
+      registryInfo: {
+        hash: 'abc123',
+        alias: 'browser-navigate',
+        trust: 'verified' as const,
+        owner: null,
+        createdAt: null,
+        upgradedAt: null,
+        brand: null,
+        upgrade: null,
+      },
+      brand: null,
+    }
+    ;(mockResolver.getByAlias as jest.Mock).mockResolvedValue(chainlessWarp)
+    const link = new WarpLinkDetecter(Config, [mockAdapter] as any, mockResolver)
+    const result = await link.detect('browser-navigate?URL=https://example.com')
+
+    expect(result.match).toBe(true)
+    expect(result.warp).toBeDefined()
+    expect(result.warp?.meta?.query).toEqual({ URL: 'https://example.com' })
+  })
 })
