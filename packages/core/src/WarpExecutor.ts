@@ -738,7 +738,8 @@ export class WarpExecutor {
     }
 
     const bag = interpolator.buildInputBag(actionResolvedInputs, this.factory.getSerializer(), primaryResolvedInputs)
-    const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, bag)
+    const mergedBag = { ...(meta.envs ?? {}), ...bag }
+    const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, mergedBag)
     return evaluateWhenCondition(interpolatedWhen)
   }
 }

@@ -1377,6 +1377,46 @@ describe('WarpExecutor', () => {
       await executor.execute(linkWarp, ['address:erd1token'])
       expect(mockWindowOpen).not.toHaveBeenCalled()
     })
+
+    it('should evaluate when condition using meta.envs values', async () => {
+      const collectWarp = {
+        ...warp,
+        chain: WarpChainName.Multiversx,
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Announce',
+            primary: true,
+            auto: true,
+            when: '{{state.active}} === true',
+            inputs: [],
+          },
+        ],
+      }
+
+      const result = await executor.execute(collectWarp, [], { envs: { 'state.active': true } })
+      expect(result.immediateExecutions.length).toBe(1)
+    })
+
+    it('should skip action when meta.envs when condition evaluates to false', async () => {
+      const collectWarp = {
+        ...warp,
+        chain: WarpChainName.Multiversx,
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Announce',
+            primary: true,
+            auto: true,
+            when: '{{state.active}} === true',
+            inputs: [],
+          },
+        ],
+      }
+
+      const result = await executor.execute(collectWarp, [], { envs: { 'state.active': false } })
+      expect(result.immediateExecutions.length).toBe(0)
+    })
   })
 
   describe('error handling', () => {
