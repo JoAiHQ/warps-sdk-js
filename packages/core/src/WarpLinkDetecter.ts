@@ -69,14 +69,6 @@ export class WarpLinkDetecter {
       return emptyResult
     }
 
-    WarpLogger.info('Warp detect parse', {
-      input: urlOrId,
-      chain: identifierResult.chain,
-      type: identifierResult.type,
-      identifier: identifierResult.identifier,
-      identifierBase: identifierResult.identifierBase,
-    })
-
     try {
       const { type, identifierBase } = identifierResult
       let warp: Warp | null = null
