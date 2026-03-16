@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.3.1
+
+### Patch Changes
+
+- 64a2387: Switch MultiversX testnet to use Battle of Nodes infrastructure (API: api.battleofnodes.com, Explorer: bon-explorer.multiversx.com).
+
 ## 1.3.0
 
 ### Minor Changes
