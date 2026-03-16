@@ -42,7 +42,7 @@ describe('WarpMultiversxExplorer', () => {
     it('should return correct transaction URL with specific explorer', () => {
       const hash = 'abc123def456'
       const url = explorer.getTransactionUrl(hash, MultiversxExplorers.MultiversxExplorerTestnet)
-      expect(url).toBe('https://testnet-explorer.multiversx.com/transactions/abc123def456')
+      expect(url).toBe('https://bon-explorer.multiversx.com/transactions/abc123def456')
     })
   })
 
@@ -70,7 +70,7 @@ describe('WarpMultiversxExplorer', () => {
     it('should return correct asset URL with specific explorer', () => {
       const identifier = 'erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36'
       const url = explorer.getAssetUrl(identifier, MultiversxExplorers.MultiversxExplorerTestnet)
-      expect(url).toBe('https://testnet-explorer.multiversx.com/tokens/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
+      expect(url).toBe('https://bon-explorer.multiversx.com/tokens/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
     })
   })
 
@@ -152,7 +152,7 @@ describe('WarpMultiversxExplorer', () => {
     it('should return correct testnet explorer URLs', () => {
       const address = 'erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36'
       const url = testnetExplorer.getAccountUrl(address, MultiversxExplorers.MultiversxExplorerTestnet)
-      expect(url).toBe('https://testnet-explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
+      expect(url).toBe('https://bon-explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqje2f99vr6r7sk54thg03c9suzcvwr4nfl3tsfkdl36')
     })
 
     it('should return all testnet explorers', () => {
