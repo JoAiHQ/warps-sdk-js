@@ -29,6 +29,7 @@
     "packages/*"
   ],
   "overrides": {
+    "@types/node": "^22.0.0",
     "ajv": "8.18.0",
     "axios": "1.13.6",
     "qs": "6.15.0"
