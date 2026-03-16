@@ -45,7 +45,7 @@ export const MultiversxExplorersConfig = {
 export const ExplorerUrls: Record<ExplorerName, string> = {
   [MultiversxExplorers.MultiversxExplorer]: 'https://explorer.multiversx.com',
   [MultiversxExplorers.MultiversxExplorerDevnet]: 'https://devnet-explorer.multiversx.com',
-  [MultiversxExplorers.MultiversxExplorerTestnet]: 'https://testnet-explorer.multiversx.com',
+  [MultiversxExplorers.MultiversxExplorerTestnet]: 'https://bon-explorer.multiversx.com',
 
   [ClawsExplorers.ClawsExplorer]: 'https://explorer.claws.network',
   [ClawsExplorers.ClawsExplorerDevnet]: 'https://explorer.claws.network',

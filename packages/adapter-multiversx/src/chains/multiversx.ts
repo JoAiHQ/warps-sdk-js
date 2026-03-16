@@ -27,7 +27,7 @@ export const MultiversxAdapter = createMultiversxAdapter(WarpChainName.Multivers
     chainId: 'T',
     blockTime: 6000,
     addressHrp: 'erd',
-    defaultApiUrl: 'https://testnet-api.multiversx.com',
+    defaultApiUrl: 'https://api.battleofnodes.com',
     logoUrl: 'https://raw.githubusercontent.com/JoAiHQ/assets/refs/heads/main/chains/logos/multiversx.svg',
     nativeToken: NativeTokenEgld,
   },
