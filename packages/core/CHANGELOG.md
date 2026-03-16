@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.8.3
+
+### Patch Changes
+
+- e128375: Fix themed logo resolution falling back to first available URL when requested theme key is missing
+
 ## 4.8.2
 
 ### Patch Changes
