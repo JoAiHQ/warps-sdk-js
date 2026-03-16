@@ -422,7 +422,7 @@ describe('WarpLinkDetecter with resolver', () => {
         ...mockWarp,
         chain: 'none',
         meta: { chain: 'none' as WarpChainName, identifier: 'browser-navigate', query: null, hash: 'abc123', creator: '', createdAt: '' },
-      } as Warp,
+      } as unknown as Warp,
       registryInfo: {
         hash: 'abc123',
         alias: 'browser-navigate',
