@@ -361,6 +361,50 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(result.immediateExecutions[0].status).toBe('error')
   })
 
+  it('should resolve destination from inputs with position destination', async () => {
+    const destinationWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Send Message',
+          prompt: '{{INSTRUCTION}}',
+          inputs: [
+            { name: 'Instruction', as: 'INSTRUCTION', type: 'string', source: 'field', required: true },
+            { name: 'Destination', as: 'DESTINATION', type: 'string', position: 'destination', source: 'hidden', required: false, default: 'room:test-room' },
+          ],
+        },
+      ],
+    }
+
+    const result = await executor.execute(destinationWarp, ['string:say hello'])
+    expect(result.immediateExecutions).toHaveLength(1)
+    const execution = result.immediateExecutions[0]
+    expect(execution.status).toBe('success')
+    expect(execution.destination).toBe('string:room:test-room')
+    expect(execution.output.PROMPT).toBe('say hello')
+  })
+
+  it('should return null destination when no destination input provided', async () => {
+    const noDestWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Simple Prompt',
+          prompt: '{{TEXT}}',
+          inputs: [
+            { name: 'Text', as: 'TEXT', type: 'string', source: 'field', required: true },
+          ],
+        },
+      ],
+    }
+
+    const result = await executor.execute(noDestWarp, ['string:hello'])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(result.immediateExecutions[0].destination).toBeNull()
+  })
+
   it('should handle errors during prompt action execution', async () => {
     const errorWarp: Warp = {
       protocol: 'warp',

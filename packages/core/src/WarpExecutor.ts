@@ -672,6 +672,8 @@ export class WarpExecutor {
         this.config
       )
 
+      const destination = resolvedInputs.find((i) => i.input.position === 'destination')?.value || null
+
       return {
         status: 'success',
         warp: preparedWarp,
@@ -683,7 +685,7 @@ export class WarpExecutor {
         values,
         output,
         messages: applyOutputToMessages(preparedWarp, output, this.config),
-        destination: null,
+        destination,
         resolvedInputs: extractedInputs,
       }
     } catch (error) {
