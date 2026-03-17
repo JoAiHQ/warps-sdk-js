@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.8.4
+
+### Patch Changes
+
+- 537139c: Resolve destination from inputs in prompt actions, matching collect and mcp behavior
+
 ## 4.8.3
 
 ### Patch Changes
