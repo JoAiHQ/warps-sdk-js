@@ -46,7 +46,13 @@ export enum PolygonExplorers {
   BlockscoutPolygonMumbai = 'blockscout_polygon_mumbai',
 }
 
-export type ExplorerName = EthereumExplorers | ArbitrumExplorers | BaseExplorers | PolygonExplorers
+export enum TempoExplorers {
+  TempoExplorer = 'tempo_explorer',
+  TempoExplorerTestnet = 'tempo_explorer_testnet',
+  TempoExplorerDevnet = 'tempo_explorer_devnet',
+}
+
+export type ExplorerName = EthereumExplorers | ArbitrumExplorers | BaseExplorers | PolygonExplorers | TempoExplorers
 
 export const EvmExplorers = {
   ethereum: {
@@ -68,6 +74,11 @@ export const EvmExplorers = {
     mainnet: [PolygonExplorers.Polygonscan, PolygonExplorers.BlockscoutPolygon] as const,
     testnet: [PolygonExplorers.PolygonscanMumbai, PolygonExplorers.BlockscoutPolygonMumbai] as const,
     devnet: [PolygonExplorers.PolygonscanMumbai, PolygonExplorers.BlockscoutPolygonMumbai] as const,
+  },
+  tempo: {
+    mainnet: [TempoExplorers.TempoExplorer] as const,
+    testnet: [TempoExplorers.TempoExplorerTestnet] as const,
+    devnet: [TempoExplorers.TempoExplorerDevnet] as const,
   },
 } as const
 
@@ -92,6 +103,10 @@ export const ExplorerUrls: Record<ExplorerName, string> = {
   [PolygonExplorers.PolygonscanMumbai]: 'https://mumbai.polygonscan.com',
   [PolygonExplorers.BlockscoutPolygon]: 'https://polygon.blockscout.com',
   [PolygonExplorers.BlockscoutPolygonMumbai]: 'https://mumbai.blockscout.com',
+
+  [TempoExplorers.TempoExplorer]: 'https://explore.tempo.xyz',
+  [TempoExplorers.TempoExplorerTestnet]: 'https://explore.testnet.tempo.xyz',
+  [TempoExplorers.TempoExplorerDevnet]: 'https://explore.devnet.tempo.xyz',
 }
 
 export const EvmChainIds = {
@@ -116,6 +131,11 @@ export const EvmChainIds = {
     Mainnet: 10,
     Sepolia: 11155420,
   },
+  Tempo: {
+    Mainnet: 4217,
+    Moderato: 42431,
+    Devnet: 31318,
+  },
 } as const
 
 export const EvmChainIdMap: Record<string, number> = {
@@ -130,6 +150,9 @@ export const EvmChainIdMap: Record<string, number> = {
   'base:sepolia': EvmChainIds.Base.Sepolia,
   'optimism:mainnet': EvmChainIds.Optimism.Mainnet,
   'optimism:sepolia': EvmChainIds.Optimism.Sepolia,
+  'tempo:mainnet': EvmChainIds.Tempo.Mainnet,
+  'tempo:moderato': EvmChainIds.Tempo.Moderato,
+  'tempo:devnet': EvmChainIds.Tempo.Devnet,
 }
 
 export const SupportedEvmChainIds: number[] = [
@@ -144,4 +167,7 @@ export const SupportedEvmChainIds: number[] = [
   EvmChainIds.Base.Sepolia,
   EvmChainIds.Optimism.Mainnet,
   EvmChainIds.Optimism.Sepolia,
+  EvmChainIds.Tempo.Mainnet,
+  EvmChainIds.Tempo.Moderato,
+  EvmChainIds.Tempo.Devnet,
 ]
