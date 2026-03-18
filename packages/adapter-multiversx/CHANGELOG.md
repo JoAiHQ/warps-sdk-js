@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.3.2
+
+### Patch Changes
+
+- 45efef2: Extract token identifiers from ESDT system SC issuance transactions natively without requiring an ABI. Supports `issue`, `issueNonFungible`, `issueSemiFungible`, `registerMetaESDT`, and `registerAndSetAllRoles` via the SDK's built-in `TokenManagementTransactionsOutcomeParser`.
+
 ## 1.3.1
 
 ### Patch Changes
