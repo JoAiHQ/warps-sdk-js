@@ -1,5 +1,12 @@
 # @warps/playground
 
+## 1.0.49
+
+### Patch Changes
+
+- Updated dependencies [6d61206]
+  - @joai/warps@4.10.0
+
 ## 1.0.48
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.10.0
+
+### Minor Changes
+
+- 6d61206: Add static chain display name and logo helpers: WarpChainDisplayNames, getChainDisplayName(), WarpChainLogos, getChainLogo()
+
 ## 4.9.0
 
 ### Minor Changes
