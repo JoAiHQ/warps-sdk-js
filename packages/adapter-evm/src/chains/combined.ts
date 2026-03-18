@@ -6,4 +6,5 @@ export const getAllEvmChainNames = (): WarpChainName[] => [
   WarpChainName.Arbitrum,
   WarpChainName.Polygon,
   WarpChainName.Somnia,
+  WarpChainName.Tempo,
 ]

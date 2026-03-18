@@ -7,6 +7,8 @@ import { EthereumTokens } from './tokens/ethereum'
 import { EthereumSepoliaTokens } from './tokens/ethereum-sepolia'
 import { PolygonTokens } from './tokens/polygon'
 import { PolygonMumbaiTokens } from './tokens/polygon-mumbai'
+import { TempoTokens } from './tokens/tempo'
+import { TempoModeratoTokens } from './tokens/tempo-moderato'
 
 export const KnownTokens: Partial<Record<WarpChainName, Record<string, WarpChainAsset[]>>> = {
   [WarpChainName.Ethereum]: {
@@ -28,6 +30,11 @@ export const KnownTokens: Partial<Record<WarpChainName, Record<string, WarpChain
     mainnet: PolygonTokens,
     testnet: PolygonMumbaiTokens,
     devnet: PolygonMumbaiTokens,
+  },
+  [WarpChainName.Tempo]: {
+    mainnet: TempoTokens,
+    testnet: TempoModeratoTokens,
+    devnet: TempoModeratoTokens,
   },
 }
 
