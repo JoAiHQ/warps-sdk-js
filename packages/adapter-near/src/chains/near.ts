@@ -16,7 +16,7 @@ export const NativeTokenNear: WarpChainAsset = {
 export const NearAdapter: ChainAdapterFactory = createNearAdapter(WarpChainName.Near, {
   mainnet: {
     name: WarpChainName.Near,
-    displayName: 'NEAR Mainnet',
+    displayName: 'NEAR',
     chainId: 'mainnet',
     blockTime: 1200,
     addressHrp: '',

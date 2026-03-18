@@ -16,7 +16,7 @@ export const NativeTokenEth: WarpChainAsset = {
 export const EthereumAdapter: ChainAdapterFactory = createEvmAdapter(WarpChainName.Ethereum, {
   mainnet: {
     name: WarpChainName.Ethereum,
-    displayName: 'Ethereum Mainnet',
+    displayName: 'Ethereum',
     chainId: '1',
     blockTime: 12000,
     addressHrp: '0x',

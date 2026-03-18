@@ -13,7 +13,7 @@ export const NativeTokenSol: WarpChainAsset = {
 export const SolanaAdapter: ChainAdapterFactory = createSolanaAdapter(WarpChainName.Solana, {
   mainnet: {
     name: WarpChainName.Solana,
-    displayName: 'Solana Mainnet',
+    displayName: 'Solana',
     chainId: '101',
     blockTime: 400,
     addressHrp: '',

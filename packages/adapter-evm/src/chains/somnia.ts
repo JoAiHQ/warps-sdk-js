@@ -22,7 +22,7 @@ export const NativeTokenStt: WarpChainAsset = {
 export const SomniaAdapter: ChainAdapterFactory = createEvmAdapter(WarpChainName.Somnia, {
   mainnet: {
     name: WarpChainName.Somnia,
-    displayName: 'Somnia Mainnet',
+    displayName: 'Somnia',
     chainId: '5031',
     blockTime: 100,
     addressHrp: '0x',
