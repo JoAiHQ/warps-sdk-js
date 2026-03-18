@@ -9,6 +9,7 @@ import {
   WarpChainAction,
   WarpChainAsset,
   WarpChainInfo,
+  WarpChainName,
   WarpClientConfig,
   WarpDataLoaderOptions,
 } from '@joai/warps'
@@ -56,8 +57,14 @@ export class WarpEvmDataLoader implements AdapterWarpDataLoader {
     return 1
   }
 
+  private static readonly ChainsWithoutNativeBalance: WarpChainName[] = [WarpChainName.Tempo]
+
+  private hasNativeBalance(): boolean {
+    return !WarpEvmDataLoader.ChainsWithoutNativeBalance.includes(this.chain.name)
+  }
+
   async getAccount(address: string): Promise<WarpChainAccount> {
-    const balance = await this.provider.getBalance(address)
+    const balance = this.hasNativeBalance() ? await this.provider.getBalance(address) : 0n
 
     return {
       chain: this.chain.name,
@@ -70,7 +77,7 @@ export class WarpEvmDataLoader implements AdapterWarpDataLoader {
     const account = await this.getAccount(address)
     const tokenBalances = await this.getERC20TokenBalances(address)
 
-    let assets: WarpChainAsset[] = account.balance > 0 ? [{ ...this.chain.nativeToken, amount: account.balance }] : []
+    let assets: WarpChainAsset[] = this.hasNativeBalance() && account.balance > 0 ? [{ ...this.chain.nativeToken, amount: account.balance }] : []
 
     for (const tokenBalance of tokenBalances) {
       if (tokenBalance.balance > 0n) {
