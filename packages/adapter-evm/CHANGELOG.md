@@ -1,5 +1,13 @@
 # @joai/warps-adapter-evm
 
+## 1.2.1
+
+### Patch Changes
+
+- 7e0d1c6: Skip fake native balance for Tempo (eth_getBalance returns artificial placeholder value)
+- Updated dependencies [5b2de7a]
+  - @joai/warps@4.10.1
+
 ## 1.2.0
 
 ### Minor Changes

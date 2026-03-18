@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.10.1
+
+### Patch Changes
+
+- 5b2de7a: Fix getChainLogo() variant logic: dark background now correctly returns the light/white logo
+
 ## 4.10.0
 
 ### Minor Changes
