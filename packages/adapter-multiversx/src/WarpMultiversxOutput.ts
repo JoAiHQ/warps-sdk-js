@@ -21,7 +21,6 @@ import {
   WarpExecutionOutput,
 } from '@joai/warps'
 import {
-  Address,
   findEventsByFirstTopic,
   SmartContractTransactionsOutcomeParser,
   TokenManagementTransactionsOutcomeParser,
@@ -29,7 +28,6 @@ import {
   TransactionOnNetwork,
   TypedValue,
 } from '@multiversx/sdk-core'
-import { ESDT_CONTRACT_ADDRESS_HEX } from '@multiversx/sdk-core/out/core/constants'
 import { WarpMultiversxAbiBuilder } from './WarpMultiversxAbiBuilder'
 import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
 
@@ -118,16 +116,19 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       }
     }
 
-    const systemScOutput = !action.abi ? this.tryExtractSystemScOutput(action, tx) : null
-    if (systemScOutput) {
+    const systemScResult = !action.abi ? this.tryExtractSystemScOutput(action, tx) : null
+    if (systemScResult) {
+      const tokenId = systemScResult.tokenIdentifier
       for (const [resultName, resultPath] of Object.entries(warp.output)) {
         if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
         if (resultPath === 'out') {
           setBareOutValue(resultName)
         } else if (resultPath === 'out.1') {
-          output[resultName] = systemScOutput
-          stringValues.push(systemScOutput)
-          nativeValues.push(systemScOutput)
+          output[resultName] = tokenId
+          if (tokenId) {
+            stringValues.push(tokenId)
+            nativeValues.push(tokenId)
+          }
         } else {
           output[resultName] = resultPath
         }
@@ -255,8 +256,8 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     return { values, output }
   }
 
-  private tryExtractSystemScOutput(action: WarpContractAction, tx: TransactionOnNetwork): string | null {
-    const esdtScAddress = Address.newFromHex(ESDT_CONTRACT_ADDRESS_HEX).toBech32()
+  private tryExtractSystemScOutput(action: WarpContractAction, tx: TransactionOnNetwork): { tokenIdentifier: string | null } | null {
+    const esdtScAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
     if (action.address !== esdtScAddress || !action.func) return null
 
     const parsers: Record<string, (p: TokenManagementTransactionsOutcomeParser, t: TransactionOnNetwork) => { tokenIdentifier: string }[]> = {
@@ -271,9 +272,9 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     if (!parse) return null
 
     try {
-      return parse(new TokenManagementTransactionsOutcomeParser(), tx)[0]?.tokenIdentifier || null
+      return { tokenIdentifier: parse(new TokenManagementTransactionsOutcomeParser(), tx)[0]?.tokenIdentifier || null }
     } catch {
-      return null
+      return { tokenIdentifier: null }
     }
   }
 
