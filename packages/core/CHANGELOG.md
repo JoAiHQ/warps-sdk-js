@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 4.9.0
+
+### Minor Changes
+
+- 3d28626: Add Tempo (Stripe L1) to WarpChainName enum and EvmWalletChainNames
+
+### Patch Changes
+
+- 0817308: Add WarpAssets helper for constructing JoAi asset URLs (chainLogo, tokenLogo, walletLogo)
+
 ## 4.8.4
 
 ### Patch Changes

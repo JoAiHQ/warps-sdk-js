@@ -1,5 +1,15 @@
 # @warps/playground
 
+## 1.0.48
+
+### Patch Changes
+
+- Updated dependencies [3d28626]
+- Updated dependencies [e3f3d7b]
+- Updated dependencies [0817308]
+  - @joai/warps@4.9.0
+  - @joai/warps-adapter-evm@1.2.0
+
 ## 1.0.47
 
 ### Patch Changes

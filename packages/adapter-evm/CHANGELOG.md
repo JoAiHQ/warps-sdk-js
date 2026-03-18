@@ -1,5 +1,17 @@
 # @joai/warps-adapter-evm
 
+## 1.2.0
+
+### Minor Changes
+
+- e3f3d7b: Add Tempo chain adapter with mainnet (4217), testnet Moderato (42431), and devnet (31318) support, including explorer configs, chain IDs, and known tokens
+
+### Patch Changes
+
+- Updated dependencies [3d28626]
+- Updated dependencies [0817308]
+  - @joai/warps@4.9.0
+
 ## 1.1.0
 
 ### Minor Changes
