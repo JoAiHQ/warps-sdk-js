@@ -7,6 +7,15 @@ export const WarpProtocolVersions = {
   Abi: '0.1.0',
 }
 
+const AssetsBaseUrl = 'https://raw.githubusercontent.com/JoAiHQ/assets/refs/heads/main'
+
+export const WarpAssets = {
+  baseUrl: AssetsBaseUrl,
+  chainLogo: (name: string) => `${AssetsBaseUrl}/chains/logos/${name}`,
+  tokenLogo: (name: string) => `${AssetsBaseUrl}/tokens/logos/${name}`,
+  walletLogo: (name: string) => `${AssetsBaseUrl}/wallets/logos/${name}`,
+}
+
 export const WarpConfig = {
   LatestWarpSchemaUrl: `https://raw.githubusercontent.com/JoAiHQ/warps-specs/refs/heads/main/schemas/v${WarpProtocolVersions.Warp}.schema.json`,
   LatestBrandSchemaUrl: `https://raw.githubusercontent.com/JoAiHQ/warps-specs/refs/heads/main/schemas/brand/v${WarpProtocolVersions.Brand}.schema.json`,
