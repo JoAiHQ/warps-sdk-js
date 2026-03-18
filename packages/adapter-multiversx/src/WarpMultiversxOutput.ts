@@ -21,12 +21,15 @@ import {
   WarpExecutionOutput,
 } from '@joai/warps'
 import {
+  Address,
   findEventsByFirstTopic,
   SmartContractTransactionsOutcomeParser,
+  TokenManagementTransactionsOutcomeParser,
   TransactionEventsParser,
   TransactionOnNetwork,
   TypedValue,
 } from '@multiversx/sdk-core'
+import { ESDT_CONTRACT_ADDRESS_HEX } from '@multiversx/sdk-core/out/core/constants'
 import { WarpMultiversxAbiBuilder } from './WarpMultiversxAbiBuilder'
 import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
 
@@ -114,6 +117,27 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
         output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config),
       }
     }
+
+    const systemScOutput = !action.abi ? this.tryExtractSystemScOutput(action, tx) : null
+    if (systemScOutput) {
+      for (const [resultName, resultPath] of Object.entries(warp.output)) {
+        if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
+        if (resultPath === 'out') {
+          setBareOutValue(resultName)
+        } else if (resultPath === 'out.1') {
+          output[resultName] = systemScOutput
+          stringValues.push(systemScOutput)
+          nativeValues.push(systemScOutput)
+        } else {
+          output[resultName] = resultPath
+        }
+      }
+      return {
+        values: { string: stringValues, native: nativeValues, mapped: {} },
+        output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config),
+      }
+    }
+
     const abi = await this.abi.getAbiForAction(action)
     const eventParser = new TransactionEventsParser({ abi })
     const outcomeParser = new SmartContractTransactionsOutcomeParser({ abi })
@@ -229,6 +253,28 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     output = await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config)
 
     return { values, output }
+  }
+
+  private tryExtractSystemScOutput(action: WarpContractAction, tx: TransactionOnNetwork): string | null {
+    const esdtScAddress = Address.newFromHex(ESDT_CONTRACT_ADDRESS_HEX).toBech32()
+    if (action.address !== esdtScAddress || !action.func) return null
+
+    const parsers: Record<string, (p: TokenManagementTransactionsOutcomeParser, t: TransactionOnNetwork) => { tokenIdentifier: string }[]> = {
+      issue: (p, t) => p.parseIssueFungible(t),
+      issueNonFungible: (p, t) => p.parseIssueNonFungible(t),
+      issueSemiFungible: (p, t) => p.parseIssueSemiFungible(t),
+      registerMetaESDT: (p, t) => p.parseRegisterMetaEsdt(t),
+      registerAndSetAllRoles: (p, t) => p.parseRegisterAndSetAllRoles(t),
+    }
+
+    const parse = parsers[action.func]
+    if (!parse) return null
+
+    try {
+      return parse(new TokenManagementTransactionsOutcomeParser(), tx)[0]?.tokenIdentifier || null
+    } catch {
+      return null
+    }
   }
 
   async resolveWarpOutputRecursively(props: {

@@ -920,6 +920,254 @@ describe('Result Helpers', () => {
     })
   })
 
+  describe('extractContractOutput (ESDT system SC)', () => {
+    const systemScAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+
+    it('extracts token identifier from issueNonFungible without ABI', async () => {
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tokenId = 'MYNFT-abc123'
+      const tx = new TransactionOnNetwork({
+        hash: 'issue-nft-tx',
+        sender,
+        function: 'issueNonFungible',
+        nonce: 1n,
+        smartContractResults: [
+          new SmartContractResult({
+            sender: new Address(systemScAddress),
+            receiver: sender,
+            data: Buffer.from(`@6f6b@${Buffer.from(tokenId).toString('hex')}`, 'utf-8') as unknown as Uint8Array,
+          }),
+        ],
+        logs: new TransactionLogs({
+          events: [
+            new TransactionEvent({
+              identifier: 'issueNonFungible',
+              topics: [
+                Buffer.from(tokenId) as unknown as Uint8Array,
+                Buffer.from('MyNFT') as unknown as Uint8Array,
+                Buffer.from('MYNFT') as unknown as Uint8Array,
+                Buffer.from('NonFungibleESDTv2') as unknown as Uint8Array,
+              ],
+            }),
+          ],
+        }),
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Issue NFT',
+            address: systemScAddress,
+            func: 'issueNonFungible',
+            args: [],
+            gasLimit: 60000000,
+          },
+        ],
+        output: {
+          TX_HASH: 'out',
+          COLLECTION_ID: 'out.1',
+        },
+      } as any
+
+      const { values, output } = await subject.extractContractOutput(warp, 1, tx, [])
+
+      expect(output.TX_HASH).toBe('issue-nft-tx')
+      expect(output.COLLECTION_ID).toBe(tokenId)
+      expect(values.string).toContain(tokenId)
+    })
+
+    it('extracts token identifier from issueSemiFungible without ABI', async () => {
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tokenId = 'MYSFT-def456'
+      const tx = new TransactionOnNetwork({
+        hash: 'issue-sft-tx',
+        sender,
+        function: 'issueSemiFungible',
+        nonce: 1n,
+        smartContractResults: [
+          new SmartContractResult({
+            sender: new Address(systemScAddress),
+            receiver: sender,
+            data: Buffer.from(`@6f6b@${Buffer.from(tokenId).toString('hex')}`, 'utf-8') as unknown as Uint8Array,
+          }),
+        ],
+        logs: new TransactionLogs({
+          events: [
+            new TransactionEvent({
+              identifier: 'issueSemiFungible',
+              topics: [
+                Buffer.from(tokenId) as unknown as Uint8Array,
+                Buffer.from('MySFT') as unknown as Uint8Array,
+                Buffer.from('MYSFT') as unknown as Uint8Array,
+                Buffer.from('SemiFungibleESDT') as unknown as Uint8Array,
+              ],
+            }),
+          ],
+        }),
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Issue SFT',
+            address: systemScAddress,
+            func: 'issueSemiFungible',
+            args: [],
+            gasLimit: 60000000,
+          },
+        ],
+        output: {
+          COLLECTION_ID: 'out.1',
+        },
+      } as any
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.COLLECTION_ID).toBe(tokenId)
+    })
+
+    it('extracts token identifier from fungible issue without ABI', async () => {
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tokenId = 'MYTKN-789abc'
+      const tx = new TransactionOnNetwork({
+        hash: 'issue-fungible-tx',
+        sender,
+        function: 'issue',
+        nonce: 1n,
+        smartContractResults: [
+          new SmartContractResult({
+            sender: new Address(systemScAddress),
+            receiver: sender,
+            data: Buffer.from(`@6f6b@${Buffer.from(tokenId).toString('hex')}`, 'utf-8') as unknown as Uint8Array,
+          }),
+        ],
+        logs: new TransactionLogs({
+          events: [
+            new TransactionEvent({
+              identifier: 'issue',
+              topics: [
+                Buffer.from(tokenId) as unknown as Uint8Array,
+                Buffer.from('MyToken') as unknown as Uint8Array,
+                Buffer.from('MYTKN') as unknown as Uint8Array,
+                Buffer.from('FungibleESDT') as unknown as Uint8Array,
+              ],
+            }),
+          ],
+        }),
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Issue Token',
+            address: systemScAddress,
+            func: 'issue',
+            args: [],
+            gasLimit: 60000000,
+          },
+        ],
+        output: {
+          TOKEN_ID: 'out.1',
+        },
+      } as any
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.TOKEN_ID).toBe(tokenId)
+    })
+
+    it('falls through to ABI path for non-issuance system SC functions', async () => {
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tx = new TransactionOnNetwork({
+        hash: 'set-role-tx',
+        sender,
+        function: 'setSpecialRole',
+        nonce: 1n,
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Set Role',
+            address: systemScAddress,
+            func: 'setSpecialRole',
+            args: [],
+            gasLimit: 60000000,
+          },
+        ],
+        output: {
+          TX_HASH: 'out',
+        },
+      } as any
+
+      // setSpecialRole has no out.1, so needsAbi=false, takes fast path
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.TX_HASH).toBe('set-role-tx')
+    })
+
+    it('uses ABI path when action has explicit abi even for system SC', async () => {
+      const httpMock = setupHttpMock()
+      httpMock.registerResponse('https://example.com/test.abi.json', await loadAbiContents(path.join(__dirname, 'testdata/test.abi.json')))
+
+      const sender = new Address('erd1kc7v0lhqu0sclywkgeg4um8ea5nvch9psf2lf8t96j3w622qss8sav2zl8')
+      const tx = new TransactionOnNetwork({
+        hash: 'abi-override-tx',
+        sender,
+        function: 'register',
+        nonce: 1n,
+        smartContractResults: [
+          new SmartContractResult({
+            receiver: sender,
+            data: Buffer.from('@6f6b@16', 'utf-8') as unknown as Uint8Array,
+          }),
+        ],
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Test',
+            address: systemScAddress,
+            func: 'register',
+            abi: 'https://example.com/test.abi.json',
+            args: [],
+            gasLimit: 60000000,
+          },
+        ],
+        output: {
+          RESULT: 'out.1',
+        },
+      } as any
+
+      // Should use the ABI path since abi is explicitly set
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.RESULT).toBe('22')
+    })
+  })
+
   describe('extractQueryOutput', () => {
     it('returns empty results when no results defined', async () => {
       const warp = {
