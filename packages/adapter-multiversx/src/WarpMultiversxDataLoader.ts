@@ -63,6 +63,52 @@ export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
     return assets
   }
 
+  async getAccountNfts(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAsset[]> {
+    const size = options?.size || 25
+    const page = options?.page || 0
+
+    const cacheKey = WarpCacheKey.AccountNfts(this.config.env, this.chain.name, address, page, size)
+    const cached = await this.cache.get<WarpChainAsset[]>(cacheKey)
+    if (cached) return cached
+
+    const provider = getMultiversxEntrypoint(this.chain, this.config.env, this.config).createNetworkProvider()
+
+    const from = page * size
+    const params = new URLSearchParams({ size: size.toString(), from: from.toString() })
+    const nfts = await provider.doGetGeneric(`accounts/${address}/nfts?${params.toString()}`)
+
+    if (!Array.isArray(nfts)) return []
+
+    const result = nfts
+      .filter((nft: any) => nft.type !== 'MetaESDT')
+      .map((nft: any): WarpChainAsset => ({
+        chain: this.chain.name,
+        identifier: nft.identifier,
+        name: nft.name || nft.identifier,
+        symbol: nft.ticker || nft.collection || '',
+        amount: nft.balance ? BigInt(nft.balance) : 1n,
+        decimals: 0,
+        type: nft.type === 'SemiFungibleESDT' ? 'sft' : 'nft',
+        nft: {
+          collection: nft.collection,
+          nonce: nft.nonce ? BigInt(nft.nonce) : undefined,
+          mediaUrl: toHttpsUrl(nft.url || nft.media?.[0]?.url),
+          thumbnailUrl: toHttpsUrl(nft.thumbnailUrl || nft.media?.[0]?.thumbnailUrl),
+          attributes:
+            Array.isArray(nft.metadata?.attributes)
+              ? Object.fromEntries(nft.metadata.attributes.map((a: any) => [a.trait_type, String(a.value)]))
+              : undefined,
+          royalties: nft.royalties ? Number(nft.royalties) / 100 : undefined,
+          rank: nft.rank,
+          creator: nft.creator,
+        },
+      }))
+
+    await this.cache.set(cacheKey, result, 5 * CacheTtl.OneMinute)
+
+    return result
+  }
+
   async getAsset(identifier: string): Promise<WarpChainAsset | null> {
     const cacheKey = WarpCacheKey.Asset(this.config.env, this.chain.name, identifier)
     const cachedAsset = await this.cache.get<WarpChainAsset>(cacheKey)
@@ -83,12 +129,33 @@ export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
     const tokenComputer = new TokenComputer()
     const nonce = isNativeToken(identifier) ? 0n : tokenComputer.extractNonceFromExtendedIdentifier(identifier)
     const token = new Token({ identifier, nonce: BigInt(nonce || 0) })
-    const _isFungible = tokenComputer.isFungible(token)
+    const isFungible = tokenComputer.isFungible(token)
 
     const provider = getMultiversxEntrypoint(this.chain, this.config.env, this.config).createNetworkProvider()
-    const normalizedIdentifier = getNormalizedTokenIdentifier(identifier)
 
-    // TODO: add handling for non-fungible tokens like meta-esdts
+    if (!isFungible && nonce > 0n) {
+      const nftData = await provider.doGetGeneric(`nfts/${identifier}`)
+      const asset: WarpChainAsset = {
+        chain: this.chain.name,
+        identifier,
+        name: nftData.name || identifier,
+        symbol: nftData.ticker || nftData.collection || '',
+        amount: 0n,
+        decimals: 0,
+        type: nftData.type === 'SemiFungibleESDT' ? 'sft' : 'nft',
+        nft: {
+          collection: nftData.collection,
+          nonce: nftData.nonce ? BigInt(nftData.nonce) : undefined,
+          mediaUrl: toHttpsUrl(nftData.url || nftData.media?.[0]?.url),
+          thumbnailUrl: toHttpsUrl(nftData.thumbnailUrl || nftData.media?.[0]?.thumbnailUrl),
+          creator: nftData.creator,
+        },
+      }
+      await this.cache.set(cacheKey, asset, CacheTtl.OneHour)
+      return asset
+    }
+
+    const normalizedIdentifier = getNormalizedTokenIdentifier(identifier)
     const tokenData = await provider.doGetGeneric(`tokens/${normalizedIdentifier}`)
 
     const asset: WarpChainAsset = {
@@ -171,4 +238,12 @@ export class WarpMultiversxDataLoader implements AdapterWarpDataLoader {
   private toActionCreatedAt(tx: TransactionOnNetwork): string {
     return new Date(tx.timestamp || tx.timestamp * 1000).toISOString()
   }
+}
+
+const IPFS_GATEWAY = 'https://ipfs.io/ipfs/'
+
+const toHttpsUrl = (url: string | undefined): string | undefined => {
+  if (!url) return undefined
+  if (url.startsWith('ipfs://')) return IPFS_GATEWAY + url.slice(7)
+  return url
 }

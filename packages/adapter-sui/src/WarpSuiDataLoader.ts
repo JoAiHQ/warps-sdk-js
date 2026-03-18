@@ -100,6 +100,65 @@ export class WarpSuiDataLoader implements AdapterWarpDataLoader {
     }
   }
 
+  async getAccountNfts(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAsset[]> {
+    try {
+      const size = options?.size || 25
+      const page = options?.page || 0
+
+      let cursor: string | null | undefined = undefined
+      for (let i = 0; i < page; i++) {
+        const result = await this.client.getOwnedObjects({
+          owner: address,
+          options: { showContent: false, showDisplay: false },
+          limit: size,
+          cursor,
+        })
+        cursor = result.nextCursor
+        if (!result.hasNextPage) return []
+      }
+
+      const result = await this.client.getOwnedObjects({
+        owner: address,
+        options: { showContent: true, showDisplay: true },
+        limit: size,
+        cursor,
+      })
+
+      const nfts: WarpChainAsset[] = []
+      for (const obj of result.data) {
+        const content = (obj.data as any)?.content
+        const display = (obj.data as any)?.display?.data
+        const objectType: string = content?.type || ''
+
+        if (objectType.startsWith('0x2::coin::Coin')) continue
+
+        const objectId = obj.data?.objectId || ''
+        const name = display?.name || objectType.split('::').pop() || objectId.slice(0, 8)
+        const collection = objectType.includes('::') ? objectType.split('::').slice(0, 2).join('::') : undefined
+        const imageUrl = display?.image_url
+
+        nfts.push({
+          chain: this.chain.name,
+          identifier: objectId,
+          name,
+          symbol: '',
+          amount: 1n,
+          decimals: 0,
+          type: 'nft',
+          nft: {
+            collection,
+            mediaUrl: imageUrl,
+            thumbnailUrl: imageUrl,
+          },
+        })
+      }
+
+      return nfts
+    } catch {
+      return []
+    }
+  }
+
   async getAction(identifier: string, awaitCompleted = false): Promise<WarpChainAction | null> {
     return null
   }

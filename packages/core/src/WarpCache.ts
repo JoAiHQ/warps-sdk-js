@@ -22,6 +22,7 @@ export const WarpCacheKey = {
   RegistryInfo: (env: WarpChainEnv, id: string) => `registry-info:${env}:${id}`,
   Brand: (env: WarpChainEnv, hash: string) => `brand:${env}:${hash}`,
   Asset: (env: WarpChainEnv, chain: string, identifier: string) => `asset:${env}:${chain}:${identifier}`,
+  AccountNfts: (env: WarpChainEnv, chain: string, address: string, page: number, size: number) => `account-nfts:${env}:${chain}:${address}:${page}:${size}`,
 }
 
 export class WarpCache {

@@ -13,6 +13,7 @@ import {
   WarpClientConfig,
   WarpDataLoaderOptions,
 } from '@joai/warps'
+
 import { Connection, PublicKey } from '@solana/web3.js'
 import { WarpSolanaConstants } from './constants'
 import { getMint } from './tokenProgram'
@@ -140,6 +141,43 @@ export class WarpSolanaDataLoader implements AdapterWarpDataLoader {
       return this.parseTransactionToAction(tx, signature)
     } catch {
       return null
+    }
+  }
+
+  async getAccountNfts(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAsset[]> {
+    try {
+      const publicKey = new PublicKey(address)
+      const tokenAccounts = await this.connection.getParsedTokenAccountsByOwner(publicKey, {
+        programId: new PublicKey(WarpSolanaConstants.Programs.TokenProgram),
+      })
+
+      const size = options?.size || 25
+      const page = options?.page || 0
+      const from = page * size
+
+      const nftAccounts = tokenAccounts.value.filter((tokenAccount: any) => {
+        const decimals = tokenAccount.account.data.parsed.info.tokenAmount.decimals
+        const amount = tokenAccount.account.data.parsed.info.tokenAmount.amount
+        return decimals === 0 && amount === '1'
+      })
+
+      const paged = nftAccounts.slice(from, from + size)
+
+      return paged.map((tokenAccount: any): WarpChainAsset => {
+        const mintAddress = tokenAccount.account.data.parsed.info.mint
+        return {
+          chain: this.chain.name,
+          identifier: mintAddress,
+          name: mintAddress.slice(0, 8) + '...',
+          symbol: '',
+          amount: 1n,
+          decimals: 0,
+          type: 'nft',
+          nft: {},
+        }
+      })
+    } catch {
+      return []
     }
   }
 

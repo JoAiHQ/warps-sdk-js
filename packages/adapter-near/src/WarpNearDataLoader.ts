@@ -189,6 +189,10 @@ export class WarpNearDataLoader implements AdapterWarpDataLoader {
     }
   }
 
+  async getAccountNfts(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAsset[]> {
+    return []
+  }
+
   async getAccountActions(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAction[]> {
     return []
   }

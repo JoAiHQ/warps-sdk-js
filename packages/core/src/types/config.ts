@@ -214,6 +214,7 @@ export interface WarpDataLoaderOptions {
 export interface AdapterWarpDataLoader {
   getAccount(address: string): Promise<WarpChainAccount>
   getAccountAssets(address: string): Promise<WarpChainAsset[]>
+  getAccountNfts?(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAsset[]>
   getAsset(identifier: string): Promise<WarpChainAsset | null>
   getAction(identifier: string, awaitCompleted?: boolean): Promise<WarpChainAction | null>
   getAccountActions(address: string, options?: WarpDataLoaderOptions): Promise<WarpChainAction[]>

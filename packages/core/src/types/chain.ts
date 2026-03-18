@@ -16,6 +16,19 @@ export type WarpChainAssetValue = {
 export type WarpChainAssetLogoThemed = Record<WarpTheme, string>
 export type WarpChainAssetLogo = string | WarpChainAssetLogoThemed | null
 
+export type WarpChainAssetType = 'fungible' | 'nft' | 'sft'
+
+export type WarpChainAssetNftMetadata = {
+  collection?: string
+  nonce?: bigint
+  mediaUrl?: string
+  thumbnailUrl?: string
+  attributes?: Record<string, string>
+  royalties?: number
+  rank?: number
+  creator?: string
+}
+
 export type WarpChainAsset = {
   chain: WarpChainName
   identifier: string
@@ -26,6 +39,8 @@ export type WarpChainAsset = {
   logoUrl?: WarpChainAssetLogo
   price?: number
   supply?: bigint
+  type?: WarpChainAssetType
+  nft?: WarpChainAssetNftMetadata
 }
 
 export type WarpChainAction = {
