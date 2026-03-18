@@ -34,6 +34,11 @@ export const EvmWalletChainNames: WarpChainName[] = [
   WarpChainName.Tempo,
 ]
 
+export const MultiversxWalletChainNames: WarpChainName[] = [
+  WarpChainName.Multiversx,
+  WarpChainName.Claws,
+]
+
 export const CLOUD_WALLET_PROVIDERS: WarpWalletProvider[] = ['coinbase', 'privy', 'gaupa']
 
 export const WarpConstants = {
