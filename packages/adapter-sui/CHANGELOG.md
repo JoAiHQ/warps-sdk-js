@@ -1,5 +1,20 @@
 # @joai/warps-adapter-sui
 
+## 1.3.0
+
+### Minor Changes
+
+- fe1000a: Add NFT support via optional `getAccountNfts` on `AdapterWarpDataLoader`.
+
+  New types: `WarpChainAssetType` (`'fungible' | 'nft' | 'sft'`) and `WarpChainAssetNftMetadata` (collection, nonce, mediaUrl, thumbnailUrl, attributes, royalties, rank, creator). `WarpChainAsset` gains optional `type` and `nft` fields — fully backward compatible.
+
+  MultiversX fetches NFTs and SFTs from `accounts/{address}/nfts`, filters MetaESDT, and normalises IPFS URLs to HTTPS. `getAsset` now correctly resolves nonce-based identifiers via the `nfts/{identifier}` endpoint. EVM, Solana, Sui, and NEAR adapters implement the method; Solana detects NFTs from zero-decimal single-amount token accounts, Sui filters owned objects excluding coin types.
+
+### Patch Changes
+
+- Updated dependencies [fe1000a]
+  - @joai/warps@4.11.0
+
 ## 1.2.0
 
 ### Minor Changes
