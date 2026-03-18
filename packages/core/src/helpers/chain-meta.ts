@@ -43,8 +43,12 @@ export const WarpChainLogos: Record<WarpChainName, WarpChainInfoLogo> = {
   [WarpChainName.Fastset]: { light: WarpAssets.chainLogo('fastset-white.svg'), dark: WarpAssets.chainLogo('fastset-black.svg') },
 }
 
+/**
+ * Get chain logo URL for a given background.
+ * @param variant - the background color: 'dark' returns the light/white logo, 'light' returns the dark/black logo
+ */
 export const getChainLogo = (chain: WarpChainName, variant: 'light' | 'dark' = 'dark'): string => {
   const logo = WarpChainLogos[chain]
   if (typeof logo === 'string') return logo
-  return variant === 'dark' ? logo.dark : logo.light
+  return variant === 'dark' ? logo.light : logo.dark
 }
