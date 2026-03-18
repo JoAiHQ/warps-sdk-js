@@ -11,6 +11,7 @@ export enum WarpChainName {
   Arbitrum = 'arbitrum',
   Polygon = 'polygon',
   Somnia = 'somnia',
+  Tempo = 'tempo',
   Fastset = 'fastset',
   Solana = 'solana',
   Near = 'near',
@@ -30,6 +31,7 @@ export const EvmWalletChainNames: WarpChainName[] = [
   WarpChainName.Arbitrum,
   WarpChainName.Polygon,
   WarpChainName.Somnia,
+  WarpChainName.Tempo,
 ]
 
 export const CLOUD_WALLET_PROVIDERS: WarpWalletProvider[] = ['coinbase', 'privy', 'gaupa']
