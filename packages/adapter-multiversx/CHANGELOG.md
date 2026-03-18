@@ -1,5 +1,11 @@
 # @joai/warps-adapter-multiversx
 
+## 1.3.3
+
+### Patch Changes
+
+- 28614fb: Fix system SC output parsing falling through to ABI path when token parsing fails (e.g. in embed context), causing 404 errors on the verification endpoint.
+
 ## 1.3.2
 
 ### Patch Changes

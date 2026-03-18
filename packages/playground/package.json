@@ -1,6 +1,6 @@
 {
   "name": "@warps/playground",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "description": "Playground for testing Warps SDK",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "@joai/warps-adapter-fastset": "1.1.0",
     "@joai/warps-mcp": "12.0.0",
     "@joai/warps-adapter-near": "1.1.0",
-    "@joai/warps-adapter-multiversx": "1.3.2",
+    "@joai/warps-adapter-multiversx": "1.3.3",
     "@joai/warps-adapter-solana": "1.1.0",
     "@joai/warps-adapter-sui": "1.2.0",
     "@joai/warps-vm-node": "1.0.3",
