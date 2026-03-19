@@ -1,5 +1,24 @@
 # @joai/warps-adapter-sui
 
+## 1.3.1
+
+### Patch Changes
+
+- 4e8a3cd: Fix `in.FIELD` output references not resolving in warp chains
+
+  `WarpExecutor.evaluateOutput` now retrieves the full `ResolvedInput[]` from the
+  factory cache and passes it to `getActionExecution` via `injectedInputs`. This
+  ensures `in.FIELD_NAME` output mappings (e.g. `"COLLECTION_ID": "in.COLLECTION_ID"`)
+  resolve correctly when chaining warps — previously the adapter had a separate
+  `WarpCache` instance that was never written to, so `inputs` was always empty and
+  the value came through as `null`, breaking the next-warp URL placeholder.
+
+  All adapter `Output` classes have been cleaned up to remove the now-dead
+  `WarpCache` dependency and use `injectedInputs ?? []` directly.
+
+- Updated dependencies [4e8a3cd]
+  - @joai/warps@4.12.0
+
 ## 1.3.0
 
 ### Minor Changes
