@@ -10,8 +10,6 @@ import {
   WarpActionExecutionResult,
   WarpActionIndex,
   WarpAdapterGenericRemoteTransaction,
-  WarpCache,
-  WarpCacheKey,
   WarpChainAction,
   WarpChainInfo,
   WarpClientConfig,
@@ -25,7 +23,6 @@ import { WarpNearSerializer } from './WarpNearSerializer'
 export class WarpNearOutput implements AdapterWarpOutput {
   private readonly serializer: WarpNearSerializer
   private readonly nearConfig: any
-  private readonly cache: WarpCache
 
   constructor(
     private readonly config: WarpClientConfig,
@@ -38,16 +35,15 @@ export class WarpNearOutput implements AdapterWarpOutput {
       networkId: this.config.env === 'mainnet' ? 'mainnet' : this.config.env === 'testnet' ? 'testnet' : 'testnet',
       nodeUrl: providerConfig.url,
     }
-    this.cache = new WarpCache(config.env, config.cache)
   }
 
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    injectedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
-    const inputs: ResolvedInput[] =
-      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
+    const inputs: ResolvedInput[] = injectedInputs ?? []
     const resolvedInputs = extractResolvedInputValues(inputs)
 
     if (!tx) {

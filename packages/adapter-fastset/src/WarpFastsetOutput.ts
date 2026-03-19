@@ -28,7 +28,8 @@ export class WarpFastsetOutput implements AdapterWarpOutput {
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    _resolvedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
     const success = this.isTransactionSuccessful(tx)
     const transactionHash = this.extractTransactionHash(tx)

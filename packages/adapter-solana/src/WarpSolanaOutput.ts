@@ -16,8 +16,6 @@ import {
   WarpConstants,
   WarpExecutionOutput,
   WarpNativeValue,
-  WarpCache,
-  WarpCacheKey,
 } from '@joai/warps'
 import { Connection, TransactionSignature } from '@solana/web3.js'
 import { WarpSolanaSerializer } from './WarpSolanaSerializer'
@@ -25,7 +23,6 @@ import { WarpSolanaSerializer } from './WarpSolanaSerializer'
 export class WarpSolanaOutput implements AdapterWarpOutput {
   private readonly serializer: WarpSolanaSerializer
   private readonly connection: Connection
-  private readonly cache: WarpCache
 
   constructor(
     private readonly config: WarpClientConfig,
@@ -34,16 +31,15 @@ export class WarpSolanaOutput implements AdapterWarpOutput {
     this.serializer = new WarpSolanaSerializer()
     const providerConfig = getProviderConfig(this.config, this.chain.name, this.config.env, this.chain.defaultApiUrl)
     this.connection = new Connection(providerConfig.url, 'confirmed')
-    this.cache = new WarpCache(config.env, config.cache)
   }
 
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    injectedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
-    const inputs: ResolvedInput[] =
-      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
+    const inputs: ResolvedInput[] = injectedInputs ?? []
     const resolvedInputs = extractResolvedInputValues(inputs)
 
     if (!tx) {

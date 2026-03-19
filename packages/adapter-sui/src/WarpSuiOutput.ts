@@ -35,7 +35,8 @@ export class WarpSuiOutput implements AdapterWarpOutput {
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    _resolvedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
     const output = await this.extractContractOutput(warp, actionIndex, tx, [])
     const next = getNextInfo(this.config, [], warp, actionIndex, output.output)

@@ -12,8 +12,6 @@ import {
   WarpActionExecutionResult,
   WarpActionIndex,
   WarpAdapterGenericRemoteTransaction,
-  WarpCache,
-  WarpCacheKey,
   WarpChainInfo,
   WarpClientConfig,
   WarpConstants,
@@ -34,7 +32,6 @@ import { WarpMultiversxSerializer } from './WarpMultiversxSerializer'
 export class WarpMultiversxOutput implements AdapterWarpOutput {
   private readonly abi: WarpMultiversxAbiBuilder
   private readonly serializer: WarpMultiversxSerializer
-  private readonly cache: WarpCache
 
   constructor(
     private readonly config: WarpClientConfig,
@@ -43,17 +40,15 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
   ) {
     this.abi = new WarpMultiversxAbiBuilder(config, chain)
     this.serializer = new WarpMultiversxSerializer({ typeRegistry: this.typeRegistry })
-    this.cache = new WarpCache(config.env, config.cache)
   }
 
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    injectedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
-    // Restore inputs via cache as transactions are broadcasted and processed asynchronously
-    const inputs: ResolvedInput[] =
-      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
+    const inputs: ResolvedInput[] = injectedInputs ?? []
 
     const output = await this.extractContractOutput(warp, actionIndex, tx, inputs)
     const messages = applyOutputToMessages(warp, output.output, this.config)

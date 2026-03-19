@@ -50,6 +50,10 @@ export class WarpFactory {
     return extractResolvedInputValues(cachedInputs)
   }
 
+  async getRawResolvedInputsFromCache(env: WarpChainEnv, warpHash: string | undefined, actionIndex: number): Promise<ResolvedInput[]> {
+    return (await this.cache.get<ResolvedInput[]>(WarpCacheKey.WarpExecutable(env, warpHash || '', actionIndex))) || []
+  }
+
   async createExecutable(
     warp: Warp,
     actionIndex: number,

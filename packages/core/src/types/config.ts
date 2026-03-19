@@ -13,6 +13,7 @@ import { ClientTransformConfig } from './transform'
 import { WalletProviderFactory } from './wallet-provider'
 import {
   BaseWarpActionInputType,
+  ResolvedInput,
   Warp,
   WarpAction,
   WarpActionIndex,
@@ -170,7 +171,7 @@ export interface AdapterWarpExecutor {
 }
 
 export interface AdapterWarpOutput {
-  getActionExecution(warp: Warp, actionIndex: WarpActionIndex, tx: WarpAdapterGenericRemoteTransaction): Promise<WarpActionExecutionResult>
+  getActionExecution(warp: Warp, actionIndex: WarpActionIndex, tx: WarpAdapterGenericRemoteTransaction, resolvedInputs?: ResolvedInput[]): Promise<WarpActionExecutionResult>
 }
 
 export interface AdapterWarpSerializer {

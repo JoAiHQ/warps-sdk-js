@@ -16,8 +16,6 @@ import {
   WarpConstants,
   WarpExecutionOutput,
   WarpNativeValue,
-  WarpCache,
-  WarpCacheKey,
 } from '@joai/warps'
 import { ethers } from 'ethers'
 import { WarpEvmSerializer } from './WarpEvmSerializer'
@@ -25,7 +23,6 @@ import { WarpEvmSerializer } from './WarpEvmSerializer'
 export class WarpEvmOutput implements AdapterWarpOutput {
   private readonly serializer: WarpEvmSerializer
   private readonly provider: ethers.JsonRpcProvider
-  private readonly cache: WarpCache
 
   constructor(
     private readonly config: WarpClientConfig,
@@ -35,17 +32,15 @@ export class WarpEvmOutput implements AdapterWarpOutput {
     const providerConfig = getProviderConfig(this.config, this.chain.name, this.config.env, this.chain.defaultApiUrl)
     const network = new ethers.Network(this.chain.name, parseInt(this.chain.chainId))
     this.provider = new ethers.JsonRpcProvider(providerConfig.url, network)
-    this.cache = new WarpCache(config.env, config.cache)
   }
 
   async getActionExecution(
     warp: Warp,
     actionIndex: WarpActionIndex,
-    tx: WarpAdapterGenericRemoteTransaction
+    tx: WarpAdapterGenericRemoteTransaction,
+    injectedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
-    // Restore inputs via cache as transactions are broadcasted and processed asynchronously
-    const inputs: ResolvedInput[] =
-      (await this.cache.get(WarpCacheKey.WarpExecutable(this.config.env, warp.meta?.hash || '', actionIndex))) ?? []
+    const inputs: ResolvedInput[] = injectedInputs ?? []
     const resolvedInputs = extractResolvedInputValues(inputs)
 
     if (!tx) {
