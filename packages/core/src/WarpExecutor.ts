@@ -278,7 +278,7 @@ export class WarpExecutor {
 
           const resolvedInputs = await this.factory.getRawResolvedInputsFromCache(this.config.env, warp.meta?.hash, currentActionIndex)
           const result = await adapter.output.getActionExecution(warp, currentActionIndex, chainAction.tx, resolvedInputs)
-          result.next = getNextInfo(this.config, this.adapters, warp, currentActionIndex, result.output)
+          result.next = getNextInfo(this.config, this.adapters, warp, currentActionIndex, buildNextVars(resolvedInputs, result.output))
 
           if (result.status === 'success') {
             await this.callHandler(() =>
@@ -745,4 +745,20 @@ export class WarpExecutor {
     const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, mergedBag)
     return evaluateWhenCondition(interpolatedWhen)
   }
+}
+
+/**
+ * Builds the variable bag passed to getNextInfo.
+ * Resolved inputs are the base (always available from cache).
+ * Non-null output values override inputs (on-chain output takes precedence).
+ */
+const buildNextVars = (resolvedInputs: ResolvedInput[] | null | undefined, output: Record<string, any>): Record<string, any> => {
+  const inputVars = Object.fromEntries(
+    (resolvedInputs ?? []).flatMap((r) => {
+      const key = r.input.as || r.input.name
+      return key ? [[key, r.value]] : []
+    })
+  )
+  const outputVars = Object.fromEntries(Object.entries(output).filter(([, v]) => v !== null && v !== undefined))
+  return { ...inputVars, ...outputVars }
 }

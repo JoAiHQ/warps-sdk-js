@@ -1606,61 +1606,59 @@ describe('WarpExecutor', () => {
       expect(result.next.length).toBeGreaterThan(0)
     })
 
-    it('should pass factory-cached ResolvedInput[] to getActionExecution so in.FIELD references resolve correctly', async () => {
+    it('should pass factory-cached ResolvedInput[] to getActionExecution', async () => {
       const onExecuted = jest.fn()
-      const warpHash = 'hash-nft-create-role'
-      const warpWithInput = {
+      const warpHash = 'hash-abc'
+      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg' as const }
+      const warp = {
         ...createMockWarp(),
-        actions: [{ type: 'contract' as const, label: 'Set Role', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'setRole', inputs: [] }],
-        output: { COLLECTION_ID: 'in.COLLECTION_ID' },
-        next: 'multiversx:esdt-nft-create?COLLECTION_ID={{COLLECTION_ID}}',
-        meta: {
-          chain: WarpChainName.Multiversx,
-          identifier: 'multiversx:esdt-set-nft-create-role',
-          hash: warpHash,
-          creator: 'erd1test',
-          createdAt: '2024-01-01T00:00:00Z',
-          query: { COLLECTION_ID: 'TIIITO-abc123' },
-        },
+        actions: [{ type: 'contract' as const, label: 'Action', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'doSomething', inputs: [inputDef] }],
+        output: { TOKEN: 'in.TOKEN' },
+        next: 'multiversx:some-warp?TOKEN={{TOKEN}}',
+        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z' },
       }
-
-      const cachedInputs = [{ name: 'COLLECTION_ID', value: 'TIIITO-abc123', type: 'string' as const, position: 'arg' as const }]
-
+      const cachedInputs = [{ input: inputDef, value: 'abc-123' }]
       const mockTx = { hash: 'tx1', status: { isSuccessful: () => true } }
-      const mockChainAction = { id: 'tx1', tx: mockTx }
       const mockAdapter = createMockAdapter()
       mockAdapter.output.getActionExecution = jest.fn().mockResolvedValue({
-        status: 'success',
-        warp: warpWithInput,
-        action: 1,
-        user: 'erd1test',
-        txHash: 'tx1',
-        tx: mockTx,
-        next: null,
-        values: { string: [], native: [], mapped: {} },
-        output: { COLLECTION_ID: 'TIIITO-abc123' },
-        messages: {},
-        destination: null,
-        resolvedInputs: ['TIIITO-abc123'],
+        status: 'success', warp, action: 1, user: 'erd1test', txHash: 'tx1', tx: mockTx,
+        next: null, values: { string: [], native: [], mapped: {} }, output: { TOKEN: 'abc-123' }, messages: {}, destination: null, resolvedInputs: cachedInputs,
       })
 
       const testExecutor = new WarpExecutor(config, [mockAdapter], { onExecuted })
-
-      // Pre-populate the factory's in-memory cache with ResolvedInput[] for the warp hash.
-      // This is exactly what WarpFactory.createExecutable does during real warp execution.
-      // getRawResolvedInputsFromCache reads this same cache, so the real code path is exercised.
       const { WarpCacheKey } = await import('./WarpCache')
       await testExecutor['factory']['cache'].set(WarpCacheKey.WarpExecutable(config.env, warpHash, 1), cachedInputs)
+      await testExecutor.evaluateOutput(warp, [{ id: 'tx1', tx: mockTx } as any])
 
-      await testExecutor.evaluateOutput(warpWithInput, [mockChainAction as any])
+      expect(mockAdapter.output.getActionExecution).toHaveBeenCalledWith(warp, 1, mockTx, cachedInputs)
+    })
 
-      // Verify the adapter received the factory-cached inputs as the 4th argument
-      expect(mockAdapter.output.getActionExecution).toHaveBeenCalledWith(
-        warpWithInput,
-        1,
-        mockTx,
-        cachedInputs
-      )
+    it('should resolve {{PLACEHOLDER}} in next from input vars when output mapping returns null', async () => {
+      const onExecuted = jest.fn()
+      const warpHash = 'hash-def'
+      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg' as const }
+      const warp = {
+        ...createMockWarp(),
+        actions: [{ type: 'contract' as const, label: 'Action', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'doSomething', inputs: [inputDef] }],
+        output: { TOKEN: 'in.TOKEN' },
+        next: 'multiversx:some-warp?TOKEN={{TOKEN}}',
+        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z' },
+      }
+      const cachedInputs = [{ input: inputDef, value: 'abc-123' }]
+      const mockTx = { hash: 'tx1', status: { isSuccessful: () => true } }
+      const mockAdapter = createMockAdapter()
+      mockAdapter.output.getActionExecution = jest.fn().mockResolvedValue({
+        status: 'success', warp, action: 1, user: 'erd1test', txHash: 'tx1', tx: mockTx,
+        next: null, values: { string: [], native: [], mapped: {} }, output: { TOKEN: null }, messages: {}, destination: null, resolvedInputs: cachedInputs,
+      })
+
+      const testExecutor = new WarpExecutor(config, [mockAdapter], { onExecuted })
+      const { WarpCacheKey } = await import('./WarpCache')
+      await testExecutor['factory']['cache'].set(WarpCacheKey.WarpExecutable(config.env, warpHash, 1), cachedInputs)
+      await testExecutor.evaluateOutput(warp, [{ id: 'tx1', tx: mockTx } as any])
+
+      const result = onExecuted.mock.calls[0][0]
+      expect(result.next[0]?.identifier).toContain('abc-123')
     })
   })
 })
