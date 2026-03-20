@@ -214,6 +214,20 @@ export class WarpFactory {
     })
   }
 
+  /**
+   * Re-resolves inputs from warp.meta.query without a factory cache warm-up.
+   * Used as a fallback in evaluateOutput when the cache is cold (e.g. different
+   * process evaluated the output than the one that created the executable).
+   */
+  public async resolveInputsFromQuery(warp: Warp, actionIndex: number, query: Record<string, any>): Promise<ResolvedInput[]> {
+    const action = getWarpActionByIndex(warp, actionIndex)
+    if (!action || !action.inputs?.length) return []
+    const chain = await this.getChainInfoForWarp(warp)
+    const adapter = findWarpAdapterForChain(chain.name, this.adapters)
+    const interpolator = new WarpInterpolator(this.config, adapter, this.adapters)
+    return this.getResolvedInputs(chain.name, action, [], interpolator, query)
+  }
+
   private requiresPayloadInputs(action: WarpAction): boolean {
     return action.inputs?.some((input) => typeof input.position === 'string' && input.position.startsWith('payload:')) ?? false
   }

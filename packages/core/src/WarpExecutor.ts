@@ -276,7 +276,13 @@ export class WarpExecutor {
             return errorResult
           }
 
-          const resolvedInputs = await this.factory.getRawResolvedInputsFromCache(this.config.env, warp.meta?.hash, currentActionIndex)
+          let resolvedInputs = await this.factory.getRawResolvedInputsFromCache(this.config.env, warp.meta?.hash, currentActionIndex)
+          if (resolvedInputs.length === 0) {
+            const query = warp.meta?.query
+            if (query && Object.keys(query).length > 0) {
+              resolvedInputs = await this.factory.resolveInputsFromQuery(warp, currentActionIndex, query)
+            }
+          }
           const result = await adapter.output.getActionExecution(warp, currentActionIndex, chainAction.tx, resolvedInputs)
           result.next = getNextInfo(this.config, this.adapters, warp, currentActionIndex, buildNextVars(resolvedInputs, result.output))
 

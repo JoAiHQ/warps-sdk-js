@@ -1660,6 +1660,43 @@ describe('WarpExecutor', () => {
       const result = onExecuted.mock.calls[0][0]
       expect(result.next[0]?.identifier).toContain('abc-123')
     })
+
+    it('should resolve in.FIELD from warp.meta.query when factory cache is cold (cross-process scenario)', async () => {
+      const onExecuted = jest.fn()
+      const warpHash = 'hash-cold-cache'
+      const inputDef = { name: 'COLLECTION_ID', as: 'COLLECTION_ID', label: 'Collection', type: 'string' as const, position: 'arg:1' as const, source: 'field' as const, required: true }
+      const warp = {
+        ...createMockWarp(),
+        actions: [{ type: 'contract' as const, label: 'Set NFT Role', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'setSpecialRole', inputs: [inputDef] }],
+        output: { TX_HASH: 'out', COLLECTION_ID: 'in.COLLECTION_ID' },
+        next: 'multiversx-esdt-nft-create?COLLECTION_ID={{COLLECTION_ID}}',
+        meta: {
+          chain: WarpChainName.Multiversx,
+          identifier: '@multiversx-esdt-set-nft-create-role',
+          hash: warpHash,
+          creator: 'erd1test',
+          createdAt: '2024-01-01T00:00:00Z',
+          query: { COLLECTION_ID: 'JKKKK1-d4e06c' },
+        },
+      }
+      const mockTx = { hash: 'tx1', status: { isSuccessful: () => true } }
+      const mockAdapter = createMockAdapter()
+      // Simulate extractContractOutput resolving in.COLLECTION_ID via injected inputs
+      mockAdapter.output.getActionExecution = jest.fn().mockImplementation(async (_warp, _idx, _tx, injectedInputs) => ({
+        status: 'success', warp, action: 1, user: 'erd1test', txHash: 'tx1', tx: mockTx,
+        next: null, values: { string: [], native: [], mapped: {} },
+        output: { TX_HASH: 'tx1', COLLECTION_ID: injectedInputs?.[0]?.value?.split(':')?.[1] ?? null },
+        messages: {}, destination: null, resolvedInputs: injectedInputs ?? [],
+      }))
+
+      // No cache warm-up — simulates cold cache on the PWA side for cloud-executed warps
+      const testExecutor = new WarpExecutor(config, [mockAdapter], { onExecuted })
+      await testExecutor.evaluateOutput(warp, [{ id: 'tx1', tx: mockTx } as any])
+
+      const result = onExecuted.mock.calls[0][0]
+      // COLLECTION_ID must not be empty — re-derived from warp.meta.query
+      expect(result.next[0]?.identifier).toContain('COLLECTION_ID=JKKKK1-d4e06c')
+    })
   })
 })
 
