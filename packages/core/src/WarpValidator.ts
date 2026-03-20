@@ -61,6 +61,11 @@ export class WarpValidator {
 
     validateUppercase(warp.vars, 'Variable')
     validateUppercase(warp.output, 'Output')
+
+    if (warp.trigger?.type === 'webhook' && warp.trigger.inputs) {
+      validateUppercase(warp.trigger.inputs, 'Webhook trigger input')
+    }
+
     return errors
   }
 
