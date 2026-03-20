@@ -1,5 +1,14 @@
 # @joai/warps
 
+## 4.12.1
+
+### Patch Changes
+
+- 9faad95: Fix `{{PLACEHOLDER}}` in `next` resolving to empty string when output mapping returns null. Resolved inputs are now used as a fallback when building the variable bag for `getNextInfo`, so values like `COLLECTION_ID` are always available even if the on-chain output section fails to populate them.
+- bdf199b: Remove `next` from `WarpTrigger` webhook type. The top-level `Warp.next` field already serves this purpose — use that instead to declare which warp to chain to after a webhook trigger fires.
+
+  `WarpValidator` now enforces that webhook trigger input keys are uppercase, consistent with `vars` and `output` field naming rules.
+
 ## 4.12.0
 
 ### Minor Changes
