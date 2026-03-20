@@ -1168,6 +1168,107 @@ describe('Result Helpers', () => {
     })
   })
 
+  describe('extractContractOutput (ESDTNFTCreate built-in)', () => {
+    it('extracts NFT identifier from ESDTNFTCreate transaction without ABI', async () => {
+      const sender = new Address('erd1lu34w2tlklct45v0uqmchcye79lu546q58nkjqy6j7vamc5z8mks7cglh6')
+      const collectionId = 'JKKKK1-33f607'
+      const nonce = 1
+
+      const tx = new TransactionOnNetwork({
+        hash: 'esdt-nft-create-tx',
+        sender,
+        function: 'ESDTNFTCreate',
+        nonce: 1n,
+        logs: new TransactionLogs({
+          events: [
+            new TransactionEvent({
+              identifier: 'ESDTNFTCreate',
+              topics: [
+                Buffer.from(collectionId) as unknown as Uint8Array,
+                new Uint8Array([nonce]),                              // nonce = 1
+                new Uint8Array([0x01]),                               // quantity = 1
+              ],
+            }),
+          ],
+        }),
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Create NFT',
+            address: 'erd1lu34w2tlklct45v0uqmchcye79lu546q58nkjqy6j7vamc5z8mks7cglh6',
+            func: 'ESDTNFTCreate',
+            args: [],
+            gasLimit: 10000000,
+          },
+        ],
+        output: {
+          TX_HASH: 'out',
+          NFT_IDENTIFIER: 'out.1',
+        },
+      } as any
+
+      const { values, output } = await subject.extractContractOutput(warp, 1, tx, [])
+
+      expect(output.TX_HASH).toBe('esdt-nft-create-tx')
+      expect(output.NFT_IDENTIFIER).toBe('JKKKK1-33f607-01')
+      expect(values.string).toContain('JKKKK1-33f607-01')
+    })
+
+    it('handles nonce requiring zero-padding (odd hex length)', async () => {
+      const sender = new Address('erd1lu34w2tlklct45v0uqmchcye79lu546q58nkjqy6j7vamc5z8mks7cglh6')
+      const collectionId = 'MYNFT-abc123'
+
+      const tx = new TransactionOnNetwork({
+        hash: 'esdt-nft-create-tx-2',
+        sender,
+        function: 'ESDTNFTCreate',
+        nonce: 2n,
+        logs: new TransactionLogs({
+          events: [
+            new TransactionEvent({
+              identifier: 'ESDTNFTCreate',
+              topics: [
+                Buffer.from(collectionId) as unknown as Uint8Array,
+                new Uint8Array([0x0f]),  // nonce = 15 → "0f" (already even length)
+                new Uint8Array([0x01]),
+              ],
+            }),
+          ],
+        }),
+      })
+
+      const warp = {
+        protocol: 'test',
+        name: 'test',
+        title: 'test',
+        description: 'test',
+        actions: [
+          {
+            type: 'contract',
+            label: 'Create NFT',
+            address: 'erd1lu34w2tlklct45v0uqmchcye79lu546q58nkjqy6j7vamc5z8mks7cglh6',
+            func: 'ESDTNFTCreate',
+            args: [],
+            gasLimit: 10000000,
+          },
+        ],
+        output: {
+          NFT_IDENTIFIER: 'out.1',
+        },
+      } as any
+
+      const { output } = await subject.extractContractOutput(warp, 1, tx, [])
+      expect(output.NFT_IDENTIFIER).toBe('MYNFT-abc123-0f')
+    })
+  })
+
   describe('extractQueryOutput', () => {
     it('returns empty results when no results defined', async () => {
       const warp = {

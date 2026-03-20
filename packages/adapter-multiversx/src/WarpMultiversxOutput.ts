@@ -111,6 +111,28 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
       }
     }
 
+    const builtInResult = !action.abi ? this.tryExtractBuiltInFunctionOutput(action, tx) : null
+    if (builtInResult) {
+      for (const [resultName, resultPath] of Object.entries(warp.output)) {
+        if (resultPath.startsWith(WarpConstants.Transform.Prefix)) continue
+        if (resultPath === 'out') {
+          setBareOutValue(resultName)
+        } else if (resultPath === 'out.1') {
+          output[resultName] = builtInResult.nftIdentifier
+          if (builtInResult.nftIdentifier) {
+            stringValues.push(builtInResult.nftIdentifier)
+            nativeValues.push(builtInResult.nftIdentifier)
+          }
+        } else {
+          output[resultName] = resultPath
+        }
+      }
+      return {
+        values: { string: stringValues, native: nativeValues, mapped: {} },
+        output: await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config),
+      }
+    }
+
     const systemScResult = !action.abi ? this.tryExtractSystemScOutput(action, tx) : null
     if (systemScResult) {
       const tokenId = systemScResult.tokenIdentifier
@@ -249,6 +271,21 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     output = await evaluateOutputCommon(warp, output, nativeValues, actionIndex, inputs, this.serializer.coreSerializer, this.config)
 
     return { values, output }
+  }
+
+  private tryExtractBuiltInFunctionOutput(action: WarpContractAction, tx: TransactionOnNetwork): { nftIdentifier: string | null } | null {
+    if (action.func !== 'ESDTNFTCreate') return null
+    try {
+      const parser = new TokenManagementTransactionsOutcomeParser()
+      const results = parser.parseNftCreate(tx)
+      const first = results[0]
+      if (!first) return { nftIdentifier: null }
+      const hex = first.nonce.toString(16)
+      const paddedHex = hex.length % 2 !== 0 ? '0' + hex : hex
+      return { nftIdentifier: `${first.tokenIdentifier}-${paddedHex}` }
+    } catch {
+      return { nftIdentifier: null }
+    }
   }
 
   private tryExtractSystemScOutput(action: WarpContractAction, tx: TransactionOnNetwork): { tokenIdentifier: string | null } | null {
