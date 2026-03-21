@@ -74,7 +74,7 @@ export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'co
 
 export type WarpTrigger =
   | { type: 'message'; pattern: string }
-  | { type: 'webhook'; source: string; inputs?: Record<string, string> }
+  | { type: 'webhook'; source: string; match?: Record<string, string | number | boolean>; inputs?: Record<string, string> }
 
 export type WarpStateAction = {
   type: 'state'
