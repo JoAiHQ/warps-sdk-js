@@ -10,10 +10,7 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
-import { createKeyPairSignerFromBytes } from '@solana/kit'
-import { Commitment, Connection, Keypair, Transaction, VersionedTransaction } from '@solana/web3.js'
-import { registerExactSvmScheme } from '@x402/svm/exact/client'
-import { SupportedX402SolanaNetworks } from './constants'
+import { Commitment, Connection, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
 import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
@@ -106,29 +103,6 @@ export class WarpSolanaWallet implements AdapterWarpWallet {
 
   getPublicKey(): string | null {
     return this.cachedPublicKey
-  }
-
-  async registerX402Handlers(client: unknown): Promise<Record<string, () => void>> {
-    if (!this.walletProvider) return {}
-
-    const provider = this.walletProvider as unknown as Record<string, unknown>
-    const getKeypair = provider.getKeypairInstance as (() => Keypair) | undefined
-
-    if (typeof getKeypair !== 'function') return {}
-
-    const keypair = getKeypair()
-    if (!keypair || !keypair.secretKey) return {}
-
-    const signer = await createKeyPairSignerFromBytes(keypair.secretKey)
-    const handlers: Record<string, () => void> = {}
-
-    for (const network of SupportedX402SolanaNetworks) {
-      handlers[network] = () => {
-        registerExactSvmScheme(client as Parameters<typeof registerExactSvmScheme>[0], { signer })
-      }
-    }
-
-    return handlers
   }
 
   private createProvider(): WalletProvider | null {

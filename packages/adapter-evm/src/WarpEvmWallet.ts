@@ -8,12 +8,8 @@ import {
   WarpWalletDetails,
   WarpWalletProvider,
 } from '@joai/warps'
-import { toClientEvmSigner } from '@x402/evm'
-import { registerExactEvmScheme } from '@x402/evm/exact/client'
 import { ethers } from 'ethers'
-import { createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { SupportedEvmChainIds } from './constants'
 import { MnemonicWalletProvider } from './providers/MnemonicWalletProvider'
 import { PrivateKeyWalletProvider } from './providers/PrivateKeyWalletProvider'
 import { ReadOnlyWalletProvider } from './providers/ReadOnlyWalletProvider'
@@ -151,32 +147,14 @@ export class WarpEvmWallet implements AdapterWarpWallet {
     return this.cachedPublicKey
   }
 
-  async registerX402Handlers(client: unknown): Promise<Record<string, () => void>> {
+  async getMppAccount(): Promise<unknown> {
     if (!this.walletProvider) throw new Error('No wallet provider available')
-
     const provider = this.walletProvider as unknown as Record<string, unknown>
     const getInstance = provider.getWalletInstance as (() => ethers.Wallet) | undefined
-
-    if (typeof getInstance !== 'function') throw new Error('Wallet provider does not have getWalletInstance method')
-
+    if (typeof getInstance !== 'function') throw new Error('Wallet provider does not support getMppAccount')
     const wallet = getInstance()
-    if (!wallet || !wallet.privateKey) throw new Error('Wallet instance does not have private key')
-
-    const signer = toClientEvmSigner(
-      privateKeyToAccount(wallet.privateKey as `0x${string}`),
-      createPublicClient({
-        transport: http(getProviderConfig(this.config, this.chain.name, this.config.env, this.chain.defaultApiUrl).url),
-      })
-    )
-    const handlers: Record<string, () => void> = {}
-
-    for (const chainId of SupportedEvmChainIds) {
-      handlers[`eip155:${chainId}`] = () => {
-        registerExactEvmScheme(client as Parameters<typeof registerExactEvmScheme>[0], { signer })
-      }
-    }
-
-    return handlers
+    if (!wallet?.privateKey) throw new Error('Wallet instance does not have a private key')
+    return privateKeyToAccount(wallet.privateKey as `0x${string}`)
   }
 
   private createProvider(): WalletProvider | null {

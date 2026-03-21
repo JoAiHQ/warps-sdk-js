@@ -234,5 +234,5 @@ export interface AdapterWarpWallet {
   delete(provider: WarpWalletProvider, externalId: string): Promise<void>
   getAddress(): string | null
   getPublicKey(): string | null
-  registerX402Handlers?(client: unknown): Promise<Record<string, () => void>>
+  getMppAccount?(): Promise<unknown>
 }

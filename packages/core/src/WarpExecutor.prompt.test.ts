@@ -3,8 +3,8 @@ import { createMockAdapter, createMockWarp } from './test-utils/sharedMocks'
 import { Warp, WarpClientConfig } from './types'
 import { WarpExecutor } from './WarpExecutor'
 
-jest.mock('./helpers/x402', () => ({
-  handleX402Payment: jest.fn((response) => response),
+jest.mock('./helpers/mpp', () => ({
+  getMppFetch: jest.fn(() => Promise.resolve(fetch)),
 }))
 
 describe('WarpExecutor - Prompt Actions', () => {

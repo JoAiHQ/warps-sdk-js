@@ -13,6 +13,3 @@ jest.mock('viem/accounts', () => ({
   })),
 }))
 
-jest.mock('@x402/evm/exact/client', () => ({
-  registerExactEvmScheme: jest.fn(),
-}))

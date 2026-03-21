@@ -6,7 +6,3 @@ declare module '@solana/kit' {
   
   export function isDurableNonceTransaction(transaction: any): boolean
 }
-
-declare module '@x402/svm/exact/client' {
-  export function registerExactSvmScheme(client: unknown, options: { signer: unknown }): void
-}

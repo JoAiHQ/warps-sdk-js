@@ -15,7 +15,7 @@ import { buildHttpRequest } from './helpers/http'
 import { applyOutputToMessages } from './helpers/messages'
 import { buildMappedOutput, extractResolvedInputValues } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
-import { handleX402Payment } from './helpers/x402'
+import { getMppFetch } from './helpers/mpp'
 import {
   ChainAdapter,
   ResolvedInput,
@@ -378,12 +378,9 @@ export class WarpExecutor {
 
     try {
       const fetchOptions: RequestInit = { method, headers, body }
-      let response = await fetch(url, fetchOptions)
+      const mppFetch = await getMppFetch(this.adapters)
+      const response = await mppFetch(url, fetchOptions)
       WarpLogger.debug('Collect response status', { status: response.status })
-
-      if (response.status === 402) {
-        response = await handleX402Payment(response, url, method, body, this.adapters)
-      }
 
       const content = await response.json()
       WarpLogger.debug('Collect response content', { content })

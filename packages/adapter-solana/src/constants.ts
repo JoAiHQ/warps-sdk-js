@@ -57,10 +57,3 @@ export const SolanaExplorerNames = {
 } as const
 
 export const SolanaExplorerUrls: Record<ExplorerName, string> = ExplorerUrls
-
-export const X402SolanaNetworkIdentifiers = {
-  Mainnet: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-  Devnet: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-} as const
-
-export const SupportedX402SolanaNetworks: string[] = [X402SolanaNetworkIdentifiers.Mainnet, X402SolanaNetworkIdentifiers.Devnet]

@@ -20,13 +20,7 @@ export const createKeyPairSignerFromBytes = jest.fn(async (bytes: Uint8Array) =>
   signTransaction: jest.fn(),
 }))
 
-export const registerExactSvmScheme = jest.fn()
-
 // Mock ESM-only modules that Jest can't handle
 jest.mock('@solana/kit', () => ({
   createKeyPairSignerFromBytes,
-}))
-
-jest.mock('@x402/svm/exact/client', () => ({
-  registerExactSvmScheme,
 }))
