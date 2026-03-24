@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.13.1
+
+### Patch Changes
+
+- Add type alias resolution in WarpSerializer for common alternative type names (`boolean` → `bool`, `integer` → `uint32`, `number` → `uint64`). Fixes `Unsupported input type: boolean` error when warp definitions use `boolean` instead of the canonical `bool` type.
+
 ## 4.13.0
 
 ### Minor Changes

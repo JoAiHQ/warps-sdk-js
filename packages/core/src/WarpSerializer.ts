@@ -8,6 +8,14 @@ import {
   WarpStructValue,
 } from './types'
 
+/** Maps common alternative type names to their canonical WarpInputTypes equivalents. */
+const TypeAliases: Record<string, string> = {
+  boolean: WarpInputTypes.Bool,
+  integer: WarpInputTypes.Uint32,
+  int: WarpInputTypes.Uint32,
+  number: WarpInputTypes.Uint64,
+}
+
 export class WarpSerializer {
   private readonly typeRegistry?: AdapterTypeRegistry
 
@@ -16,6 +24,7 @@ export class WarpSerializer {
   }
 
   nativeToString(type: WarpActionInputType, value: WarpNativeValue): string {
+    type = (TypeAliases[type] ?? type) as WarpActionInputType
     if (type === WarpInputTypes.Tuple && Array.isArray(value)) {
       if (value.length === 0) return type + WarpConstants.ArgParamsSeparator
       if (value.every((v) => typeof v === 'string' && v.includes(WarpConstants.ArgParamsSeparator))) {
@@ -94,7 +103,7 @@ export class WarpSerializer {
 
   stringToNative(value: string): [WarpActionInputType, WarpNativeValue] {
     const parts = value.split(WarpConstants.ArgParamsSeparator)
-    const baseType = parts[0]
+    const baseType = TypeAliases[parts[0]] ?? parts[0]
     const val = parts.slice(1).join(WarpConstants.ArgParamsSeparator)
 
     if (baseType === 'null') {

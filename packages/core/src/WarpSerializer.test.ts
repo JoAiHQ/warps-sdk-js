@@ -397,5 +397,16 @@ describe('WarpSerializer', () => {
       expect(result[0]).toBe('asset')
       expect(result[1]).toEqual({ identifier: 'AAA-123456-05', amount: BigInt(100) })
     })
+
+    it('resolves type aliases in stringToNative', () => {
+      expect(serializer.stringToNative('boolean:true')).toEqual(['bool', true])
+      expect(serializer.stringToNative('boolean:false')).toEqual(['bool', false])
+      expect(serializer.stringToNative('integer:42')).toEqual(['uint32', 42])
+    })
+
+    it('resolves type aliases in nativeToString', () => {
+      expect(serializer.nativeToString('boolean' as any, true)).toBe('bool:true')
+      expect(serializer.nativeToString('integer' as any, 42)).toBe('uint32:42')
+    })
   })
 })
