@@ -36,6 +36,8 @@ export type WarpMessageName = string
 
 export type WarpSchedule = 'minutely' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly'
 
+export type WarpNextConfig = string | { success?: string; error?: string }
+
 export type Warp = {
   protocol: string
   chain?: WarpChainName
@@ -47,7 +49,7 @@ export type Warp = {
   vars?: Record<WarpVarPlaceholder, string>
   trigger?: WarpTrigger
   actions: WarpAction[]
-  next?: string
+  next?: WarpNextConfig
   output?: Record<WarpOutputName, WarpResulutionPath>
   messages?: Record<WarpMessageName, WarpText>
   ui?: string
@@ -87,7 +89,7 @@ export type WarpStateAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -99,7 +101,7 @@ export type WarpMountAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -111,7 +113,7 @@ export type WarpUnmountAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -126,7 +128,7 @@ export type WarpTransferAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -144,7 +146,7 @@ export type WarpContractAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -159,7 +161,7 @@ export type WarpQueryAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -171,7 +173,7 @@ export type WarpCollectAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -182,7 +184,7 @@ export type WarpComputeAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -213,7 +215,7 @@ export type WarpMcpAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 
@@ -231,7 +233,7 @@ export type WarpPromptAction = {
   inputs?: WarpActionInput[]
   primary?: boolean
   auto?: boolean
-  next?: string
+  next?: WarpNextConfig
   when?: string
 }
 

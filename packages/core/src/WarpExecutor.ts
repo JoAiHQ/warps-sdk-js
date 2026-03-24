@@ -4,6 +4,7 @@ import {
   extractCollectOutput,
   findWarpAdapterForChain,
   getNextInfo,
+  getNextInfoForStatus,
   getWarpActionByIndex,
   getWarpPrimaryAction,
   isWarpActionAutoExecute,
@@ -284,7 +285,8 @@ export class WarpExecutor {
             }
           }
           const result = await adapter.output.getActionExecution(warp, currentActionIndex, chainAction.tx, resolvedInputs)
-          result.next = getNextInfo(this.config, this.adapters, warp, currentActionIndex, buildNextVars(resolvedInputs, result.output))
+          const nextVars = buildNextVars(resolvedInputs, result.output)
+          result.next = getNextInfoForStatus(this.config, this.adapters, warp, currentActionIndex, nextVars, result.status)
 
           if (result.status === 'success') {
             await this.callHandler(() =>
@@ -604,7 +606,7 @@ export class WarpExecutor {
     output: any,
     rawData?: any
   ): WarpActionExecutionResult {
-    const next = getNextInfo(this.config, this.adapters, executable.warp, executable.action, output)
+    const next = getNextInfoForStatus(this.config, this.adapters, executable.warp, executable.action, output, status)
 
     const resolvedInputs = extractResolvedInputValues(executable.resolvedInputs)
     return {
@@ -701,7 +703,7 @@ export class WarpExecutor {
         user: null,
         txHash: null,
         tx: null,
-        next: null,
+        next: getNextInfoForStatus(this.config, this.adapters, warp, actionIndex, {}, 'error'),
         values: { string: [], native: [], mapped: {} },
         output: { _DATA: error },
         messages: {},

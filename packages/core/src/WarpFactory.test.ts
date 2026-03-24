@@ -1,5 +1,5 @@
 import { WarpChainName, WarpConstants } from './constants'
-import { getNextInfo } from './helpers'
+import { getNextInfo, getNextInfoForStatus } from './helpers'
 import { createMockAdapter, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
 import { TransformRunner, WarpAction, WarpChainInfo, WarpClientConfig, WarpContractAction, WarpMcpAction } from './types'
 import { WarpFactory } from './WarpFactory'
@@ -75,6 +75,122 @@ describe('getNextInfo', () => {
     const adapter = createMockAdapter()
     const result = getNextInfo(config, [adapter], warp, 0, {})
     expect(result?.[0].url).toBe('https://usewarp.to/multiversx%3Amywarp?param1=value1&param2=value2')
+  })
+
+  // --- Object next config: success path ---
+
+  it('resolves success path from object next config', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'success-warp', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfo(testConfig, [adapter], warp, 0, {})
+    expect(result?.[0].identifier).toBe('success-warp')
+  })
+
+  it('resolves success path with query params from object next config', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'next-warp?token={{TOKEN}}', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfo(testConfig, [adapter], warp, 0, { TOKEN: 'abc123' })
+    expect(result?.[0].identifier).toBe('next-warp?token=abc123')
+  })
+
+  it('resolves success path URL from object next config', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'https://example.com/done', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfo(testConfig, [adapter], warp, 0, {})
+    expect(result?.[0]).toEqual({ identifier: null, url: 'https://example.com/done' })
+  })
+
+  it('returns null for success when object next has only error', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfo(testConfig, [adapter], warp, 0, {})
+    expect(result).toBeNull()
+  })
+
+  it('resolves success via getNextInfoForStatus', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'success-warp', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'success')
+    expect(result?.[0].identifier).toBe('success-warp')
+  })
+
+  // --- Object next config: error path ---
+
+  it('returns null for error path on string next', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: 'success-only-warp',
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'error')
+    expect(result).toBeNull()
+  })
+
+  it('resolves error path from object next config', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'success-warp', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'error')
+    expect(result?.[0].identifier).toBe('error-warp')
+  })
+
+  it('resolves error path with query params and placeholders', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { error: 'settings-open?pane={{PANE}}' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, { PANE: 'Privacy_AllFiles' }, 'error')
+    expect(result?.[0].identifier).toBe('settings-open?pane=Privacy_AllFiles')
+  })
+
+  it('returns null for error when object next has only success', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'success-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'error')
+    expect(result).toBeNull()
+  })
+
+  // --- Backward compatibility ---
+
+  it('string next still works via getNextInfoForStatus with success', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: 'legacy-next-warp',
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'success')
+    expect(result?.[0].identifier).toBe('legacy-next-warp')
+  })
+
+  it('unhandled status resolves success path', () => {
+    const warp = {
+      ...createMockWarp(),
+      next: { success: 'success-warp', error: 'error-warp' },
+    }
+    const adapter = createMockAdapter()
+    const result = getNextInfoForStatus(testConfig, [adapter], warp, 0, {}, 'unhandled')
+    expect(result?.[0].identifier).toBe('success-warp')
   })
 })
 

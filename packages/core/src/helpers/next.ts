@@ -1,12 +1,19 @@
 import { WarpChainName, WarpConstants } from '../constants'
 import { ChainAdapter, WarpClientConfig } from '../types'
 import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
-import { Warp } from '../types/warp'
+import { Warp, WarpNextConfig } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
-import { findWarpAdapterForChain, replacePlaceholders } from './general'
+import { findWarpAdapterForChain, getWarpActionByIndex, replacePlaceholders } from './general'
 import { getWarpInfoFromIdentifier } from './identifier'
 
 const URL_PREFIX = 'https://'
+
+/** Resolve a next config (string or object) into a plain string for the given path. */
+export const resolveNextString = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error'): string | null => {
+  if (!raw) return null
+  if (typeof raw === 'string') return path === 'success' ? raw : null
+  return raw[path] || null
+}
 
 export const getNextInfo = (
   config: WarpClientConfig,
@@ -15,7 +22,8 @@ export const getNextInfo = (
   actionIndex: number,
   output: WarpExecutionOutput
 ): WarpExecutionNextInfo | null => {
-  const next = (warp.actions?.[actionIndex - 1] as { next?: string })?.next || warp.next || null
+  const rawNext = (getWarpActionByIndex(warp, actionIndex) as { next?: WarpNextConfig })?.next || warp.next || null
+  const next = resolveNextString(rawNext, 'success')
   if (!next) return null
   if (next.startsWith(URL_PREFIX)) return [{ identifier: null, url: next }]
 
@@ -74,6 +82,32 @@ export const getNextInfo = (
     .filter((link): link is NonNullable<typeof link> => link !== null)
 
   return nextLinks
+}
+
+/** Resolve the next chain for a given execution status. For string next, only resolves on success. For object next, resolves the matching path. */
+export const getNextInfoForStatus = (
+  config: WarpClientConfig,
+  adapters: ChainAdapter[],
+  warp: Warp,
+  actionIndex: number,
+  output: WarpExecutionOutput,
+  status: 'success' | 'error' | 'unhandled'
+): WarpExecutionNextInfo | null => {
+  const path = status === 'error' ? 'error' : 'success'
+  const rawNext = (getWarpActionByIndex(warp, actionIndex) as { next?: WarpNextConfig })?.next || warp.next || null
+  const next = resolveNextString(rawNext, path)
+  if (!next) return null
+  if (next.startsWith(URL_PREFIX)) return [{ identifier: null, url: next }]
+
+  const [baseIdentifier, queryWithPlaceholders] = next.split('?')
+  if (!queryWithPlaceholders) {
+    const interpolatedIdentifier = replacePlaceholders(baseIdentifier, { ...warp.vars, ...output })
+    return [{ identifier: interpolatedIdentifier, url: buildNextUrl(adapters, interpolatedIdentifier, config) }]
+  }
+
+  const query = replacePlaceholders(queryWithPlaceholders, { ...warp.vars, ...output })
+  const identifier = query ? `${baseIdentifier}?${query}` : baseIdentifier
+  return [{ identifier, url: buildNextUrl(adapters, identifier, config) }]
 }
 
 const buildNextUrl = (adapters: ChainAdapter[], identifier: string, config: WarpClientConfig): string => {
