@@ -1,5 +1,20 @@
 # @joai/warps
 
+## 4.13.0
+
+### Minor Changes
+
+- 0c64e38: Replace x402 with MPP (Machine Payments Protocol) using the official mppx SDK.
+  - `@joai/warps`: HTTP collect actions now use `mppx/client` to auto-handle 402 Payment Required responses. The new `getMppFetch()` helper returns an mppx-powered fetch that transparently pays and retries on 402, replacing manual challenge/retry logic. Removed `x402` helpers.
+  - `@joai/warps-adapter-evm`: Replaced `registerX402Handlers` with `getMppAccount()` returning a viem Account for mppx client signing on the Tempo chain.
+  - `@joai/warps-adapter-solana`: Removed x402 Solana handlers (`registerX402SvmHandlers`) — MPP is EVM/Tempo only.
+
+- fde528b: Support object `next` config with `success`/`error` branches for conditional warp chaining based on execution status
+
+### Patch Changes
+
+- 26a0983: Add `match` conditions to webhook trigger type for deterministic event-type filtering. Expose `matchesTrigger`, `resolveInputs`, and `resolvePath` utilities from `WarpWebhookTriggerMatcher`.
+
 ## 4.12.2
 
 ### Patch Changes
