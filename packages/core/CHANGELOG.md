@@ -1,5 +1,18 @@
 # @joai/warps
 
+## 4.14.0
+
+### Minor Changes
+
+- 605afc4: Add `loop` warp action type.
+
+  `WarpLoopAction` is a cortex-native action that re-executes the warp after each iteration, enabling continuous polling or recurring actions without a cron schedule.
+
+  Fields:
+  - `when` (optional): condition to evaluate before each iteration; loop stops when falsy
+  - `delay` (optional, default `0`): milliseconds to wait between iterations
+  - `maxIterations` (optional, default `10000`): hard safety cap on total iterations
+
 ## 4.13.1
 
 ### Patch Changes
