@@ -68,11 +68,11 @@ export type WarpMeta = {
   createdAt: string
 }
 
-export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpComputeAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction
+export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpComputeAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction | WarpLoopAction
 
 export type WarpActionIndex = number
 
-export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'compute' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount'
+export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'compute' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount' | 'loop'
 
 export type WarpTrigger =
   | { type: 'message'; pattern: string }
@@ -115,6 +115,19 @@ export type WarpUnmountAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+}
+
+export type WarpLoopAction = {
+  type: 'loop'
+  label: WarpText
+  description?: WarpText | null
+  inputs?: WarpActionInput[]
+  primary?: boolean
+  auto?: boolean
+  next?: WarpNextConfig
+  when?: string
+  delay?: number // ms between iterations, default 0
+  maxIterations?: number // hard cap, default 10_000
 }
 
 export type WarpTransferAction = {
