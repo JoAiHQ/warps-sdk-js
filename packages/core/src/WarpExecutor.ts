@@ -6,7 +6,7 @@ import {
   getNextInfo,
   getNextInfoForStatus,
   getWarpActionByIndex,
-  getWarpPrimaryAction,
+  getWarpInputAction,
   isWarpActionAutoExecute,
   replacePlaceholdersInWhenExpression,
   resolvePlatformValue,
@@ -32,8 +32,10 @@ import {
   WarpCollectDestinationHttp,
   WarpExecutable,
   WarpLinkAction,
+  WarpLoopAction,
   WarpMcpAction,
   WarpPromptAction,
+  WarpStateAction,
 } from './types'
 import { WarpFactory } from './WarpFactory'
 import { WarpInterpolator } from './WarpInterpolator'
@@ -43,6 +45,9 @@ export type ExecutionHandlers = {
   onExecuted?: (result: WarpActionExecutionResult) => void | Promise<void>
   onError?: (params: { message: string; result: WarpActionExecutionResult }) => void
   onSignRequest?: (params: { message: string; chain: WarpChainInfo }) => string | Promise<string>
+  onPromptGenerate?: (prompt: string) => string | null | Promise<string | null>
+  onMountAction?: (params: { action: WarpAction; actionIndex: WarpActionIndex; warp: Warp }) => void | Promise<void>
+  onLoop?: (params: { warp: Warp; inputs: string[]; meta: Record<string, any>; delay: number }) => void
   onActionExecuted?: (params: {
     action: WarpActionIndex
     chain: WarpChainInfo | null
@@ -59,6 +64,8 @@ export type ExecutionHandlers = {
 
 export class WarpExecutor {
   private factory: WarpFactory
+  private loopIterations = new Map<string, number>()
+  private active = true
 
   constructor(
     private config: WarpClientConfig,
@@ -69,10 +76,16 @@ export class WarpExecutor {
     this.factory = new WarpFactory(config, adapters)
   }
 
+  /** Stops any scheduled loop re-executions. */
+  stop(): void {
+    this.active = false
+    this.loopIterations.clear()
+  }
+
   async execute(
     warp: Warp,
     inputs: string[],
-    meta: { envs?: Record<string, any>; queries?: Record<string, any> } = {}
+    meta: { envs?: Record<string, any>; queries?: Record<string, any>; scope?: string } = {}
   ): Promise<{
     txs: WarpAdapterGenericTransaction[]
     chain: WarpChainInfo | null
@@ -87,19 +100,35 @@ export class WarpExecutor {
     const warpQueries = warp.meta?.query ?? {}
     const mergedQueries = { ...warpQueries, ...meta.queries }
     const mergedMeta = { ...meta, queries: mergedQueries }
+    const outputBag: Record<string, any> = {}
 
-    const { action: primaryAction, index: primaryIndex } = getWarpPrimaryAction(warp)
+    const { index: inputActionIndex } = getWarpInputAction(warp)
 
     for (let index = 1; index <= warp.actions.length; index++) {
       const action = getWarpActionByIndex(warp, index)
-      if (!isWarpActionAutoExecute(action, warp)) continue
-      const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, mergedMeta)
+      if (!isWarpActionAutoExecute(action)) continue
+
+      // Pass accumulated outputs from previous actions as envs
+      const actionMeta = Object.keys(outputBag).length > 0
+        ? { ...mergedMeta, envs: { ...mergedMeta.envs, ...outputBag } }
+        : mergedMeta
+
+      const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
       if (tx) txs.push(tx)
       if (chain) chainInfo = chain
       if (immediateExecution) immediateExecutions.push(immediateExecution)
 
-      // Extract resolved inputs from primary action's executable
-      if (executable && index === primaryIndex + 1 && executable.resolvedInputs) {
+      // Accumulate outputs for subsequent actions
+      if (immediateExecution?.output) {
+        const { _DATA, ...rest } = immediateExecution.output
+        Object.assign(outputBag, rest)
+      }
+      if (immediateExecution?.values?.mapped) {
+        Object.assign(outputBag, immediateExecution.values.mapped)
+      }
+
+      // Extract resolved inputs from the input-defining action
+      if (executable && index === inputActionIndex + 1 && executable.resolvedInputs) {
         resolvedInputs = extractResolvedInputValues(executable.resolvedInputs)
       }
     }
@@ -113,6 +142,9 @@ export class WarpExecutor {
       await this.callHandler(() => this.handlers?.onExecuted?.(lastImmediateExecution))
     }
 
+    // Handle loop actions — schedule re-execution if conditions are met
+    this.scheduleLoops(warp, inputs, mergedMeta, outputBag)
+
     return { txs, chain: chainInfo, immediateExecutions, resolvedInputs }
   }
 
@@ -120,7 +152,7 @@ export class WarpExecutor {
     warp: Warp,
     actionIndex: WarpActionIndex,
     inputs: string[],
-    meta: { envs?: Record<string, any>; queries?: Record<string, any> } = {}
+    meta: { envs?: Record<string, any>; queries?: Record<string, any>; scope?: string } = {}
   ): Promise<{
     tx: WarpAdapterGenericTransaction | null
     chain: WarpChainInfo | null
@@ -161,6 +193,29 @@ export class WarpExecutor {
       }
     }
 
+    if (action.type === 'loop') {
+      // Loop actions are handled by scheduleLoops() after the execute loop completes
+      return { tx: null, chain: null, immediateExecution: null, executable: null }
+    }
+
+    if (action.type === 'state') {
+      return this.executeState(warp, action as WarpStateAction, actionIndex, meta)
+    }
+
+    if (action.type === 'mount' || action.type === 'unmount') {
+      if (action.when) {
+        const bag = meta.envs || {}
+        const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, bag)
+        if (!evaluateWhenCondition(interpolatedWhen)) {
+          return { tx: null, chain: null, immediateExecution: null, executable: null }
+        }
+      }
+
+      await this.handlers?.onMountAction?.({ action, actionIndex, warp })
+
+      return { tx: null, chain: null, immediateExecution: null, executable: null }
+    }
+
     const executable = await this.factory.createExecutable(warp, actionIndex, inputs, meta)
 
     if (action.when) {
@@ -195,12 +250,6 @@ export class WarpExecutor {
         this.handlers?.onError?.({ message: errorMessage, result })
       }
       return { tx: null, chain: null, immediateExecution: null, executable }
-    }
-
-    if (action.type === 'state' || action.type === 'mount' || action.type === 'unmount') {
-      // These are runtime-handled action types (managed by the host, e.g. cortex).
-      // The SDK has no execution logic for them — skip silently.
-      return { tx: null, chain: null, immediateExecution: null, executable: null }
     }
 
     if (action.type === 'mcp') {
@@ -249,7 +298,7 @@ export class WarpExecutor {
     const outputs = (
       await Promise.all(
         warp.actions.map(async (action, index) => {
-          if (!isWarpActionAutoExecute(action, warp)) return null
+          if (!isWarpActionAutoExecute(action)) return null
           if (action.type !== 'transfer' && action.type !== 'contract') return null
           const chainAction = actions[index]
           const currentActionIndex = index + 1
@@ -630,6 +679,127 @@ export class WarpExecutor {
     return await handler()
   }
 
+  private scheduleLoops(
+    warp: Warp,
+    inputs: string[],
+    meta: { envs?: Record<string, any>; queries?: Record<string, any>; scope?: string },
+    outputBag: Record<string, any>
+  ): void {
+    if (!this.active) return
+
+    for (const action of warp.actions) {
+      if (action.type !== 'loop' || action.auto === false) continue
+
+      const loopAction = action as WarpLoopAction
+      const scope = meta.scope || 'default'
+      const loopKey = `loop:${scope}:${warp.meta?.identifier || warp.name}`
+
+      if (loopAction.when) {
+        const mergedBag = { ...meta.envs, ...outputBag }
+        const interpolatedWhen = replacePlaceholdersInWhenExpression(loopAction.when, mergedBag)
+        try {
+          if (!evaluateWhenCondition(interpolatedWhen)) {
+            this.loopIterations.delete(loopKey)
+            continue
+          }
+        } catch {
+          this.loopIterations.delete(loopKey)
+          continue
+        }
+      }
+
+      const maxIterations = loopAction.maxIterations ?? 10_000
+      const current = (this.loopIterations.get(loopKey) ?? 0) + 1
+      if (current > maxIterations) {
+        this.loopIterations.delete(loopKey)
+        WarpLogger.debug(`Loop maxIterations (${maxIterations}) reached for warp ${warp.meta?.identifier}`)
+        continue
+      }
+
+      this.loopIterations.set(loopKey, current)
+
+      if (!this.handlers?.onLoop) continue
+
+      const delay = loopAction.delay ?? 0
+      this.handlers.onLoop({ warp, inputs, meta, delay })
+    }
+  }
+
+  private async executeState(
+    warp: Warp,
+    action: WarpStateAction,
+    actionIndex: WarpActionIndex,
+    meta: { envs?: Record<string, any>; scope?: string }
+  ): Promise<{
+    tx: WarpAdapterGenericTransaction | null
+    chain: WarpChainInfo | null
+    immediateExecution: WarpActionExecutionResult | null
+    executable: WarpExecutable | null
+  }> {
+    if (action.when) {
+      const bag = meta.envs || {}
+      const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, bag)
+      if (!evaluateWhenCondition(interpolatedWhen)) {
+        return { tx: null, chain: null, immediateExecution: null, executable: null }
+      }
+    }
+
+    const cache = this.factory.getCache()
+    const scope = meta.scope || 'default'
+    const stateKey = `state:${scope}:${action.store}`
+
+    if (action.op === 'read') {
+      const state: Record<string, any> = (await cache.get(stateKey)) ?? {}
+      const keys = action.keys ?? Object.keys(state)
+      const output: Record<string, any> = {}
+      for (const key of keys) {
+        if (state[key] !== undefined && state[key] !== null) {
+          output[`state.${key}`] = state[key]
+        }
+      }
+      const execution: WarpActionExecutionResult = {
+        status: 'success',
+        warp,
+        action: actionIndex,
+        user: null,
+        txHash: null,
+        tx: null,
+        next: null,
+        values: { string: [], native: [], mapped: {} },
+        output,
+        messages: {},
+        destination: null,
+        resolvedInputs: [],
+      }
+      await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution, tx: null }))
+      return { tx: null, chain: null, immediateExecution: execution, executable: null }
+    }
+
+    if (action.op === 'write' && action.data) {
+      const existing: Record<string, any> = (await cache.get(stateKey)) ?? {}
+      const bag = meta.envs || {}
+      const resolved: Record<string, any> = {}
+      for (const [key, value] of Object.entries(action.data)) {
+        if (typeof value === 'string') {
+          const replaced = value.replace(/\{\{([^}]+)\}\}/g, (_, name: string) => {
+            const v = bag[name.trim()]
+            return v !== undefined && v !== null ? String(v) : value
+          })
+          resolved[key] = parseStateValue(replaced)
+        } else {
+          resolved[key] = value
+        }
+      }
+      await cache.set(stateKey, { ...existing, ...resolved })
+    }
+
+    if (action.op === 'clear') {
+      await cache.delete(stateKey)
+    }
+
+    return { tx: null, chain: null, immediateExecution: null, executable: null }
+  }
+
   private async executePrompt(
     warp: Warp,
     action: WarpPromptAction,
@@ -644,16 +814,16 @@ export class WarpExecutor {
       const preparedWarp = await interpolator.apply(warp, meta)
       const preparedAction = getWarpActionByIndex(preparedWarp, actionIndex) as WarpPromptAction
 
-      const { action: primaryAction } = getWarpPrimaryAction(preparedWarp)
-      const primaryTypedInputs = this.factory.getStringTypedInputs(primaryAction, inputs)
-      const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator, meta.queries)
-      const primaryResolvedInputs = await this.factory.getModifiedInputs(primaryResolved)
-
-      let resolvedInputs: ResolvedInput[] = primaryResolvedInputs
+      let resolvedInputs: ResolvedInput[] = []
       if (action.inputs && action.inputs.length > 0) {
         const actionTypedInputs = this.factory.getStringTypedInputs(action, inputs)
         const actionResolved = await this.factory.getResolvedInputs(chain.name, action, actionTypedInputs, interpolator, meta.queries)
         resolvedInputs = await this.factory.getModifiedInputs(actionResolved)
+      } else {
+        const { action: inputAction } = getWarpInputAction(preparedWarp)
+        const inputTypedInputs = this.factory.getStringTypedInputs(inputAction, inputs)
+        const inputResolved = await this.factory.getResolvedInputs(chain.name, inputAction, inputTypedInputs, interpolator, meta.queries)
+        resolvedInputs = await this.factory.getModifiedInputs(inputResolved)
       }
 
       const platformPrompt = resolvePlatformValue(preparedAction.prompt, this.config.platform)
@@ -661,8 +831,7 @@ export class WarpExecutor {
       const interpolatedPrompt = interpolator.applyInputs(
         platformPrompt,
         resolvedInputs,
-        this.factory.getSerializer(),
-        primaryResolvedInputs
+        this.factory.getSerializer()
       )
 
       const extractedInputs = extractResolvedInputValues(resolvedInputs)
@@ -677,6 +846,11 @@ export class WarpExecutor {
         serializer,
         this.config
       )
+
+      if (this.handlers?.onPromptGenerate) {
+        const generated = await this.handlers.onPromptGenerate(interpolatedPrompt)
+        if (generated) output.MESSAGE = generated
+      }
 
       const destination = resolvedInputs.find((i) => i.input.position === 'destination')?.value || null
 
@@ -726,10 +900,6 @@ export class WarpExecutor {
     const chain = chainName ? ({ name: chainName } as WarpChainInfo) : await this.factory.getChainInfoForWarp(warp, inputs)
     const adapter = findWarpAdapterForChain(chain.name, this.adapters)
     const interpolator = new WarpInterpolator(this.config, adapter, this.adapters)
-    const { action: primaryAction } = getWarpPrimaryAction(warp)
-    const primaryTypedInputs = this.factory.getStringTypedInputs(primaryAction, inputs)
-    const primaryResolved = await this.factory.getResolvedInputs(chain.name, primaryAction, primaryTypedInputs, interpolator, meta.queries)
-    const primaryResolvedInputs = await this.factory.getModifiedInputs(primaryResolved)
 
     let actionResolvedInputs: ResolvedInput[]
     if (resolvedInputs) {
@@ -745,7 +915,7 @@ export class WarpExecutor {
       actionResolvedInputs = await this.factory.getModifiedInputs(actionResolved)
     }
 
-    const bag = interpolator.buildInputBag(actionResolvedInputs, this.factory.getSerializer(), primaryResolvedInputs)
+    const bag = interpolator.buildInputBag(actionResolvedInputs, this.factory.getSerializer())
     const mergedBag = { ...(meta.envs ?? {}), ...bag }
     const interpolatedWhen = replacePlaceholdersInWhenExpression(action.when, mergedBag)
     return evaluateWhenCondition(interpolatedWhen)
@@ -766,4 +936,12 @@ const buildNextVars = (resolvedInputs: ResolvedInput[] | null | undefined, outpu
   )
   const outputVars = Object.fromEntries(Object.entries(output).filter(([, v]) => v !== null && v !== undefined))
   return { ...inputVars, ...outputVars }
+}
+
+const parseStateValue = (value: string): string | number | boolean => {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  const num = Number(value)
+  if (!isNaN(num) && value.trim() !== '') return num
+  return value
 }
