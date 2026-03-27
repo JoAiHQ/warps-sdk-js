@@ -85,7 +85,7 @@ export type WarpStateAction = {
   keys?: string[]
   data?: Record<string, any>
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
