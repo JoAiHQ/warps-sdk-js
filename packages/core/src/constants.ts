@@ -104,10 +104,6 @@ export const WarpConstants = {
   Position: {
     Payload: 'payload:',
   },
-
-  Alerts: {
-    TriggerEventPrefix: 'event',
-  },
 }
 
 export const WarpInputTypes = {

@@ -1,5 +1,4 @@
 import { WarpChainName, WarpPlatformName } from '../constants'
-import { WarpAlerts } from './alerts'
 import { WarpChainAsset, WarpChainAssetValue } from './chain'
 import { ChainAdapter } from './config'
 import { WarpTheme } from './general'
@@ -53,7 +52,6 @@ export type Warp = {
   output?: Record<WarpOutputName, WarpResulutionPath>
   messages?: Record<WarpMessageName, WarpText>
   ui?: string
-  alerts?: WarpAlerts
   related?: string[]
   schedule?: WarpSchedule
   meta?: WarpMeta
@@ -76,7 +74,7 @@ export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'co
 
 export type WarpTrigger =
   | { type: 'message'; pattern: string }
-  | { type: 'webhook'; source: string; match?: Record<string, string | number | boolean>; inputs?: Record<string, string> }
+  | { type: 'webhook'; source: string; match?: Record<string, string | number | boolean>; inputs?: Record<string, string>; label?: WarpText; subject?: WarpText; body?: WarpText }
 
 export type WarpStateAction = {
   type: 'state'

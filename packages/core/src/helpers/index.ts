@@ -1,6 +1,5 @@
 export * from './adapters'
 export * from './chain-meta'
-export * from './alert'
 export * from './brand'
 export * from './crypto'
 export * from './env'

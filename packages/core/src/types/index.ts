@@ -1,5 +1,4 @@
 export * from './abi'
-export * from './alerts'
 export * from './brand'
 export * from './chain'
 export * from './config'
