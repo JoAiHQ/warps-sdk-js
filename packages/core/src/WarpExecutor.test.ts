@@ -1609,13 +1609,13 @@ describe('WarpExecutor', () => {
     it('should pass factory-cached ResolvedInput[] to getActionExecution', async () => {
       const onExecuted = jest.fn()
       const warpHash = 'hash-abc'
-      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg' as const }
+      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg:1' as const, source: 'field' as const }
       const warp = {
         ...createMockWarp(),
         actions: [{ type: 'contract' as const, label: 'Action', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'doSomething', inputs: [inputDef] }],
         output: { TOKEN: 'in.TOKEN' },
         next: 'multiversx:some-warp?TOKEN={{TOKEN}}',
-        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z' },
+        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z', query: {} },
       }
       const cachedInputs = [{ input: inputDef, value: 'abc-123' }]
       const mockTx = { hash: 'tx1', status: { isSuccessful: () => true } }
@@ -1636,13 +1636,13 @@ describe('WarpExecutor', () => {
     it('should resolve {{PLACEHOLDER}} in next from input vars when output mapping returns null', async () => {
       const onExecuted = jest.fn()
       const warpHash = 'hash-def'
-      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg' as const }
+      const inputDef = { name: 'TOKEN', label: 'Token', type: 'string' as const, position: 'arg:1' as const, source: 'field' as const }
       const warp = {
         ...createMockWarp(),
         actions: [{ type: 'contract' as const, label: 'Action', chain: WarpChainName.Multiversx, address: 'erd1sc', func: 'doSomething', inputs: [inputDef] }],
         output: { TOKEN: 'in.TOKEN' },
         next: 'multiversx:some-warp?TOKEN={{TOKEN}}',
-        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z' },
+        meta: { chain: WarpChainName.Multiversx, identifier: 'multiversx:some-warp', hash: warpHash, creator: 'erd1test', createdAt: '2024-01-01T00:00:00Z', query: {} },
       }
       const cachedInputs = [{ input: inputDef, value: 'abc-123' }]
       const mockTx = { hash: 'tx1', status: { isSuccessful: () => true } }

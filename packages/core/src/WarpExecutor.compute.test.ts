@@ -169,9 +169,9 @@ describe('WarpExecutor — compute action', () => {
   })
 })
 
-describe('getWarpPrimaryAction — compute type', () => {
+describe('getWarpInputAction — compute type', () => {
   it('detects compute as primary action when mixed with non-detectable types', async () => {
-    const { getWarpPrimaryAction } = await import('./helpers/general')
+    const { getWarpInputAction } = await import('./helpers/general')
     const warp = {
       ...createMockWarp(),
       actions: [
@@ -181,12 +181,12 @@ describe('getWarpPrimaryAction — compute type', () => {
       ],
     }
 
-    const { action } = getWarpPrimaryAction(warp as any)
+    const { action } = getWarpInputAction(warp as any)
     expect(action.type).toBe('compute')
   })
 
   it('compute is picked before mcp in detectable order', async () => {
-    const { getWarpPrimaryAction } = await import('./helpers/general')
+    const { getWarpInputAction } = await import('./helpers/general')
     const warp = {
       ...createMockWarp(),
       actions: [
@@ -195,7 +195,7 @@ describe('getWarpPrimaryAction — compute type', () => {
       ],
     }
 
-    const { action } = getWarpPrimaryAction(warp as any)
+    const { action } = getWarpInputAction(warp as any)
     expect(action.type).toBe('compute')
   })
 })

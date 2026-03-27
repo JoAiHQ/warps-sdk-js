@@ -287,7 +287,7 @@ describe('WarpValidator', () => {
       const validator = new WarpValidator(defaultConfig)
       const warp = createWarp({
         actions: [
-          { type: 'link', label: 'test link 1', url: 'https://test1.com', primary: true },
+          { type: 'link', label: 'test link 1', url: 'https://test1.com' },
           { type: 'link', label: 'test link 2', url: 'https://test2.com' },
         ],
       })
@@ -303,13 +303,13 @@ describe('WarpValidator', () => {
       })
       const result = await validator.validate(warp)
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('Warp has no primary action: undefined')
+      expect(result.errors).toContain('Warp has no actions: undefined')
     })
 
     it('validates successfully when single non-detectable action is marked as primary', async () => {
       const validator = new WarpValidator(defaultConfig)
       const warp = createWarp({
-        actions: [{ type: 'link', label: 'test link', url: 'https://test.com', primary: true }],
+        actions: [{ type: 'link', label: 'test link', url: 'https://test.com' }],
       })
       const result = await validator.validate(warp)
       expect(result.valid).toBe(true)
@@ -343,7 +343,7 @@ describe('WarpValidator', () => {
       const configWithoutSchema = createMockConfig({ schema: undefined })
       const validator = new WarpValidator(configWithoutSchema)
       const warp = createWarp({
-        actions: [{ type: 'transfer', label: 'test transfer', description: 'test', address: 'erd1...', primary: true }],
+        actions: [{ type: 'transfer', label: 'test transfer', description: 'test', address: 'erd1...' }],
       })
       const result = await validator.validate(warp)
       expect(result.valid).toBe(true)

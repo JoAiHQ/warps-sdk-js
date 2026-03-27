@@ -17,29 +17,22 @@ export const getLatestProtocolIdentifier = (name: ProtocolName): string => {
 
 export const getWarpActionByIndex = (warp: Warp, index: number) => warp?.actions[index - 1]
 
-export const getWarpPrimaryAction = (warp: Warp): { action: WarpAction; index: number } => {
-  if (warp.actions.length === 0) throw new Error(`Warp has no primary action: ${warp.meta?.identifier}`)
+const PIPELINE_ACTION_TYPES: WarpActionType[] = ['state', 'mount', 'unmount', 'loop']
 
-  const actionWithPrimary = warp.actions.find((action) => action.primary === true)
-  if (actionWithPrimary) return { action: actionWithPrimary, index: warp.actions.indexOf(actionWithPrimary) }
+export const getWarpInputAction = (warp: Warp): { action: WarpAction; index: number } => {
+  if (warp.actions.length === 0) throw new Error(`Warp has no actions: ${warp.meta?.identifier}`)
 
-  const detectableTypes: WarpActionType[] = ['transfer', 'contract', 'query', 'collect', 'compute', 'mcp']
-  const firstDetectableAction = warp.actions.find((action) => detectableTypes.includes(action.type))
-  if (firstDetectableAction) {
-    return { action: firstDetectableAction, index: warp.actions.indexOf(firstDetectableAction) }
+  const first = warp.actions.find((action) => !PIPELINE_ACTION_TYPES.includes(action.type))
+  if (first) {
+    return { action: first, index: warp.actions.indexOf(first) }
   }
 
-  const firstAction = warp.actions[0]
-  return { action: firstAction, index: 0 }
+  return { action: warp.actions[0], index: 0 }
 }
 
-export const isWarpActionAutoExecute = (action: WarpAction, warp: Warp) => {
+export const isWarpActionAutoExecute = (action: WarpAction) => {
   if (action.auto === false) return false
-  if (action.type === 'link') {
-    if (action.auto === true) return true
-    const { action: primaryAction } = getWarpPrimaryAction(warp)
-    return action === primaryAction
-  }
+  if (action.type === 'link') return action.auto === true
   return true
 }
 

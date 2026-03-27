@@ -24,7 +24,6 @@ describe('WarpBuilder', () => {
         type: 'link',
         label: 'test link',
         url: 'https://test.com',
-        primary: true,
       })
       .build()
 
@@ -32,7 +31,7 @@ describe('WarpBuilder', () => {
     expect(warp.title).toBe('test title')
     expect(warp.description).toBe('test description')
     expect(warp.preview).toBe('test preview')
-    expect(warp.actions).toEqual([{ type: 'link', label: 'test link', url: 'https://test.com', primary: true }])
+    expect(warp.actions).toEqual([{ type: 'link', label: 'test link', url: 'https://test.com' }])
   })
 
   it('getDescriptionPreview - strips all html', () => {

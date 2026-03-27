@@ -97,7 +97,7 @@ export type WarpMountAction = {
   description?: WarpText | null
   warp: string
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -109,7 +109,7 @@ export type WarpUnmountAction = {
   description?: WarpText | null
   warp: string
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -120,7 +120,7 @@ export type WarpLoopAction = {
   label: WarpText
   description?: WarpText | null
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -137,7 +137,7 @@ export type WarpTransferAction = {
   value?: string
   transfers?: string[]
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -155,7 +155,7 @@ export type WarpContractAction = {
   transfers?: string[]
   abi?: string
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -170,7 +170,7 @@ export type WarpQueryAction = {
   args?: string[]
   abi?: string
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -182,7 +182,7 @@ export type WarpCollectAction = {
   description?: WarpText | null
   destination?: WarpCollectDestination
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -193,7 +193,7 @@ export type WarpComputeAction = {
   label: WarpText
   description?: WarpText | null
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -213,7 +213,7 @@ export type WarpLinkAction = {
   description?: WarpText | null
   url: string
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   when?: string
 }
@@ -224,7 +224,7 @@ export type WarpMcpAction = {
   description?: WarpText | null
   destination?: WarpMcpDestination
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string
@@ -242,7 +242,7 @@ export type WarpPromptAction = {
   description?: WarpText | null
   prompt: WarpPlatformValue<string>
   inputs?: WarpActionInput[]
-  primary?: boolean
+
   auto?: boolean
   next?: WarpNextConfig
   when?: string

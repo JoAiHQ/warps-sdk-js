@@ -7,7 +7,7 @@ import {
   WarpMcpAction,
   WarpPromptAction,
   WarpText,
-  getWarpPrimaryAction,
+  getWarpInputAction,
   resolveWarpText,
 } from '@joai/warps'
 import type { WarpMcpCapabilities, WarpMcpPrompt, WarpMcpResource, WarpMcpTool } from '../types'
@@ -29,22 +29,22 @@ export const convertWarpToMcpCapabilities = async (warp: Warp, config: WarpClien
   }
 
   try {
-    const { action: primaryAction } = getWarpPrimaryAction(warp)
-    const description = extractTextOrUndefined(warp.description, config) || extractTextOrUndefined(primaryAction.description, config)
+    const { action: inputAction } = getWarpInputAction(warp)
+    const description = extractTextOrUndefined(warp.description, config) || extractTextOrUndefined(inputAction.description, config)
 
-    if (primaryAction.type === 'prompt') {
-      const promptAction = primaryAction as WarpPromptAction
+    if (inputAction.type === 'prompt') {
+      const promptAction = inputAction as WarpPromptAction
       prompt = convertPromptActionToPrompt(warp, promptAction, description, config)
-    } else if (primaryAction.type === 'mcp') {
-      const mcpAction = primaryAction as WarpMcpAction
+    } else if (inputAction.type === 'mcp') {
+      const mcpAction = inputAction as WarpMcpAction
       if (mcpAction.destination) {
-        tool = convertMcpActionToTool(warp, mcpAction, description, primaryAction.inputs, resource, config)
+        tool = convertMcpActionToTool(warp, mcpAction, description, inputAction.inputs, resource, config)
       }
     } else {
-      tool = convertActionToTool(warp, primaryAction, description, primaryAction.inputs, resource, config)
+      tool = convertActionToTool(warp, inputAction, description, inputAction.inputs, resource, config)
     }
   } catch (error) {
-    // If getWarpPrimaryAction fails or conversion fails, return null capabilities
+    // If getWarpInputAction fails or conversion fails, return null capabilities
     return { tool: null, resource, prompt: null }
   }
 

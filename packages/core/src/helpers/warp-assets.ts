@@ -1,16 +1,16 @@
 import { WarpChainName } from '../constants'
 import { ChainAdapter, Warp, WarpChainInfo, WarpContractAction, WarpTransferAction } from '../types'
-import { findWarpAdapterForChain, getWarpPrimaryAction } from './general'
+import { findWarpAdapterForChain, getWarpInputAction } from './general'
 
 export const getRequiredAssetIds = (warp: Warp, chainInfo: WarpChainInfo): string[] => {
-  let primaryAction: ReturnType<typeof getWarpPrimaryAction> | null = null
+  let inputAction: ReturnType<typeof getWarpInputAction> | null = null
   try {
-    primaryAction = getWarpPrimaryAction(warp)
+    inputAction = getWarpInputAction(warp)
   } catch {
     return []
   }
 
-  const action = primaryAction?.action as WarpTransferAction | WarpContractAction | null
+  const action = inputAction?.action as WarpTransferAction | WarpContractAction | null
   if (!action || (action.type !== 'contract' && action.type !== 'transfer')) return []
 
   const inputs = action.inputs ?? []

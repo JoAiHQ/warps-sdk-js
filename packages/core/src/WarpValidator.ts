@@ -1,6 +1,6 @@
 import Ajv from 'ajv'
 import { WarpConfig } from './config'
-import { getWarpPrimaryAction } from './helpers'
+import { getWarpInputAction } from './helpers'
 import { Warp, WarpClientConfig, WarpContractAction, WarpQueryAction } from './types'
 
 type ValidationResult = {
@@ -18,7 +18,7 @@ export class WarpValidator {
   async validate(warp: Warp): Promise<ValidationResult> {
     const errors: ValidationError[] = []
 
-    errors.push(...this.validatePrimaryAction(warp))
+    errors.push(...this.validateHasActions(warp))
     errors.push(...this.validateMaxOneValuePosition(warp))
     errors.push(...this.validateVariableNamesAndResultNamesUppercase(warp))
     errors.push(...this.validateAbiIsSetIfApplicable(warp))
@@ -30,12 +30,12 @@ export class WarpValidator {
     }
   }
 
-  private validatePrimaryAction(warp: Warp): ValidationError[] {
+  private validateHasActions(warp: Warp): ValidationError[] {
     try {
-      const { action: primaryAction } = getWarpPrimaryAction(warp)
-      return primaryAction ? [] : ['Primary action is required']
+      const { action } = getWarpInputAction(warp)
+      return action ? [] : ['Warp must have at least one action']
     } catch (error) {
-      return [error instanceof Error ? error.message : 'Primary action is required']
+      return [error instanceof Error ? error.message : 'Warp must have at least one action']
     }
   }
 
