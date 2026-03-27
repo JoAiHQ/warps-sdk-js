@@ -118,12 +118,12 @@ export class WarpInterpolator {
     return JSON.parse(modifiable)
   }
 
-  applyInputs(text: string, resolvedInputs: ResolvedInput[], serializer: WarpSerializer, primaryInputs?: ResolvedInput[]): string {
+  applyInputs(text: string, resolvedInputs: ResolvedInput[], serializer: WarpSerializer): string {
     if (!text || typeof text !== 'string') return text
     if (!text.includes('{{')) return text
 
     let result = this.applyGlobalsToText(text)
-    const bag = this.buildInputBag(resolvedInputs, serializer, primaryInputs)
+    const bag = this.buildInputBag(resolvedInputs, serializer)
     return replacePlaceholders(result, bag)
   }
 
@@ -177,7 +177,7 @@ export class WarpInterpolator {
     })
   }
 
-  buildInputBag(resolvedInputs: ResolvedInput[], serializer: WarpSerializer, primaryInputs?: ResolvedInput[]): Record<string, string> {
+  buildInputBag(resolvedInputs: ResolvedInput[], serializer: WarpSerializer): Record<string, string> {
     const bag: Record<string, string> = {}
 
     resolvedInputs.forEach((resolvedInput) => {
@@ -186,23 +186,6 @@ export class WarpInterpolator {
       const [, nativeValue] = serializer.stringToNative(resolvedInput.value)
       bag[key] = String(nativeValue)
     })
-
-    if (primaryInputs) {
-      primaryInputs.forEach((resolvedInput) => {
-        if (!resolvedInput.value) return
-        const key = resolvedInput.input.as || resolvedInput.input.name
-        const [, nativeValue] = serializer.stringToNative(resolvedInput.value)
-        bag[`primary.${key}`] = String(nativeValue)
-
-        if (resolvedInput.input.type === 'asset' && typeof resolvedInput.input.position === 'object') {
-          const asset = nativeValue as { identifier: string; amount: bigint }
-          if (asset && typeof asset === 'object' && 'identifier' in asset && 'amount' in asset) {
-            bag[`primary.${key}.token`] = String(asset.identifier)
-            bag[`primary.${key}.amount`] = String(asset.amount)
-          }
-        }
-      })
-    }
 
     return bag
   }
