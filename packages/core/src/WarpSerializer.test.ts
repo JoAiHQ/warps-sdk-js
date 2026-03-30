@@ -285,6 +285,15 @@ describe('WarpSerializer', () => {
       expect(serializer.stringToNative('string:hello')).toEqual(['string', 'hello'])
     })
 
+    it('deserializes chain input type as string', () => {
+      expect(serializer.stringToNative('chain:multiversx')).toEqual(['chain', 'multiversx'])
+      expect(serializer.stringToNative('chain:solana')).toEqual(['chain', 'solana'])
+    })
+
+    it('deserializes nft input type as string', () => {
+      expect(serializer.stringToNative('nft:NFT-abc123')).toEqual(['nft', 'NFT-abc123'])
+    })
+
     it('deserializes token values via type registry', () => {
       // Mock type registry with token handler
       const mockTypeRegistry = {

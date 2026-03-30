@@ -182,6 +182,9 @@ export class WarpSerializer {
       }
     }
 
+    // UI-only input types that serialize as plain strings
+    if (baseType === 'chain' || baseType === 'nft') return [baseType, val]
+
     throw new Error(`WarpArgSerializer (stringToNative): Unsupported input type: ${baseType}`)
   }
 
