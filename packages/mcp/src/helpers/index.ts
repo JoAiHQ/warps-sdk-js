@@ -1,5 +1,6 @@
 export * from './apps'
 export * from './execution'
+export * from './mcp-config'
 export * from './prompts'
 export * from './tools'
 export * from './ui'

@@ -89,3 +89,6 @@ export type WarpMcpToolResult = {
 }
 
 export type WarpMcpExecutor = (warp: Warp, inputs: string[]) => Promise<WarpMcpToolResult>
+
+/** App-level MCP config authored per app in joai--warps/mcp.ts */
+export type AppMcpConfig = WarpAppResourceUiMeta
