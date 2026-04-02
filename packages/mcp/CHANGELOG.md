@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 12.1.0
+
+### Minor Changes
+
+- f8bb7a8: Add `AppMcpConfig` type and `buildAppMcpResourceMeta` helper for MCP Apps resource metadata. Applies secure defaults (CSP, permissions, border) for the `meta.ui` block expected by MCP Apps clients.
+
 ## 12.0.1
 
 ### Patch Changes
