@@ -38,9 +38,11 @@ export class WarpSuiOutput implements AdapterWarpOutput {
     tx: WarpAdapterGenericRemoteTransaction,
     _resolvedInputs?: ResolvedInput[]
   ): Promise<WarpActionExecutionResult> {
+    const inputs: ResolvedInput[] = _resolvedInputs ?? []
     const output = await this.extractContractOutput(warp, actionIndex, tx, [])
     const next = getNextInfo(this.config, [], warp, actionIndex, output.output)
-    const messages = applyOutputToMessages(warp, output.output, this.config)
+    const inputValues = Object.fromEntries(inputs.map((i) => [i.input.as || i.input.name, i.value]))
+    const messages = applyOutputToMessages(warp, { ...inputValues, ...output.output }, this.config)
     return {
       status: tx.effects?.status?.status === 'success' ? 'success' : 'error',
       warp,

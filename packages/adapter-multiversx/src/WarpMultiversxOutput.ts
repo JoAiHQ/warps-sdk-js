@@ -51,7 +51,8 @@ export class WarpMultiversxOutput implements AdapterWarpOutput {
     const inputs: ResolvedInput[] = injectedInputs ?? []
 
     const output = await this.extractContractOutput(warp, actionIndex, tx, inputs)
-    const messages = applyOutputToMessages(warp, output.output, this.config)
+    const inputValues = Object.fromEntries(inputs.map((i) => [i.input.as || i.input.name, i.value]))
+    const messages = applyOutputToMessages(warp, { ...inputValues, ...output.output }, this.config)
 
     const resolvedInputs = extractResolvedInputValues(inputs)
     return {

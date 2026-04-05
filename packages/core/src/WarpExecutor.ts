@@ -864,7 +864,7 @@ export class WarpExecutor {
         next: getNextInfo(this.config, this.adapters, preparedWarp, actionIndex, output),
         values,
         output,
-        messages: applyOutputToMessages(preparedWarp, output, this.config),
+        messages: applyOutputToMessages(preparedWarp, { ...values.mapped, ...output }, this.config),
         destination,
         resolvedInputs: extractedInputs,
       }
