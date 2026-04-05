@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.15.2
+
+### Patch Changes
+
+- b04cd78: Include input values in message template interpolation so `{{inputAs}}` placeholders resolve in success/error messages alongside output variables.
+
 ## 4.15.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @joai/warps-adapter-multiversx
 
+## 1.5.2
+
+### Patch Changes
+
+- b04cd78: Include input values in message template interpolation so `{{inputAs}}` placeholders resolve in success/error messages alongside output variables.
+- Updated dependencies [b04cd78]
+  - @joai/warps@4.15.2
+
 ## 1.5.1
 
 ### Patch Changes
