@@ -141,4 +141,28 @@ describe('applyOutputToMessages', () => {
       success: 'Transaction completed with 100',
     })
   })
+
+  it('should resolve input values when merged into output bag', () => {
+    const warp = createMockWarp({
+      success: '{{shopName}} created! Your Shop ID is {{SHOP_ID}}.',
+    })
+    const inputValues = { shopName: 'vLeap' }
+    const output = { SHOP_ID: '42' }
+    const result = applyOutputToMessages(warp, { ...inputValues, ...output })
+    expect(result).toEqual({
+      success: 'vLeap created! Your Shop ID is 42.',
+    })
+  })
+
+  it('should let output values take priority over input values with same key', () => {
+    const warp = createMockWarp({
+      success: 'Result: {{value}}',
+    })
+    const inputValues = { value: 'from-input' }
+    const output = { value: 'from-output' }
+    const result = applyOutputToMessages(warp, { ...inputValues, ...output })
+    expect(result).toEqual({
+      success: 'Result: from-output',
+    })
+  })
 })
