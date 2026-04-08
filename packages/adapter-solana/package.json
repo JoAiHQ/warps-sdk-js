@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-solana",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Solana adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -36,7 +36,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@joai/warps": "^4.13.0",
+    "@joai/warps": "^4.16.0",
     "@scure/bip39": "^2.0.1",
     "@solana-program/compute-budget": "^0.14.0",
     "@solana/kit": "^6.2.0",

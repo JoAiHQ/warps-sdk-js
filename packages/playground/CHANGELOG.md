@@ -1,5 +1,18 @@
 # @warps/playground
 
+## 1.0.63
+
+### Patch Changes
+
+- Updated dependencies [94b69da]
+  - @joai/warps@4.16.0
+  - @joai/warps-adapter-multiversx@1.6.0
+  - @joai/warps-adapter-near@1.2.2
+  - @joai/warps-adapter-solana@1.2.3
+  - @joai/warps-adapter-sui@1.3.3
+  - @joai/warps-adapter-evm@1.4.1
+  - @joai/warps-adapter-fastset@1.1.2
+
 ## 1.0.62
 
 ### Patch Changes

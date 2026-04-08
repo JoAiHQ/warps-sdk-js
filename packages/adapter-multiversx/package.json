@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-adapter-multiversx",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -38,6 +38,6 @@
   "dependencies": {
     "@multiversx/sdk-core": "^15.4.0",
     "@scure/bip39": "^2.0.1",
-    "@joai/warps": "^4.15.2"
+    "@joai/warps": "^4.16.0"
   }
 }

@@ -1,5 +1,19 @@
 # @joai/warps-adapter-near
 
+## 1.2.2
+
+### Patch Changes
+
+- 94b69da: Add contract deploy/upgrade to executor interface
+
+  Introduces ContractFlags, ContractDeployParams, ContractUpgradeParams to
+  AdapterWarpExecutor. WarpMultiversxExecutor implements createDeployTransaction
+  and createUpgradeTransaction with nonce fetching and chain-agnostic flags.
+  All other adapters implement the interface with unsupported stubs.
+
+- Updated dependencies [94b69da]
+  - @joai/warps@4.16.0
+
 ## 1.2.1
 
 ### Patch Changes
