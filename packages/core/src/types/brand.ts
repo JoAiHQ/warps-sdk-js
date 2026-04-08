@@ -1,6 +1,20 @@
 import { WarpTheme } from './general'
-import { WarpText } from './i18n'
+import { WarpI18nText, WarpText } from './i18n'
 import { WarpMeta } from './warp'
+
+export type WarpBrandSiteRoute = {
+  path: string
+  warp: string
+  label: WarpI18nText
+  nav?: boolean
+}
+
+export type WarpBrandSiteConfig = {
+  enabled: boolean
+  auth?: boolean
+  indexPath: string
+  routes: WarpBrandSiteRoute[]
+}
 
 export type WarpBrand = {
   protocol: string
