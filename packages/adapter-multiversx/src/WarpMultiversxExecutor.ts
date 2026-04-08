@@ -1,5 +1,6 @@
 import {
   Address,
+  AddressComputer,
   ArgSerializer,
   SmartContractTransactionsFactory,
   Token,
@@ -12,6 +13,8 @@ import {
 import {
   AdapterWarpExecutor,
   applyOutputToMessages,
+  ContractDeployParams,
+  ContractUpgradeParams,
   extractResolvedInputValues,
   getNextInfo,
   getWarpActionByIndex,
@@ -153,6 +156,55 @@ export class WarpMultiversxExecutor implements AdapterWarpExecutor {
       destination,
       resolvedInputs,
     }
+  }
+
+  async createDeployTransaction(params: ContractDeployParams): Promise<{ tx: Transaction; contractAddress: string }> {
+    const sender = Address.newFromBech32(params.senderAddress)
+    const accountRes = await fetch(`${this.chain.defaultApiUrl}/accounts/${params.senderAddress}`)
+    const accountData = await accountRes.json()
+    const nonce = BigInt(accountData.nonce || 0)
+
+    const config = new TransactionsFactoryConfig({ chainID: this.chain.chainId })
+    const factory = new SmartContractTransactionsFactory({ config })
+    const typedArgs = (params.args || []).map((arg) => this.serializer.stringToTyped(arg))
+
+    const tx = await factory.createTransactionForDeploy(sender, {
+      bytecode: Buffer.from(params.bytecodeHex, 'hex'),
+      gasLimit: params.gasLimit ?? 100_000_000n,
+      arguments: typedArgs,
+      isUpgradeable: params.flags?.upgradeable ?? true,
+      isReadable: params.flags?.readable ?? false,
+      isPayable: params.flags?.payable ?? false,
+      isPayableBySmartContract: params.flags?.payableByContract ?? false,
+    })
+    tx.nonce = nonce
+
+    const contractAddress = new AddressComputer().computeContractAddress(sender, nonce)
+    return { tx, contractAddress: contractAddress.toBech32() }
+  }
+
+  async createUpgradeTransaction(params: ContractUpgradeParams): Promise<Transaction> {
+    const sender = Address.newFromBech32(params.senderAddress)
+    const accountRes = await fetch(`${this.chain.defaultApiUrl}/accounts/${params.senderAddress}`)
+    const accountData = await accountRes.json()
+    const nonce = BigInt(accountData.nonce || 0)
+
+    const config = new TransactionsFactoryConfig({ chainID: this.chain.chainId })
+    const factory = new SmartContractTransactionsFactory({ config })
+    const typedArgs = (params.args || []).map((arg) => this.serializer.stringToTyped(arg))
+
+    const tx = await factory.createTransactionForUpgrade(sender, {
+      contract: Address.newFromBech32(params.contractAddress),
+      bytecode: Buffer.from(params.bytecodeHex, 'hex'),
+      gasLimit: params.gasLimit ?? 100_000_000n,
+      arguments: typedArgs,
+      isUpgradeable: params.flags?.upgradeable ?? true,
+      isReadable: params.flags?.readable ?? false,
+      isPayable: params.flags?.payable ?? false,
+      isPayableBySmartContract: params.flags?.payableByContract ?? false,
+    })
+    tx.nonce = nonce
+    return tx
   }
 
   private toTokenTransfers(transfers: WarpChainAssetValue[]): TokenTransfer[] {

@@ -165,9 +165,30 @@ export interface AdapterWarpBrandBuilder {
   createFromTransactionHash(hash: string, cache?: WarpCacheConfig): Promise<WarpBrand | null>
 }
 
+export interface ContractFlags {
+  upgradeable?: boolean
+  readable?: boolean
+  payable?: boolean
+  payableByContract?: boolean
+}
+
+export interface ContractDeployParams {
+  senderAddress: string
+  bytecodeHex: string
+  gasLimit?: bigint
+  args?: string[]
+  flags?: ContractFlags
+}
+
+export interface ContractUpgradeParams extends ContractDeployParams {
+  contractAddress: string
+}
+
 export interface AdapterWarpExecutor {
   createTransaction(executable: WarpExecutable): Promise<WarpAdapterGenericTransaction>
   executeQuery(executable: WarpExecutable): Promise<WarpActionExecutionResult>
+  createDeployTransaction(params: ContractDeployParams): Promise<{ tx: WarpAdapterGenericTransaction; contractAddress: string }>
+  createUpgradeTransaction(params: ContractUpgradeParams): Promise<WarpAdapterGenericTransaction>
 }
 
 export interface AdapterWarpOutput {
