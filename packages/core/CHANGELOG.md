@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.16.1
+
+### Patch Changes
+
+- 543c0a5: Update default client URL from usewarp.to to joai.ai. Add joai.ai variants to SuperClientUrls.
+
 ## 4.16.0
 
 ### Minor Changes
