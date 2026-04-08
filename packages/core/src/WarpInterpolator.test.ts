@@ -45,6 +45,8 @@ const mockAdapter = {
   },
   executor: {
     createTransaction: jest.fn(),
+    createDeployTransaction: jest.fn().mockResolvedValue({ tx: [{}], contractAddress: '' }),
+    createUpgradeTransaction: jest.fn().mockResolvedValue([{}]),
     preprocessInput: jest.fn(),
   },
   output: {

@@ -93,6 +93,12 @@ export const createMockAdapter = (chainName: WarpChainName = WarpChainName.Multi
     createTransaction() {
       return Promise.resolve([{}])
     },
+    createDeployTransaction() {
+      return Promise.resolve({ tx: [{}], contractAddress: '' })
+    },
+    createUpgradeTransaction() {
+      return Promise.resolve([{}])
+    },
     preprocessInput(chain: any, input: string, type: string, value: string) {
       return Promise.resolve(input)
     },
