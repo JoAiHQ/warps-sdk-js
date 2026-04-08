@@ -78,4 +78,12 @@ export class WarpFastsetExecutor implements AdapterWarpExecutor {
   async executeQuery(executable: WarpExecutable): Promise<any> {
     throw new Error('WarpFastsetExecutor: Not implemented')
   }
+
+  async createDeployTransaction(): Promise<never> {
+    throw new Error('WarpFastsetExecutor: Contract deployment not supported')
+  }
+
+  async createUpgradeTransaction(): Promise<never> {
+    throw new Error('WarpFastsetExecutor: Contract upgrade not supported')
+  }
 }

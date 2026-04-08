@@ -235,4 +235,12 @@ export class WarpSuiExecutor implements AdapterWarpExecutor {
 
     throw new Error(`Insufficient ${coinType} balance. Required: ${requiredAmount}, Available: ${total}`)
   }
+
+  async createDeployTransaction(): Promise<never> {
+    throw new Error('WarpSuiExecutor: Contract deployment not supported')
+  }
+
+  async createUpgradeTransaction(): Promise<never> {
+    throw new Error('WarpSuiExecutor: Contract upgrade not supported')
+  }
 }

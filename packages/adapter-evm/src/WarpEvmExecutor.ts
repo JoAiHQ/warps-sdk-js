@@ -369,4 +369,12 @@ export class WarpEvmExecutor implements AdapterWarpExecutor {
       return nativeValue
     })
   }
+
+  async createDeployTransaction(): Promise<never> {
+    throw new Error('WarpEvmExecutor: Contract deployment not supported')
+  }
+
+  async createUpgradeTransaction(): Promise<never> {
+    throw new Error('WarpEvmExecutor: Contract upgrade not supported')
+  }
 }

@@ -255,4 +255,12 @@ export class WarpNearExecutor implements AdapterWarpExecutor {
       }
     }
   }
+
+  async createDeployTransaction(): Promise<never> {
+    throw new Error('WarpNearExecutor: Contract deployment not supported')
+  }
+
+  async createUpgradeTransaction(): Promise<never> {
+    throw new Error('WarpNearExecutor: Contract upgrade not supported')
+  }
 }

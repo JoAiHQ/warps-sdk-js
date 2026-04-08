@@ -680,4 +680,12 @@ export class WarpSolanaExecutor implements AdapterWarpExecutor {
 
     return [computeUnitLimitIx, computeUnitPriceIx, ...instructions]
   }
+
+  async createDeployTransaction(): Promise<never> {
+    throw new Error('WarpSolanaExecutor: Contract deployment not supported')
+  }
+
+  async createUpgradeTransaction(): Promise<never> {
+    throw new Error('WarpSolanaExecutor: Contract upgrade not supported')
+  }
 }
