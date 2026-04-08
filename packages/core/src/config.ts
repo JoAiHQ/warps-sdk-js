@@ -12,12 +12,19 @@ export const WarpConfig = {
   LatestBrandSchemaUrl: `https://raw.githubusercontent.com/JoAiHQ/warps-specs/refs/heads/main/schemas/brand/v${WarpProtocolVersions.Brand}.schema.json`,
 
   DefaultClientUrl: (env: WarpChainEnv) => {
-    if (env === 'devnet') return 'https://devnet.usewarp.to'
-    if (env === 'testnet') return 'https://testnet.usewarp.to'
-    return 'https://usewarp.to'
+    if (env === 'devnet') return 'https://devnet.joai.ai'
+    if (env === 'testnet') return 'https://testnet.joai.ai'
+    return 'https://joai.ai'
   },
 
-  SuperClientUrls: ['https://usewarp.to', 'https://testnet.usewarp.to', 'https://devnet.usewarp.to'],
+  SuperClientUrls: [
+    'https://joai.ai',
+    'https://devnet.joai.ai',
+    'https://testnet.joai.ai',
+    'https://usewarp.to',
+    'https://testnet.usewarp.to',
+    'https://devnet.usewarp.to',
+  ],
 
   AvailableActionInputSources: ['field', 'query', WarpConstants.Source.UserWallet, 'hidden'] as WarpActionInputSource[],
 
