@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.17.0
+
+### Minor Changes
+
+- Add `WarpSection` type and `sections` field to the `Warp` type for multi-section wizard UI support
+
 ## 4.16.1
 
 ### Patch Changes

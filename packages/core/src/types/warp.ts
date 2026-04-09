@@ -54,7 +54,14 @@ export type Warp = {
   ui?: string
   related?: string[]
   schedule?: WarpSchedule
+  sections?: WarpSection[]
   meta?: WarpMeta
+}
+
+export type WarpSection = {
+  title: WarpText
+  description?: WarpText | null
+  inputs: string[]
 }
 
 export type WarpMeta = {
