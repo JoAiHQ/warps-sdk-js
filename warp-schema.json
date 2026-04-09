@@ -11,9 +11,6 @@
           },
           "type": "array"
         },
-        "alerts": {
-          "$ref": "#/definitions/WarpAlerts"
-        },
         "bot": {
           "type": "string"
         },
@@ -43,7 +40,7 @@
           "type": "string"
         },
         "next": {
-          "type": "string"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "output": {
           "additionalProperties": {
@@ -66,8 +63,17 @@
         "schedule": {
           "$ref": "#/definitions/WarpSchedule"
         },
+        "sections": {
+          "items": {
+            "$ref": "#/definitions/WarpSection"
+          },
+          "type": "array"
+        },
         "title": {
           "$ref": "#/definitions/WarpText"
+        },
+        "trigger": {
+          "$ref": "#/definitions/WarpTrigger"
         },
         "ui": {
           "type": "string"
@@ -103,6 +109,9 @@
           "$ref": "#/definitions/WarpCollectAction"
         },
         {
+          "$ref": "#/definitions/WarpComputeAction"
+        },
+        {
           "$ref": "#/definitions/WarpLinkAction"
         },
         {
@@ -110,6 +119,18 @@
         },
         {
           "$ref": "#/definitions/WarpPromptAction"
+        },
+        {
+          "$ref": "#/definitions/WarpStateAction"
+        },
+        {
+          "$ref": "#/definitions/WarpMountAction"
+        },
+        {
+          "$ref": "#/definitions/WarpUnmountAction"
+        },
+        {
+          "$ref": "#/definitions/WarpLoopAction"
         }
       ]
     },
@@ -318,44 +339,16 @@
         "contract",
         "query",
         "collect",
+        "compute",
         "link",
         "mcp",
-        "prompt"
+        "prompt",
+        "state",
+        "mount",
+        "unmount",
+        "loop"
       ],
       "type": "string"
-    },
-    "WarpAlert": {
-      "additionalProperties": false,
-      "properties": {
-        "action": {
-          "type": "string"
-        },
-        "body": {
-          "$ref": "#/definitions/WarpText"
-        },
-        "label": {
-          "$ref": "#/definitions/WarpText"
-        },
-        "subject": {
-          "$ref": "#/definitions/WarpText"
-        },
-        "trigger": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "label",
-        "trigger",
-        "subject",
-        "body"
-      ],
-      "type": "object"
-    },
-    "WarpAlerts": {
-      "additionalProperties": {
-        "$ref": "#/definitions/WarpAlert"
-      },
-      "type": "object"
     },
     "WarpChainName": {
       "enum": [
@@ -367,6 +360,7 @@
         "arbitrum",
         "polygon",
         "somnia",
+        "tempo",
         "fastset",
         "solana",
         "near"
@@ -402,10 +396,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "type": {
           "$ref": "#/definitions/WarpActionType"
@@ -457,6 +448,48 @@
       ],
       "type": "object"
     },
+    "WarpComputeAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "next": {
+          "$ref": "#/definitions/WarpNextConfig"
+        },
+        "type": {
+          "const": "compute",
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label"
+      ],
+      "type": "object"
+    },
     "WarpContractAction": {
       "additionalProperties": false,
       "properties": {
@@ -504,10 +537,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "transfers": {
           "items": {
@@ -563,9 +593,6 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
-        "primary": {
-          "type": "boolean"
-        },
         "type": {
           "$ref": "#/definitions/WarpActionType"
         },
@@ -580,6 +607,54 @@
         "type",
         "label",
         "url"
+      ],
+      "type": "object"
+    },
+    "WarpLoopAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "delay": {
+          "type": "number"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "maxIterations": {
+          "type": "number"
+        },
+        "next": {
+          "$ref": "#/definitions/WarpNextConfig"
+        },
+        "type": {
+          "const": "loop",
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label"
       ],
       "type": "object"
     },
@@ -612,10 +687,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "type": {
           "$ref": "#/definitions/WarpActionType"
@@ -691,6 +763,71 @@
       ],
       "type": "object"
     },
+    "WarpMountAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "next": {
+          "$ref": "#/definitions/WarpNextConfig"
+        },
+        "type": {
+          "const": "mount",
+          "type": "string"
+        },
+        "warp": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label",
+        "warp"
+      ],
+      "type": "object"
+    },
+    "WarpNextConfig": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "error": {
+              "type": "string"
+            },
+            "success": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
     "WarpPlatformValue<string>": {
       "anyOf": [
         {
@@ -739,10 +876,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "prompt": {
           "$ref": "#/definitions/WarpPlatformValue%3Cstring%3E"
@@ -802,10 +936,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "type": {
           "$ref": "#/definitions/WarpActionType"
@@ -833,6 +964,99 @@
         "yearly"
       ],
       "type": "string"
+    },
+    "WarpSection": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "$ref": "#/definitions/WarpText"
+        }
+      },
+      "required": [
+        "title",
+        "inputs"
+      ],
+      "type": "object"
+    },
+    "WarpStateAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "keys": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "next": {
+          "$ref": "#/definitions/WarpNextConfig"
+        },
+        "op": {
+          "enum": [
+            "read",
+            "write",
+            "clear"
+          ],
+          "type": "string"
+        },
+        "store": {
+          "type": "string"
+        },
+        "type": {
+          "const": "state",
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label",
+        "op",
+        "store"
+      ],
+      "type": "object"
     },
     "WarpText": {
       "anyOf": [
@@ -876,10 +1100,7 @@
           "$ref": "#/definitions/WarpText"
         },
         "next": {
-          "type": "string"
-        },
-        "primary": {
-          "type": "boolean"
+          "$ref": "#/definitions/WarpNextConfig"
         },
         "transfers": {
           "items": {
@@ -900,6 +1121,115 @@
       "required": [
         "type",
         "label"
+      ],
+      "type": "object"
+    },
+    "WarpTrigger": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "pattern": {
+              "type": "string"
+            },
+            "type": {
+              "const": "message",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "pattern"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "$ref": "#/definitions/WarpText"
+            },
+            "inputs": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "label": {
+              "$ref": "#/definitions/WarpText"
+            },
+            "match": {
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              },
+              "type": "object"
+            },
+            "source": {
+              "type": "string"
+            },
+            "subject": {
+              "$ref": "#/definitions/WarpText"
+            },
+            "type": {
+              "const": "webhook",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "source"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "WarpUnmountAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "next": {
+          "$ref": "#/definitions/WarpNextConfig"
+        },
+        "type": {
+          "const": "unmount",
+          "type": "string"
+        },
+        "warp": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label",
+        "warp"
       ],
       "type": "object"
     },
