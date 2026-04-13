@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.17.1
+
+### Patch Changes
+
+- deb2ba2: Add `local` input position type. Inputs with `position: "local"` are available for `{{interpolation}}` in subsequent actions but are excluded from the HTTP request body. Use this for inputs that should stay client-side — e.g., values needed by a `prompt` action but not by the API destination.
+
 ## 4.17.0
 
 ### Minor Changes
