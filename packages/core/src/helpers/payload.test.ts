@@ -267,6 +267,17 @@ describe('buildMappedOutput', () => {
       },
     })
   })
+
+  it('should exclude local position inputs from mapped output', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'contactId', type: 'string', source: 'field' }, value: 'string:abc123' },
+      { input: { name: 'daysInactive', type: 'string', source: 'field', position: 'local' }, value: 'string:30' },
+      { input: { name: 'offer', type: 'string', source: 'field', position: 'local' }, value: 'string:20% off' },
+    ]
+    expect(buildMappedOutput(inputs, serializer)).toEqual({
+      contactId: 'abc123',
+    })
+  })
 })
 
 describe('buildInputsContext', () => {
@@ -285,6 +296,18 @@ describe('buildInputsContext', () => {
     expect(context['asset.token']).toBe('EGLD')
     expect(context['asset.amount']).toBe('1000000000000000000')
     expect(context['asset.identifier']).toBe('EGLD')
+  })
+
+  it('includes local position inputs in context for interpolation', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'contactId', type: 'string', source: 'field' }, value: 'string:abc123' },
+      { input: { name: 'daysInactive', type: 'string', source: 'field', position: 'local' }, value: 'string:30' },
+    ]
+
+    const context = buildInputsContext(inputs, serializer)
+
+    expect(context.contactId).toBe('abc123')
+    expect(context.daysInactive).toBe('30')
   })
 
   it('respects currentIndex and includes currentInput when provided', () => {

@@ -288,6 +288,7 @@ export type WarpActionInputPosition =
   | 'chain'
   | `payload:${string}`
   | 'destination'
+  | 'local'
   | WarpActionInputPositionAssetObject
 
 export type WarpActionInputPositionAssetObject = {

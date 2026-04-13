@@ -301,6 +301,10 @@
           "type": "string"
         },
         {
+          "const": "local",
+          "type": "string"
+        },
+        {
           "$ref": "#/definitions/WarpActionInputPositionAssetObject"
         }
       ]
