@@ -45,7 +45,7 @@ export type ExecutionHandlers = {
   onExecuted?: (result: WarpActionExecutionResult) => void | Promise<void>
   onError?: (params: { message: string; result: WarpActionExecutionResult }) => void
   onSignRequest?: (params: { message: string; chain: WarpChainInfo }) => string | Promise<string>
-  onPromptGenerate?: (prompt: string) => string | null | Promise<string | null>
+  onPromptGenerate?: (prompt: string, expect?: string | Record<string, any>) => string | null | Promise<string | null>
   onMountAction?: (params: { action: WarpAction; actionIndex: WarpActionIndex; warp: Warp }) => void | Promise<void>
   onLoop?: (params: { warp: Warp; inputs: string[]; meta: Record<string, any>; delay: number }) => void
   onActionExecuted?: (params: {
@@ -848,7 +848,7 @@ export class WarpExecutor {
       )
 
       if (this.handlers?.onPromptGenerate) {
-        const generated = await this.handlers.onPromptGenerate(interpolatedPrompt)
+        const generated = await this.handlers.onPromptGenerate(interpolatedPrompt, preparedAction.expect)
         if (generated) output.MESSAGE = generated
       }
 

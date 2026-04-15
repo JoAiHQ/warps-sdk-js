@@ -430,7 +430,7 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(execution.status).toBe('success')
     expect(execution.output.PROMPT).toBe('Write a tweet about AI')
     expect(execution.output.MESSAGE).toBe('Generated response text')
-    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('Write a tweet about AI')
+    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('Write a tweet about AI', undefined)
   })
 
   it('should only set PROMPT when onPromptGenerate returns null', async () => {
@@ -451,7 +451,7 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(execution.status).toBe('success')
     expect(execution.output.PROMPT).toBe('/open -a Safari')
     expect(execution.output.MESSAGE).toBeUndefined()
-    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('/open -a Safari')
+    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('/open -a Safari', undefined)
   })
 
   it('should not call onPromptGenerate when handler is absent', async () => {
@@ -501,7 +501,7 @@ describe('WarpExecutor - Prompt Actions', () => {
     const promptExec = result.immediateExecutions[1]
     expect(promptExec.output.PROMPT).toBe('Classify: raw-tx-data')
     expect(promptExec.output.MESSAGE).toBe('Classification: DeFi swap')
-    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('Classify: raw-tx-data')
+    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('Classify: raw-tx-data', undefined)
   })
 
   it('should handle state read actions via SDK cache', async () => {
@@ -650,7 +650,7 @@ describe('WarpExecutor - Prompt Actions', () => {
     const result = await combinedExecutor.execute(chainedWarp, [])
 
     expect(result.immediateExecutions).toHaveLength(2)
-    expect(combinedHandlers.onPromptGenerate).toHaveBeenCalledWith('Translate this: Hello World')
+    expect(combinedHandlers.onPromptGenerate).toHaveBeenCalledWith('Translate this: Hello World', undefined)
     const promptExec = result.immediateExecutions[1]
     expect(promptExec.output.PROMPT).toBe('Translate this: Hello World')
     expect(promptExec.output.MESSAGE).toBe('Translated: Hallo Welt')
@@ -731,7 +731,7 @@ describe('WarpExecutor - Prompt Actions', () => {
     await pipelineExecutor.execute(pipelineWarp, [], { scope: 'room-1' })
 
     // Verify the prompt received the state value
-    expect(pipelineHandlers.onPromptGenerate).toHaveBeenCalledWith('What is the meaning of life?')
+    expect(pipelineHandlers.onPromptGenerate).toHaveBeenCalledWith('What is the meaning of life?', undefined)
 
     // Verify the state write persisted the LLM response
     const stored = await cache.get<Record<string, any>>('state:room-1:game')

@@ -249,6 +249,7 @@ export type WarpPromptAction = {
   description?: WarpText | null
   prompt: WarpPlatformValue<string>
   inputs?: WarpActionInput[]
+  expect?: string | Record<string, any>
 
   auto?: boolean
   next?: WarpNextConfig

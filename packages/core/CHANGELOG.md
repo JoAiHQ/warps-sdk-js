@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 4.18.0
+
+### Minor Changes
+
+- Add `expect` field to prompt actions for structured output
+
+  Prompt actions now accept an optional `expect` field — a JSON Schema object or URL string — that constrains the LLM to return valid JSON matching that shape. When set, `onPromptGenerate` receives the schema as a second argument so the runtime can use provider-native structured output (JSON mode, tool use, etc.).
+
+  This eliminates reliance on "Return ONLY raw JSON" prompt instructions and guarantees the output flowing into `{{PROMPT}}` is always valid JSON.
+
 ## 4.17.1
 
 ### Patch Changes
