@@ -270,6 +270,7 @@ export type BaseWarpActionInputType =
   | 'bool'
   | 'address'
   | 'hex'
+  | 'datetime'
   | string
 
 export type WarpActionInputType = string
