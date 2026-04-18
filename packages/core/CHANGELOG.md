@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.19.0
+
+### Minor Changes
+
+- af09140: Add email, textarea, and media as first-class input types. These are UI-semantic types that serialize as plain strings, enabling warp definitions to use `type: "email"`, `type: "textarea"`, and `type: "media"` without triggering an unsupported type error in the serializer.
+
 ## 4.18.1
 
 ### Patch Changes
