@@ -124,6 +124,9 @@ export const WarpInputTypes = {
   Asset: 'asset',
   Hex: 'hex',
   Datetime: 'datetime',
+  Email: 'email',
+  Textarea: 'textarea',
+  Media: 'media',
 }
 
 export const safeWindow = typeof window !== 'undefined' ? window : ({ open: () => {} } as Window)

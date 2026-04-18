@@ -310,6 +310,18 @@ describe('WarpSerializer', () => {
       expect(serializer.stringToNative('nft:NFT-abc123')).toEqual(['nft', 'NFT-abc123'])
     })
 
+    it('deserializes email input type as string', () => {
+      expect(serializer.stringToNative('email:user@example.com')).toEqual(['email', 'user@example.com'])
+    })
+
+    it('deserializes textarea input type as string', () => {
+      expect(serializer.stringToNative('textarea:some long text')).toEqual(['textarea', 'some long text'])
+    })
+
+    it('deserializes media input type as string', () => {
+      expect(serializer.stringToNative('media:https://example.com/file.jpg')).toEqual(['media', 'https://example.com/file.jpg'])
+    })
+
     it('deserializes token values via type registry', () => {
       // Mock type registry with token handler
       const mockTypeRegistry = {

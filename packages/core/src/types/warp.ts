@@ -271,6 +271,9 @@ export type BaseWarpActionInputType =
   | 'address'
   | 'hex'
   | 'datetime'
+  | 'email'
+  | 'textarea'
+  | 'media'
   | string
 
 export type WarpActionInputType = string
