@@ -1,5 +1,5 @@
 import { WarpSerializer } from './WarpSerializer'
-import { WarpConstants } from './constants'
+import { WarpConstants, WarpInputTypes } from './constants'
 import { WarpStructValue } from './types'
 
 describe('WarpSerializer', () => {
@@ -38,6 +38,22 @@ describe('WarpSerializer', () => {
 
     it('serializes hex values', () => {
       expect(serializer.nativeToString('hex', '0x1234')).toBe('hex:0x1234')
+    })
+
+    it('serializes datetime values as ISO 8601 strings', () => {
+      expect(serializer.nativeToString('datetime', '2026-04-19T00:00:00.000Z')).toBe('datetime:2026-04-19T00:00:00.000Z')
+    })
+
+    it('serializes datetime values with timezone offset', () => {
+      expect(serializer.nativeToString('datetime', '2026-04-19T10:30:00+02:00')).toBe('datetime:2026-04-19T10:30:00+02:00')
+    })
+
+    it('serializes datetime values with milliseconds', () => {
+      expect(serializer.nativeToString('datetime', '2026-04-19T08:15:30.123Z')).toBe('datetime:2026-04-19T08:15:30.123Z')
+    })
+
+    it('serializes datetime via WarpInputTypes.Datetime constant', () => {
+      expect(serializer.nativeToString(WarpInputTypes.Datetime, '2026-04-19T00:00:00.000Z')).toBe('datetime:2026-04-19T00:00:00.000Z')
     })
 
     it('serializes token values via type registry', () => {
@@ -399,6 +415,32 @@ describe('WarpSerializer', () => {
 
     it('deserializes hex values', () => {
       expect(serializer.stringToNative('hex:0x1234')).toEqual(['hex', '0x1234'])
+    })
+
+    it('deserializes datetime UTC values', () => {
+      expect(serializer.stringToNative('datetime:2026-04-19T00:00:00.000Z')).toEqual(['datetime', '2026-04-19T00:00:00.000Z'])
+    })
+
+    it('deserializes datetime values with timezone offset', () => {
+      expect(serializer.stringToNative('datetime:2026-04-19T10:30:00+02:00')).toEqual(['datetime', '2026-04-19T10:30:00+02:00'])
+    })
+
+    it('deserializes datetime values with milliseconds', () => {
+      expect(serializer.stringToNative('datetime:2026-04-19T08:15:30.123Z')).toEqual(['datetime', '2026-04-19T08:15:30.123Z'])
+    })
+
+    it('preserves type tag as datetime not string on deserialize', () => {
+      const [type] = serializer.stringToNative('datetime:2026-04-19T00:00:00.000Z')
+      expect(type).toBe('datetime')
+      expect(type).not.toBe('string')
+    })
+
+    it('roundtrips datetime values through nativeToString and stringToNative', () => {
+      const iso = '2026-04-19T14:00:00.000Z'
+      const serialized = serializer.nativeToString('datetime', iso)
+      const [type, value] = serializer.stringToNative(serialized)
+      expect(type).toBe('datetime')
+      expect(value).toBe(iso)
     })
 
     it('deserializes asset values', () => {

@@ -123,6 +123,7 @@ export const WarpInputTypes = {
   Address: 'address',
   Asset: 'asset',
   Hex: 'hex',
+  Datetime: 'datetime',
 }
 
 export const safeWindow = typeof window !== 'undefined' ? window : ({ open: () => {} } as Window)

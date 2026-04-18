@@ -159,6 +159,7 @@ export class WarpSerializer {
     else if (baseType === WarpInputTypes.Bool) return [baseType, val === 'true']
     else if (baseType === WarpInputTypes.Address) return [baseType, val]
     else if (baseType === WarpInputTypes.Hex) return [baseType, val]
+    else if (baseType === WarpInputTypes.Datetime) return [baseType, val]
     else if (baseType === WarpInputTypes.Asset) {
       const [identifier, amount] = (val as string).split(WarpConstants.ArgCompositeSeparator)
       const value: WarpChainAssetValue = { identifier, amount: BigInt(amount) }
