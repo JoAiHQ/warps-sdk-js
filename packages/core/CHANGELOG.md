@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.21.0
+
+### Minor Changes
+
+- 2232260: Add `mergeVars` method to `WarpClient` for runtime var injection without recreating the client.
+
 ## 4.20.0
 
 ### Minor Changes
