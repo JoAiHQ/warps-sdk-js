@@ -42,7 +42,7 @@ export class WarpClient {
   private readonly resolver: WarpResolver
 
   constructor(
-    private readonly config: WarpClientConfig,
+    private config: WarpClientConfig,
     private readonly options: WarpClientOptions
   ) {
     this.chains = options.chains.map((factory) => factory(this.config))
@@ -56,6 +56,10 @@ export class WarpClient {
 
   getConfig(): WarpClientConfig {
     return this.config
+  }
+
+  mergeVars(vars: Record<string, string | number>): void {
+    this.config = { ...this.config, vars: { ...this.config.vars, ...vars } }
   }
 
   getResolver(): WarpResolver {
