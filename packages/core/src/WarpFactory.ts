@@ -291,6 +291,21 @@ export class WarpFactory {
           const transformedString = this.serializer.nativeToString(resolved.input.type, transformedValue)
           results.push({ ...resolved, value: transformedString })
         }
+      } else if (resolved.input.modifier?.startsWith('crypto:')) {
+        const [, fn, sourceField] = resolved.input.modifier.split(':')
+        const sourceInput = fn === 'sha256' && sourceField ? inputs.find((i) => (i.input.as || i.input.name) === sourceField) : null
+        const sourceUrl = sourceInput?.value ? (this.serializer.stringToNative(sourceInput.value)[1] as string) ?? null : null
+        if (sourceUrl) {
+          const response = await fetch(sourceUrl)
+          const arrayBuffer = await response.arrayBuffer()
+          const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', arrayBuffer)
+          const hash = Array.from(new Uint8Array(hashBuffer))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+          results.push({ ...resolved, value: this.serializer.nativeToString('string', hash) })
+        } else {
+          results.push(resolved)
+        }
       } else {
         results.push(resolved)
       }

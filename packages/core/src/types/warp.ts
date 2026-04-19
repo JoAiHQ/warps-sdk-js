@@ -273,7 +273,7 @@ export type BaseWarpActionInputType =
   | 'datetime'
   | 'email'
   | 'textarea'
-  | 'media'
+  | 'file'
   | string
 
 export type WarpActionInputType = string
@@ -301,7 +301,7 @@ export type WarpActionInputPositionAssetObject = {
   amount: `arg:${string}`
 }
 
-export type WarpActionInputModifier = 'scale' | 'transform'
+export type WarpActionInputModifier = 'scale' | 'transform' | 'crypto'
 
 export type WarpActionInput = {
   name: string

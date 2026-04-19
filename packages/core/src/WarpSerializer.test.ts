@@ -318,8 +318,8 @@ describe('WarpSerializer', () => {
       expect(serializer.stringToNative('textarea:some long text')).toEqual(['textarea', 'some long text'])
     })
 
-    it('deserializes media input type as string', () => {
-      expect(serializer.stringToNative('media:https://example.com/file.jpg')).toEqual(['media', 'https://example.com/file.jpg'])
+    it('deserializes file input type as string', () => {
+      expect(serializer.stringToNative('file:https://example.com/doc.pdf')).toEqual(['file', 'https://example.com/doc.pdf'])
     })
 
     it('deserializes token values via type registry', () => {

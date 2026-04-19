@@ -560,6 +560,85 @@ describe('WarpFactory', () => {
     })
   })
 
+  describe('getModifiedInputs with crypto modifier', () => {
+    const mockDigest = jest.fn()
+    const mockFetch = jest.fn()
+
+    beforeEach(() => {
+      mockDigest.mockReset()
+      mockFetch.mockReset()
+      Object.defineProperty(globalThis, 'crypto', {
+        value: { subtle: { digest: mockDigest } },
+        configurable: true,
+      })
+      global.fetch = mockFetch
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('computes sha256 hash from source file input', async () => {
+      const fileContent = new Uint8Array([0x25, 0x50, 0x44, 0x46])
+      const hashBytes = new Uint8Array([0xab, 0xcd, 0xef, 0x01])
+      mockFetch.mockResolvedValue({ arrayBuffer: async () => fileContent.buffer })
+      mockDigest.mockResolvedValue(hashBytes.buffer)
+
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const inputs = [
+        { input: { name: 'Document Hash', as: 'documentHash', type: 'string', source: 'hidden', modifier: 'crypto:sha256:document' }, value: null },
+        { input: { name: 'Document', as: 'document', type: 'file', source: 'field' }, value: 'file:https://example.com/doc.pdf' },
+      ]
+
+      const result = await factory.getModifiedInputs(inputs as any)
+      expect(mockFetch).toHaveBeenCalledWith('https://example.com/doc.pdf')
+      expect(mockDigest).toHaveBeenCalledWith('SHA-256', fileContent.buffer)
+      expect(result[0].value).toBe('string:abcdef01')
+    })
+
+    it('leaves hash input unchanged when source field is missing', async () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const inputs = [
+        { input: { name: 'Document Hash', as: 'documentHash', type: 'string', source: 'hidden', modifier: 'crypto:sha256:document' }, value: null },
+      ]
+
+      const result = await factory.getModifiedInputs(inputs as any)
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(result[0].value).toBeNull()
+    })
+
+    it('leaves hash input unchanged when source field has no value', async () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const inputs = [
+        { input: { name: 'Document Hash', as: 'documentHash', type: 'string', source: 'hidden', modifier: 'crypto:sha256:document' }, value: null },
+        { input: { name: 'Document', as: 'document', type: 'file', source: 'field' }, value: null },
+      ]
+
+      const result = await factory.getModifiedInputs(inputs as any)
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(result[0].value).toBeNull()
+    })
+
+    it('passes through unmodified inputs alongside crypto inputs', async () => {
+      const fileContent = new Uint8Array([0x25])
+      const hashBytes = new Uint8Array([0xff])
+      mockFetch.mockResolvedValue({ arrayBuffer: async () => fileContent.buffer })
+      mockDigest.mockResolvedValue(hashBytes.buffer)
+
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const inputs = [
+        { input: { name: 'Title', as: 'title', type: 'string', source: 'field' }, value: 'string:My Doc' },
+        { input: { name: 'Document Hash', as: 'documentHash', type: 'string', source: 'hidden', modifier: 'crypto:sha256:document' }, value: null },
+        { input: { name: 'Document', as: 'document', type: 'file', source: 'field' }, value: 'file:https://example.com/doc.pdf' },
+      ]
+
+      const result = await factory.getModifiedInputs(inputs as any)
+      expect(result[0].value).toBe('string:My Doc')
+      expect(result[1].value).toBe('string:ff')
+      expect(result[2].value).toBe('file:https://example.com/doc.pdf')
+    })
+  })
+
   it('preprocessInput returns input as-is for non-asset', async () => {
     const factory = new WarpFactory(config, [createMockAdapter()])
     const result = await factory.preprocessInput(WarpChainName.Multiversx, 'biguint:123')
