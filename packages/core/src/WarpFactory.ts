@@ -1,4 +1,4 @@
-import { WarpChainName, WarpConstants } from './constants'
+import { WarpChainName, WarpConstants, WarpInputTypes } from './constants'
 
 const noDestinationTypes = ['collect', 'compute', 'mcp', 'state', 'mount', 'unmount'] as const
 import { findWarpAdapterForChain, getWarpActionByIndex, getWarpInputAction, shiftBigintBy, splitInput } from './helpers'
@@ -25,6 +25,14 @@ import { CacheTtl, WarpCache, WarpCacheKey } from './WarpCache'
 import { WarpInterpolator } from './WarpInterpolator'
 import { WarpLogger } from './WarpLogger'
 import { WarpSerializer } from './WarpSerializer'
+
+const knownTypePrefixes = new Set(Object.values(WarpInputTypes))
+
+const hasKnownTypePrefix = (input: string): boolean => {
+  const sep = input.indexOf(WarpConstants.ArgParamsSeparator)
+  if (sep === -1) return false
+  return knownTypePrefixes.has(input.slice(0, sep))
+}
 
 export class WarpFactory {
   private url: URL
@@ -163,7 +171,7 @@ export class WarpFactory {
     return inputs.map((input, index) => {
       const actionInput = actionInputs[index]
       if (!actionInput) return input
-      if (input.includes(WarpConstants.ArgParamsSeparator)) return input
+      if (hasKnownTypePrefix(input)) return input
       return this.serializer.nativeToString(actionInput.type, input)
     })
   }

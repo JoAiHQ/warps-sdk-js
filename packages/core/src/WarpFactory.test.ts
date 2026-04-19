@@ -772,6 +772,48 @@ describe('WarpFactory', () => {
 
       expect(result).toEqual(['some-input', 'another-input'])
     })
+
+    it('correctly types a URL string input without treating the URL colon as a type separator', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action: WarpAction = {
+        type: 'collect',
+        label: 'Test',
+        destination: { url: 'https://api.example.com', method: 'POST' },
+        inputs: [{ name: 'sourceUrl', type: 'string', position: 'arg:1', source: 'field' }],
+      } as any
+
+      const result = factory.getStringTypedInputs(action, ['https://storage.googleapis.com/sample/video.mp4'])
+
+      expect(result).toEqual(['string:https://storage.googleapis.com/sample/video.mp4'])
+    })
+
+    it('passes through an already-typed URL string without double-prefixing', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action: WarpAction = {
+        type: 'collect',
+        label: 'Test',
+        destination: { url: 'https://api.example.com', method: 'POST' },
+        inputs: [{ name: 'sourceUrl', type: 'string', position: 'arg:1', source: 'field' }],
+      } as any
+
+      const result = factory.getStringTypedInputs(action, ['string:https://storage.googleapis.com/sample/video.mp4'])
+
+      expect(result).toEqual(['string:https://storage.googleapis.com/sample/video.mp4'])
+    })
+
+    it('correctly types a plain message string containing a colon', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action: WarpAction = {
+        type: 'collect',
+        label: 'Test',
+        destination: { url: 'https://api.example.com', method: 'POST' },
+        inputs: [{ name: 'message', type: 'string', position: 'arg:1', source: 'field' }],
+      } as any
+
+      const result = factory.getStringTypedInputs(action, ['Note: this is a message'])
+
+      expect(result).toEqual(['string:Note: this is a message'])
+    })
   })
 
   describe('primary input references', () => {
