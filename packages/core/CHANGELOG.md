@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.22.1
+
+### Patch Changes
+
+- 5d3199d: fix: use known type prefix check in getStringTypedInputs to avoid URL colons being misidentified as type separators
+
 ## 4.22.0
 
 ### Minor Changes
