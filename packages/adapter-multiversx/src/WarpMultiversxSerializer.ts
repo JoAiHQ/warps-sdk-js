@@ -339,6 +339,11 @@ export class WarpMultiversxSerializer implements AdapterWarpSerializer {
     if (type === WarpInputTypes.Bool) return val ? new BooleanValue(typeof val === 'boolean' ? val : val === 'true') : new NothingValue()
     if (type === WarpInputTypes.Address) return val ? new AddressValue(Address.newFromBech32(val as string)) : new NothingValue()
     if (type === WarpInputTypes.Hex) return val ? BytesValue.fromHex(val as string) : new NothingValue()
+    if (type === WarpInputTypes.Datetime) {
+      if (!val || val === '0') return new U64Value(0n)
+      const ts = Math.floor(new Date(val).getTime() / 1000)
+      return new U64Value(BigInt(isNaN(ts) ? 0 : ts))
+    }
     if (type === WarpInputTypes.Asset) {
       const [identifier, amount] = val.split(WarpConstants.ArgCompositeSeparator)
       const tokenComputer = new TokenComputer()

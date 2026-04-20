@@ -674,4 +674,26 @@ describe('WarpMultiversxSerializer', () => {
       expect(() => serializer.stringToTyped('codemeta:invalid')).toThrow()
     })
   })
+
+  describe('datetime handling', () => {
+    it('converts ISO datetime string to U64 unix timestamp in seconds', () => {
+      const result = serializer.stringToTyped('datetime:2026-04-20T12:00:00.000Z')
+      expect(result.valueOf().toString()).toBe(String(Math.floor(new Date('2026-04-20T12:00:00.000Z').getTime() / 1000)))
+    })
+
+    it('converts "0" to U64 zero (no deadline)', () => {
+      const result = serializer.stringToTyped('datetime:0')
+      expect(result.valueOf().toString()).toBe('0')
+    })
+
+    it('converts empty value to U64 zero', () => {
+      const result = serializer.stringToTyped('datetime:')
+      expect(result.valueOf().toString()).toBe('0')
+    })
+
+    it('converts invalid date string to U64 zero', () => {
+      const result = serializer.stringToTyped('datetime:not-a-date')
+      expect(result.valueOf().toString()).toBe('0')
+    })
+  })
 })
