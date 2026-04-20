@@ -1,5 +1,16 @@
 # @joai/warps-adapter-multiversx
 
+## 1.7.0
+
+### Minor Changes
+
+- 410f78e: Support `datetime` input type in MultiversX contract arg encoding — converts ISO 8601 strings to u64 Unix timestamps in seconds. Empty or "0" values encode as u64 zero (no deadline).
+
+### Patch Changes
+
+- Updated dependencies [7ad9ffd]
+  - @joai/warps@4.23.0
+
 ## 1.6.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.23.0
+
+### Minor Changes
+
+- 7ad9ffd: Remove default chain concept. `WarpMeta.chain` is now `WarpChainName | null`. `getWarpInfoFromIdentifier` and `extractIdentifierInfoFromUrl` no longer accept a `defaultChain` parameter — identifiers without an explicit chain prefix resolve to `chain: null`. `WarpClientConfig.defaultChain` removed. `createBuilder` accepts `null` and returns a base `WarpBuilder` without adapter lookup. `WarpIdentifierInfo` moved from helpers to `types/warp`.
+
 ## 4.22.1
 
 ### Patch Changes

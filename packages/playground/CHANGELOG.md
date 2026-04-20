@@ -1,5 +1,14 @@
 # @warps/playground
 
+## 1.0.74
+
+### Patch Changes
+
+- Updated dependencies [410f78e]
+- Updated dependencies [7ad9ffd]
+  - @joai/warps-adapter-multiversx@1.7.0
+  - @joai/warps@4.23.0
+
 ## 1.0.73
 
 ### Patch Changes
