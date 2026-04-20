@@ -1,5 +1,5 @@
 import { WarpChainName, WarpConstants } from '../constants'
-import { ChainAdapter, WarpClientConfig } from '../types'
+import { ChainAdapter, WarpClientConfig, WarpIdentifierInfo } from '../types'
 import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
 import { Warp, WarpNextConfig } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
@@ -18,7 +18,6 @@ export const resolveNextStrings = (raw: WarpNextConfig | null | undefined, path:
   return Array.isArray(val) ? val : [val]
 }
 
-/** @deprecated Use resolveNextStrings. Kept for backwards compatibility. */
 export const resolveNextString = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error'): string | null => {
   return resolveNextStrings(raw, path)?.[0] ?? null
 }
@@ -116,14 +115,14 @@ export const getNextInfoForStatus = (
 
 const buildNextUrl = (adapters: ChainAdapter[], identifier: string, config: WarpClientConfig): string => {
   const [rawId, queryString] = identifier.split('?')
-  const info = getWarpInfoFromIdentifier(rawId, config.defaultChain) || {
-    chain: WarpConstants.IdentifierChainDefault,
+  const info: WarpIdentifierInfo = getWarpInfoFromIdentifier(rawId) ?? {
+    chain: null,
     type: 'alias',
     identifier: rawId,
     identifierBase: rawId,
   }
-  const adapter = findWarpAdapterForChain(info.chain, adapters)
-  if (!adapter) throw new Error(`Adapter not found for chain ${info.chain}`)
+  const adapter = info.chain ? findWarpAdapterForChain(info.chain, adapters) : null
+  if (!adapter) throw new Error(`Adapter not found for chain ${info.chain ?? 'unknown'}`)
   const baseUrl = new WarpLinkBuilder(config, adapters).build(adapter.chainInfo.name, info.type, info.identifierBase)
   if (!queryString) return baseUrl
 

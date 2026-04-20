@@ -41,7 +41,7 @@ export class WarpLinkDetecter {
 
   isValid(url: string): boolean {
     if (!url.startsWith(WarpConstants.HttpProtocolPrefix)) return false
-    const idResult = extractIdentifierInfoFromUrl(url, this.config.defaultChain)
+    const idResult = extractIdentifierInfoFromUrl(url)
     return !!idResult
   }
 
@@ -62,8 +62,8 @@ export class WarpLinkDetecter {
     const emptyResult: DetectionResult = { match: false, url: urlOrId, warp: null, chain: null, registryInfo: null, brand: null }
 
     const identifierResult = urlOrId.startsWith(WarpConstants.HttpProtocolPrefix)
-      ? extractIdentifierInfoFromUrl(urlOrId, this.config.defaultChain)
-      : getWarpInfoFromIdentifier(urlOrId, this.config.defaultChain)
+      ? extractIdentifierInfoFromUrl(urlOrId)
+      : getWarpInfoFromIdentifier(urlOrId)
 
     if (!identifierResult) {
       return emptyResult
@@ -97,7 +97,7 @@ export class WarpLinkDetecter {
           brand = result.brand
         }
       } else {
-        // Fallback to direct chain adapter resolution (backwards compat)
+        if (!identifierResult.chain) throw new Error(`WarpLinkDetecter: chain is required for identifier ${identifierResult.identifier}`)
         const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
 
         if (type === 'hash') {
@@ -124,8 +124,8 @@ export class WarpLinkDetecter {
         return emptyResult
       }
 
-      const warpChain = warp.chain || identifierResult.chain
-      const warpAdapter = this.adapters.find((a) => a.chainInfo.name.toLowerCase() === warpChain.toLowerCase())
+      const warpChain = warp.chain || identifierResult.chain || null
+      const warpAdapter = warpChain ? this.adapters.find((a) => a.chainInfo.name.toLowerCase() === warpChain.toLowerCase()) : null
       const preparedWarp = warpAdapter
         ? await new WarpInterpolator(this.config, warpAdapter, this.adapters).apply(warp)
         : warp
@@ -138,7 +138,7 @@ export class WarpLinkDetecter {
   }
 }
 
-const modifyWarpMetaIdentifier = (warp: Warp, chain: WarpChainName, registryInfo: WarpRegistryInfo | null, identifier: string) => {
+const modifyWarpMetaIdentifier = (warp: Warp, chain: WarpChainName | null, registryInfo: WarpRegistryInfo | null, identifier: string) => {
   if (!warp.meta) return
   warp.meta.identifier = registryInfo?.alias
     ? createWarpIdentifier(null, 'alias', registryInfo.alias)

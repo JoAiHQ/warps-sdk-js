@@ -66,7 +66,6 @@ export type WarpClientConfig = {
   }
   walletProviders?: Partial<Record<WarpChainName, Partial<Record<WarpWalletProvider, WalletProviderFactory>>>>
   fallback?: WarpChainName
-  defaultChain?: WarpChainName
   schema?: {
     warp?: string
     brand?: string

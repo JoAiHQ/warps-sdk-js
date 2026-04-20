@@ -26,6 +26,7 @@ import {
 } from './types'
 import { WarpText } from './types/i18n'
 import { WarpResolver } from './types/resolver'
+import { WarpBuilder } from './WarpBuilder'
 import { ExecutionHandlers, WarpExecutor } from './WarpExecutor'
 import { WarpFactory } from './WarpFactory'
 import { WarpIndex } from './WarpIndex'
@@ -125,8 +126,9 @@ export class WarpClient {
   }
 
   async createFromTransactionHash(hash: string, cache?: WarpCacheConfig): Promise<Warp | null> {
-    const identifierInfo = getWarpInfoFromIdentifier(hash, this.config.defaultChain)
+    const identifierInfo = getWarpInfoFromIdentifier(hash)
     if (!identifierInfo) throw new Error('WarpClient: createFromTransactionHash - invalid hash')
+    if (!identifierInfo.chain) throw new Error('WarpClient: createFromTransactionHash - chain is required')
     const adapter = findWarpAdapterForChain(identifierInfo.chain, this.chains)
     return adapter.builder().createFromTransactionHash(hash, cache)
   }
@@ -191,7 +193,8 @@ export class WarpClient {
     return new WarpLinkBuilder(this.config, this.chains)
   }
 
-  createBuilder(chain: WarpChainName) {
+  createBuilder(chain: WarpChainName | null) {
+    if (!chain) return new WarpBuilder(this.config)
     return findWarpAdapterForChain(chain, this.chains).builder()
   }
 

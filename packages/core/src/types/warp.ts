@@ -25,6 +25,8 @@ export type WarpChainInfo = {
 
 export type WarpIdentifierType = 'hash' | 'alias'
 
+export type WarpIdentifierInfo = { chain: WarpChainName | null; type: WarpIdentifierType; identifier: string; identifierBase: string }
+
 export type WarpVarPlaceholder = string
 
 export type WarpOutputName = string
@@ -65,7 +67,7 @@ export type WarpSection = {
 }
 
 export type WarpMeta = {
-  chain: WarpChainName
+  chain: WarpChainName | null
   identifier: string
   query: Record<string, any> | null
   hash: string
