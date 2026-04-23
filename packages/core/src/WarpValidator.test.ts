@@ -429,4 +429,192 @@ describe('WarpValidator', () => {
       expect(result.errors[0]).toContain('Schema validation failed')
     })
   })
+
+  describe('validateUrlPlaceholdersHaveInputs', () => {
+    it('passes when URL placeholder has matching url-positioned input', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'log activity',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}/activities', method: 'POST' },
+            inputs: [
+              { name: 'contactId', as: 'contactId', type: 'string', position: 'url:contactId', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(0)
+    })
+
+    it('passes when URL placeholder is declared as a var', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        vars: { JOAI_AGENT_UUID: 'env:JOAI_AGENT_UUID' },
+        actions: [
+          {
+            type: 'collect',
+            label: 'reminders',
+            destination: { url: 'https://api.example.com/v1/agents/{{JOAI_AGENT_UUID}}/reminders', method: 'POST' },
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(0)
+    })
+
+    it('fails when URL placeholder has no matching input and is not a var', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'log activity',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}/activities', method: 'POST' },
+            inputs: [
+              // contactId is a regular field input, not url-positioned → URL collapses
+              { name: 'contactId', as: 'contactId', type: 'string', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(false)
+      expect(result.errors.some((e) => e.includes('{{contactId}}') && e.includes('url:contactId'))).toBe(true)
+    })
+
+    it('fails when URL has multiple placeholders and one is missing', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'delete activity',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}/activities/{{activityId}}', method: 'DELETE' },
+            inputs: [
+              { name: 'contactId', as: 'contactId', type: 'string', position: 'url:contactId', source: 'field' },
+              { name: 'activityId', as: 'activityId', type: 'string', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(false)
+      expect(result.errors.some((e) => e.includes('{{activityId}}'))).toBe(true)
+      expect(result.errors.some((e) => e.includes('{{contactId}}'))).toBe(false)
+    })
+
+    it('ignores actions without HTTP destination', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          { type: 'transfer', label: 'test', description: 'test', address: 'erd1...' },
+        ],
+      })
+      const result = await validator.validate(warp)
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(0)
+    })
+  })
+
+  describe('validateNoArgPositionsOnHttpActions', () => {
+    it('passes for HTTP action with no arg positions', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'create reminder',
+            destination: { url: 'https://api.example.com/v1/reminders', method: 'POST' },
+            inputs: [
+              { name: 'text', as: 'text', type: 'string', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const argErrors = result.errors.filter((e) => e.includes('CLI arg positions'))
+      expect(argErrors).toHaveLength(0)
+    })
+
+    it('fails when POST action has arg:N input', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'create item',
+            destination: { url: 'https://api.example.com/v1/items', method: 'POST' },
+            inputs: [
+              { name: 'title', as: 'title', type: 'string', position: 'arg:1', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(false)
+      expect(result.errors.some((e) => e.includes('title') && e.includes('arg:1') && e.includes('POST'))).toBe(true)
+    })
+
+    it('fails for PATCH/PUT/DELETE too', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'update name',
+            destination: { url: 'https://api.example.com/v1/agents/{{JOAI_AGENT_UUID}}', method: 'PATCH' },
+            inputs: [
+              { name: 'name', as: 'name', type: 'string', position: 'arg:1', source: 'field' },
+            ],
+          } as any,
+        ],
+        vars: { JOAI_AGENT_UUID: 'env:JOAI_AGENT_UUID' },
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(false)
+      expect(result.errors.some((e) => e.includes('arg:1') && e.includes('PATCH'))).toBe(true)
+    })
+
+    it('allows arg:N on GET actions (query strings can encode positional args in other modes)', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'lookup',
+            destination: { url: 'https://api.example.com/v1/lookup', method: 'GET' },
+            inputs: [
+              { name: 'q', as: 'q', type: 'string', position: 'arg:1', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const argErrors = result.errors.filter((e) => e.includes('CLI arg positions'))
+      expect(argErrors).toHaveLength(0)
+    })
+
+    it('allows arg:N on non-HTTP actions (e.g. transfers)', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'transfer',
+            label: 'test',
+            description: 'test',
+            address: 'erd1...',
+            inputs: [{ name: 'amount', type: 'biguint', position: 'arg:1', source: 'field' }],
+          },
+        ],
+      })
+      const result = await validator.validate(warp)
+      const argErrors = result.errors.filter((e) => e.includes('CLI arg positions'))
+      expect(argErrors).toHaveLength(0)
+    })
+  })
 })
