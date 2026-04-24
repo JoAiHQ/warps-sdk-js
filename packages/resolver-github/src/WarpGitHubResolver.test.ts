@@ -52,7 +52,12 @@ const mockManifest = {
 }
 
 describe('WarpGitHubResolver', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Static MemoryCacheStrategy persists across tests — bust it via the
+    // resolver's public invalidate() API so each test starts clean.
+    for (const env of ['mainnet', 'devnet', 'testnet'] as const) {
+      await new WarpGitHubResolver({ env, cache: { type: 'memory' } }).invalidate()
+    }
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockManifest),
@@ -208,5 +213,141 @@ describe('WarpGitHubResolver', () => {
     await resolver2.getByAlias('test-warp')
     // Should not fetch again — served from WarpCache
     expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not reset lastFetchedAt when hydrating from a pre-existing cache entry', async () => {
+    // Regression: a second resolver reading an almost-expired cache entry
+    // used to reset its own TTL window to "now", serving that stale manifest
+    // for another full refreshInterval. Now we use the entry's original
+    // fetchedAt, so the refresh window stays anchored to the real fetch.
+    const nowSpy = jest.spyOn(Date, 'now')
+
+    nowSpy.mockReturnValue(1_000_000)
+    const resolver1 = new WarpGitHubResolver({
+      env: 'testnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+    await resolver1.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // 59 seconds later, a fresh resolver instance comes up and reads the
+    // cache. The cache entry is 59s old — still within the 60s TTL.
+    nowSpy.mockReturnValue(1_059_000)
+    const resolver2 = new WarpGitHubResolver({
+      env: 'testnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+    await resolver2.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // 2 seconds later the cache entry is 61s old — past the refreshInterval.
+    // resolver2 must re-fetch, not serve stale.
+    nowSpy.mockReturnValue(1_061_000)
+    await resolver2.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('ignores cache entries older than refreshInterval', async () => {
+    // A second resolver with a shorter refreshInterval must treat the
+    // existing cache entry as stale even when the underlying WarpCache TTL
+    // (set by the first resolver) has not yet expired.
+    const nowSpy = jest.spyOn(Date, 'now')
+
+    nowSpy.mockReturnValue(1_000_000)
+    // First resolver writes cache with a long TTL (10 min).
+    const warmer = new WarpGitHubResolver({
+      env: 'mainnet',
+      cache: { type: 'memory' },
+      refreshInterval: 10 * 60 * 1000,
+    })
+    await warmer.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    nowSpy.mockReturnValue(1_000_000 + 120_000) // 2 minutes later
+    // Second resolver with 60s interval — cache entry is 120s old → stale.
+    const resolver = new WarpGitHubResolver({
+      env: 'mainnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+    await resolver.getByAlias('test-warp')
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('invalidate() clears in-memory state and forces a network re-fetch', async () => {
+    const resolver = new WarpGitHubResolver({
+      env: 'mainnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+
+    await resolver.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // Within refreshInterval — would normally hit the in-memory manifest.
+    await resolver.invalidate()
+    await resolver.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('invalidate() busts the shared WarpCache entry', async () => {
+    const resolver1 = new WarpGitHubResolver({
+      env: 'mainnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+    await resolver1.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    await resolver1.invalidate()
+
+    // A brand-new resolver would normally hydrate from the shared cache —
+    // after invalidate() the cache is empty, so it must hit the network.
+    const resolver2 = new WarpGitHubResolver({
+      env: 'mainnet',
+      cache: { type: 'memory' },
+      refreshInterval: 60_000,
+    })
+    await resolver2.getByAlias('test-warp')
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('deduplicates concurrent ensureLoaded calls', async () => {
+    // Slow fetch so both getByAlias calls observe pendingFetch.
+    let resolveFetch: (value: unknown) => void = () => {}
+    global.fetch = jest.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = () =>
+            resolve({ ok: true, json: () => Promise.resolve(mockManifest) })
+        })
+    )
+
+    const resolver = new WarpGitHubResolver({ env: 'mainnet' })
+    const p1 = resolver.getByAlias('test-warp')
+    const p2 = resolver.getByAlias('test-warp')
+
+    resolveFetch(null)
+    await Promise.all([p1, p2])
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears pendingFetch even if the fetch throws', async () => {
+    // First call throws — pendingFetch must be cleared so the next call can retry.
+    global.fetch = jest.fn()
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve(mockManifest) })
+
+    const resolver = new WarpGitHubResolver({ env: 'mainnet' })
+    const first = await resolver.getByAlias('test-warp')
+    expect(first).toBeNull()
+
+    const second = await resolver.getByAlias('test-warp')
+    expect(second).not.toBeNull()
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })

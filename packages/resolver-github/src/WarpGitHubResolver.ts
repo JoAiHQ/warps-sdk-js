@@ -43,6 +43,11 @@ const MANIFEST_BRANCH: Record<WarpChainEnv, string> = {
   mainnet: 'main',
 }
 
+type CachedManifest = {
+  manifest: { warps: ManifestEntry[] }
+  fetchedAt: number
+}
+
 export class WarpGitHubResolver implements WarpResolver {
   private manifest: { warps: ManifestEntry[] } | null = null
   private byAlias: Map<string, ManifestEntry> = new Map()
@@ -72,26 +77,55 @@ export class WarpGitHubResolver implements WarpResolver {
     return this.toResolverResult(entry)
   }
 
+  /**
+   * Bust the manifest cache — clears in-memory indexes and removes the
+   * WarpCache entry so the next call re-fetches from GitHub. Useful when a
+   * catalog update must propagate immediately (tests, deploys, manual ops).
+   */
+  async invalidate(): Promise<void> {
+    this.manifest = null
+    this.lastFetchedAt = 0
+    this.byAlias.clear()
+    this.byHash.clear()
+    if (this.cache) {
+      const env = this.config?.env ?? 'mainnet'
+      await this.cache.delete(`${MANIFEST_CACHE_KEY}:${env}`)
+    }
+  }
+
   private async ensureLoaded(): Promise<void> {
     const now = Date.now()
     const interval = this.config?.refreshInterval ?? DEFAULT_REFRESH_INTERVAL
     if (this.manifest && (now - this.lastFetchedAt) < interval) return
     if (this.pendingFetch) return this.pendingFetch
     this.pendingFetch = this.fetchManifest()
-    await this.pendingFetch
-    this.pendingFetch = null
+    try {
+      await this.pendingFetch
+    } finally {
+      this.pendingFetch = null
+    }
   }
 
+  /**
+   * Populates `manifest` from WarpCache if still fresh, else from GitHub.
+   *
+   * Freshness is evaluated against the cache entry's *original* `fetchedAt`,
+   * not the time we read it. Without this, a second resolver instance that
+   * hydrates from an almost-expired cache entry would reset its own
+   * `lastFetchedAt` to now and serve that manifest for another full
+   * `refreshInterval` — up to 2× the intended staleness window.
+   */
   private async fetchManifest(): Promise<void> {
     const env = this.config?.env ?? 'mainnet'
     const cacheKey = `${MANIFEST_CACHE_KEY}:${env}`
+    const interval = this.config?.refreshInterval ?? DEFAULT_REFRESH_INTERVAL
 
     if (this.cache) {
-      const cached = await this.cache.get<{ warps: ManifestEntry[] }>(cacheKey)
-      if (cached) {
-        this.manifest = cached
+      const cached = await this.cache.get<CachedManifest>(cacheKey)
+      if (cached && Date.now() - cached.fetchedAt < interval) {
+        this.manifest = cached.manifest
         this.buildIndexes()
-        this.lastFetchedAt = Date.now()
+        this.lastFetchedAt = cached.fetchedAt
         return
       }
     }
@@ -104,13 +138,15 @@ export class WarpGitHubResolver implements WarpResolver {
         WarpLogger.error(`WarpGitHubResolver: failed to fetch manifest (${response.status})`)
         return
       }
-      this.manifest = (await response.json()) as { warps: ManifestEntry[] }
+      const manifest = (await response.json()) as { warps: ManifestEntry[] }
+      const fetchedAt = Date.now()
+      this.manifest = manifest
       this.buildIndexes()
-      this.lastFetchedAt = Date.now()
+      this.lastFetchedAt = fetchedAt
 
       if (this.cache) {
-        const ttl = Math.round((this.config?.refreshInterval ?? DEFAULT_REFRESH_INTERVAL) / 1000)
-        await this.cache.set(cacheKey, this.manifest, ttl)
+        const ttl = Math.round(interval / 1000)
+        await this.cache.set<CachedManifest>(cacheKey, { manifest, fetchedAt }, ttl)
       }
     } catch (error) {
       WarpLogger.error('WarpGitHubResolver: failed to fetch manifest', error)
