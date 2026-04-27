@@ -113,25 +113,30 @@ export class WarpValidator {
     const errors: ValidationError[] = []
     const varNames = new Set(Object.keys(warp.vars ?? {}))
 
+    // Track url-positioned inputs across the chain. In multi-action warps the
+    // user provides each input once and it stays available for subsequent
+    // actions, so a `url:contactId` declared in action 1 also satisfies the
+    // {{contactId}} in action 2's URL.
+    const chainUrlPositioned = new Set<string>()
+
     for (const action of warp.actions) {
+      const inputs = (action as { inputs?: Array<{ position?: string; name?: string; as?: string }> }).inputs ?? []
+      for (const input of inputs) {
+        if (typeof input.position === 'string' && input.position.startsWith('url:')) {
+          chainUrlPositioned.add(input.position.slice(4))
+        }
+      }
+
       const destination = (action as { destination?: WarpCollectDestinationHttp | string }).destination
       if (!destination || typeof destination === 'string' || !destination.url) continue
 
       const placeholders = this.extractUrlPlaceholders(destination.url)
       if (placeholders.length === 0) continue
 
-      const inputs = (action as { inputs?: Array<{ position?: string; name?: string; as?: string }> }).inputs ?? []
-      const urlPositionedInputNames = new Set(
-        inputs
-          .map((i) => i.position)
-          .filter((p): p is string => typeof p === 'string' && p.startsWith('url:'))
-          .map((p) => p.slice(4))
-      )
-
       for (const placeholder of placeholders) {
         if (varNames.has(placeholder)) continue
         if (UPPERCASE_VAR_PATTERN.test(placeholder)) continue
-        if (!urlPositionedInputNames.has(placeholder)) {
+        if (!chainUrlPositioned.has(placeholder)) {
           errors.push(
             `URL "${destination.url}" contains {{${placeholder}}} but no input has position "url:${placeholder}" (and it is not declared in vars)`
           )

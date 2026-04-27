@@ -12,6 +12,9 @@ export default {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    // mppx ships pure ESM with .js extension — ts-jest can't parse it.
+    // The validator/builder paths under test never reach mppx, so stub it.
+    '^mppx/client$': '<rootDir>/src/__mocks__/mppx-client.ts',
   },
   transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
 }

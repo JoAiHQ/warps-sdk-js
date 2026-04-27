@@ -504,8 +504,11 @@ describe('WarpValidator', () => {
       })
       const result = await validator.validate(warp)
       expect(result.valid).toBe(false)
-      expect(result.errors.some((e) => e.includes('{{activityId}}'))).toBe(true)
-      expect(result.errors.some((e) => e.includes('{{contactId}}'))).toBe(false)
+      // Exactly one URL-position error: activityId is missing url:activityId positioning
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(1)
+      expect(urlErrors[0]).toContain('url:activityId')
+      expect(urlErrors[0]).not.toContain('url:contactId')
     })
 
     it('ignores actions without HTTP destination', async () => {
@@ -518,6 +521,66 @@ describe('WarpValidator', () => {
       const result = await validator.validate(warp)
       const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
       expect(urlErrors).toHaveLength(0)
+    })
+
+    it('passes when a later action reuses a url-positioned input from an earlier action (chain inheritance)', async () => {
+      // In multi-action warps the user provides each input once and it stays
+      // available for subsequent actions. Validator must NOT require
+      // re-declaring url:contactId in every action that uses {{contactId}}.
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'set property',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}/properties', method: 'POST' },
+            inputs: [
+              { name: 'contactId', as: 'contactId', type: 'string', position: 'url:contactId', source: 'field' },
+              { name: 'value', as: 'value', type: 'string', source: 'field', position: 'payload:value' },
+            ],
+          } as any,
+          {
+            type: 'collect',
+            label: 'tag contact',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}', method: 'PUT' },
+            inputs: [
+              // No re-declaration of contactId — should inherit from action 1
+              { name: 'tag', as: 'tag', type: 'string', source: 'field', position: 'payload:tagsAppend[]' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(0)
+    })
+
+    it('still fails for placeholder that no action declares (even chain-wide)', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'collect',
+            label: 'first',
+            destination: { url: 'https://api.example.com/v1/teams/{{teamId}}/contacts', method: 'GET' },
+            inputs: [
+              { name: 'teamId', as: 'teamId', type: 'string', position: 'url:teamId', source: 'field' },
+            ],
+          } as any,
+          {
+            type: 'collect',
+            label: 'second references unknown {{contactId}}',
+            destination: { url: 'https://api.example.com/v1/contacts/{{contactId}}', method: 'PUT' },
+            inputs: [
+              { name: 'name', as: 'name', type: 'string', source: 'field' },
+            ],
+          } as any,
+        ],
+      })
+      const result = await validator.validate(warp)
+      const urlErrors = result.errors.filter((e) => e.includes('no input has position "url:'))
+      expect(urlErrors).toHaveLength(1)
+      expect(urlErrors[0]).toContain('url:contactId')
     })
   })
 

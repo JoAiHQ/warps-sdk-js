@@ -29,6 +29,31 @@ const mockAdapter = {
   },
 }
 
+describe('buildFromPrefixedIdentifier', () => {
+  it('builds url for chainless alias with regular client', () => {
+    const config = createMockConfig({ env: 'devnet', clientUrl: 'https://anyclient.com' })
+    const url = new WarpLinkBuilder(config, [mockAdapter]).buildFromPrefixedIdentifier('@joai-site-provision')
+    expect(url).toBe('https://anyclient.com?warp=%40joai-site-provision')
+  })
+
+  it('builds url for chainless alias with super client', () => {
+    const config = createMockConfig({ env: 'devnet', clientUrl: 'https://devnet.usewarp.to' })
+    const url = new WarpLinkBuilder(config, [mockAdapter]).buildFromPrefixedIdentifier('@joai-site-provision')
+    expect(url).toBe('https://devnet.usewarp.to/%40joai-site-provision')
+  })
+
+  it('builds url for chained identifier', () => {
+    const config = createMockConfig({ env: 'devnet', clientUrl: 'https://anyclient.com' })
+    const url = new WarpLinkBuilder(config, [mockAdapter]).buildFromPrefixedIdentifier('multiversx:mywarp')
+    expect(url).toBe('https://anyclient.com?warp=multiversx%3Amywarp')
+  })
+
+  it('throws when adapter not found for chained identifier', () => {
+    const config = createMockConfig({ env: 'devnet', clientUrl: 'https://anyclient.com' })
+    expect(() => new WarpLinkBuilder(config, []).buildFromPrefixedIdentifier('multiversx:mywarp')).toThrow('Adapter not found for chain: multiversx')
+  })
+})
+
 describe('build', () => {
   it('builds a link with hash', () => {
     const link = new WarpLinkBuilder(Config, [mockAdapter]).build(WarpChainName.Multiversx, 'hash', '123')

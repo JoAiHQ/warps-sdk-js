@@ -1,9 +1,9 @@
 import { WarpChainName, WarpConstants } from '../constants'
-import { ChainAdapter, WarpClientConfig, WarpIdentifierInfo } from '../types'
+import { ChainAdapter, WarpClientConfig } from '../types'
 import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
 import { Warp, WarpNextConfig } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
-import { findWarpAdapterForChain, getWarpActionByIndex, replacePlaceholders } from './general'
+import { getWarpActionByIndex, replacePlaceholders } from './general'
 import { getWarpInfoFromIdentifier } from './identifier'
 
 const URL_PREFIX = 'https://'
@@ -115,17 +115,9 @@ export const getNextInfoForStatus = (
 
 const buildNextUrl = (adapters: ChainAdapter[], identifier: string, config: WarpClientConfig): string => {
   const [rawId, queryString] = identifier.split('?')
-  const info: WarpIdentifierInfo = getWarpInfoFromIdentifier(rawId) ?? {
-    chain: null,
-    type: 'alias',
-    identifier: rawId,
-    identifierBase: rawId,
-  }
-  const adapter = info.chain ? findWarpAdapterForChain(info.chain, adapters) : null
-  if (!adapter) throw new Error(`Adapter not found for chain ${info.chain ?? 'unknown'}`)
-  const baseUrl = new WarpLinkBuilder(config, adapters).build(adapter.chainInfo.name, info.type, info.identifierBase)
+  const baseUrl = new WarpLinkBuilder(config, adapters).buildFromPrefixedIdentifier(rawId)
+  if (!baseUrl) throw new Error(`Cannot build URL for identifier: ${rawId}`)
   if (!queryString) return baseUrl
-
   const url = new URL(baseUrl)
   new URLSearchParams(queryString).forEach((value, key) => url.searchParams.set(key, value))
   return url.toString().replace(/\/\?/, '?')
