@@ -34,7 +34,14 @@ export class WarpLinkBuilder {
 
   buildFromPrefixedIdentifier(identifier: string): string | null {
     const identifierResult = getWarpInfoFromIdentifier(identifier)
-    if (!identifierResult || !identifierResult.chain) return null
+    if (!identifierResult) return null
+    if (!identifierResult.chain) {
+      const clientUrl = this.config.clientUrl || WarpConfig.DefaultClientUrl(this.config.env)
+      const aliasId = WarpConstants.IdentifierAliasMarker + identifierResult.identifierBase
+      return WarpConfig.SuperClientUrls.includes(clientUrl)
+        ? `${clientUrl}/${encodeURIComponent(aliasId)}`
+        : `${clientUrl}?${WarpConstants.IdentifierParamName}=${encodeURIComponent(aliasId)}`
+    }
     const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
     if (!adapter) return null
     return this.build(adapter.chainInfo.name, identifierResult.type, identifierResult.identifierBase)
