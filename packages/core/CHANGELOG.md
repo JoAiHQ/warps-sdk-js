@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.25.1
+
+### Patch Changes
+
+- e6746f3: fix: pass parent meta to inline sub-warp execution so auth vars and envs are available
+
 ## 4.25.0
 
 ### Minor Changes
