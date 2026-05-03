@@ -240,7 +240,6 @@ export class WarpExecutor {
       if (!subWarp) return { tx: null, chain: null, immediateExecution: null, executable: null }
 
       const bag = { ...this.config.vars, ...(meta.envs || {}), ...(meta.queries || {}) }
-      Object.entries(bag).filter(([, v]) => typeof v !== 'string').forEach(([k, v]) => console.log('[warp:inline] non-string bag value', { key: k, type: typeof v, value: v }))
       const resolvedQuery: Record<string, string> = {}
       for (const [key, value] of Object.entries(subWarp.meta?.query || {})) {
         resolvedQuery[key] = value.replace(/\{\{(.+?)\}\}/g, (_match: string, path: string) => String(bag[path.trim()] ?? ''))
