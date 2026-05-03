@@ -75,11 +75,11 @@ export type WarpMeta = {
   createdAt: string
 }
 
-export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpComputeAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction | WarpLoopAction
+export type WarpAction = WarpTransferAction | WarpContractAction | WarpQueryAction | WarpCollectAction | WarpComputeAction | WarpLinkAction | WarpMcpAction | WarpPromptAction | WarpStateAction | WarpMountAction | WarpUnmountAction | WarpLoopAction | WarpInlineAction
 
 export type WarpActionIndex = number
 
-export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'compute' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount' | 'loop'
+export type WarpActionType = 'transfer' | 'contract' | 'query' | 'collect' | 'compute' | 'link' | 'mcp' | 'prompt' | 'state' | 'mount' | 'unmount' | 'loop' | 'inline'
 
 export type WarpTrigger =
   | { type: 'message'; pattern: string }
@@ -135,6 +135,17 @@ export type WarpLoopAction = {
   when?: string
   delay?: number // ms between iterations, default 0
   maxIterations?: number // hard cap, default 10_000
+}
+
+export type WarpInlineAction = {
+  type: 'inline'
+  label: WarpText
+  description?: WarpText | null
+  warp: string
+  inputs?: WarpActionInput[]
+
+  auto?: boolean
+  when?: string
 }
 
 export type WarpTransferAction = {
