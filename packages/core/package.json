@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps",
-  "version": "4.24.1",
+  "version": "4.25.0",
   "description": "",
   "type": "module",
   "types": "./dist/index.d.ts",
