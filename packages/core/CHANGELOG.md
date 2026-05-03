@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.25.3
+
+### Patch Changes
+
+- 32eb9e9: fix: include local-positioned inputs in collect output values for outputBag
+
 ## 4.25.2
 
 ### Patch Changes
