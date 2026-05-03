@@ -55,8 +55,19 @@ export const extractCollectOutput = async (
 
   const { stringValues, nativeValues, output } = extractOutputValues(warp, actionIndex, extractValue)
 
+  const mapped = buildMappedOutput(inputs, serializer)
+  for (const ri of inputs) {
+    if (ri.input.position === 'local') {
+      const key = ri.input.as || ri.input.name
+      if (key && ri.value) {
+        const [, native] = serializer.stringToNative(ri.value)
+        mapped[key] = native
+      }
+    }
+  }
+
   return {
-    values: { string: stringValues, native: nativeValues, mapped: buildMappedOutput(inputs, serializer) },
+    values: { string: stringValues, native: nativeValues, mapped },
     output: await evaluateOutputCommon(warp, output, response, actionIndex, inputs, serializer, config),
   }
 }
