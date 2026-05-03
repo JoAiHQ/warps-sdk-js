@@ -68,7 +68,12 @@ export class WarpClient {
   }
 
   createExecutor(handlers?: ExecutionHandlers): WarpExecutor {
-    return new WarpExecutor(this.config, this.chains, handlers)
+    const executor = new WarpExecutor(this.config, this.chains, handlers)
+    executor.setWarpResolver(async (identifier) => {
+      const result = await this.detectWarp(identifier)
+      return result.warp ?? null
+    })
+    return executor
   }
 
   async detectWarp(urlOrId: string, cache?: WarpCacheConfig): Promise<DetectionResult> {

@@ -131,6 +131,9 @@
         },
         {
           "$ref": "#/definitions/WarpLoopAction"
+        },
+        {
+          "$ref": "#/definitions/WarpInlineAction"
         }
       ]
     },
@@ -350,7 +353,8 @@
         "state",
         "mount",
         "unmount",
-        "loop"
+        "loop",
+        "inline"
       ],
       "type": "string"
     },
@@ -572,6 +576,49 @@
       },
       "type": "object"
     },
+    "WarpInlineAction": {
+      "additionalProperties": false,
+      "properties": {
+        "auto": {
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/definitions/WarpActionInput"
+          },
+          "type": "array"
+        },
+        "label": {
+          "$ref": "#/definitions/WarpText"
+        },
+        "type": {
+          "const": "inline",
+          "type": "string"
+        },
+        "warp": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "label",
+        "warp"
+      ],
+      "type": "object"
+    },
     "WarpLinkAction": {
       "additionalProperties": false,
       "properties": {
@@ -732,7 +779,14 @@
       "additionalProperties": false,
       "properties": {
         "chain": {
-          "$ref": "#/definitions/WarpChainName"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/WarpChainName"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "createdAt": {
           "type": "string"
@@ -819,13 +873,39 @@
           "type": "string"
         },
         {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
           "additionalProperties": false,
           "properties": {
             "error": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
             },
             "success": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
             }
           },
           "type": "object"
@@ -867,6 +947,16 @@
             },
             {
               "type": "null"
+            }
+          ]
+        },
+        "expect": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
             }
           ]
         },

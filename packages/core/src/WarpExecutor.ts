@@ -31,6 +31,7 @@ import {
   WarpCollectAction,
   WarpCollectDestinationHttp,
   WarpExecutable,
+  WarpInlineAction,
   WarpLinkAction,
   WarpLoopAction,
   WarpMcpAction,
@@ -66,6 +67,7 @@ export class WarpExecutor {
   private factory: WarpFactory
   private loopIterations = new Map<string, number>()
   private active = true
+  private warpResolver: ((identifier: string) => Promise<Warp | null>) | null = null
 
   constructor(
     private config: WarpClientConfig,
@@ -74,6 +76,10 @@ export class WarpExecutor {
   ) {
     this.handlers = handlers
     this.factory = new WarpFactory(config, adapters)
+  }
+
+  setWarpResolver(resolver: (identifier: string) => Promise<Warp | null>): void {
+    this.warpResolver = resolver
   }
 
   /** Stops any scheduled loop re-executions. */
@@ -213,6 +219,38 @@ export class WarpExecutor {
 
       await this.handlers?.onMountAction?.({ action, actionIndex, warp })
 
+      return { tx: null, chain: null, immediateExecution: null, executable: null }
+    }
+
+    if (action.type === 'inline') {
+      if (!this.warpResolver) {
+        return { tx: null, chain: null, immediateExecution: null, executable: null }
+      }
+
+      if (action.when) {
+        const chainName = this.adapters[0]?.chainInfo.name || ''
+        const shouldExecute = await this.evaluateWhenCondition(warp, action, inputs, meta, [], chainName)
+        if (!shouldExecute) {
+          return { tx: null, chain: null, immediateExecution: null, executable: null }
+        }
+      }
+
+      const inlineAction = action as WarpInlineAction
+      const subWarp = await this.warpResolver(inlineAction.warp)
+      if (!subWarp) return { tx: null, chain: null, immediateExecution: null, executable: null }
+
+      const bag = { ...this.config.vars, ...(meta.envs || {}), ...(meta.queries || {}) }
+      const resolvedQuery: Record<string, string> = {}
+      for (const [key, value] of Object.entries(subWarp.meta?.query || {})) {
+        resolvedQuery[key] = value.replace(/\{\{(.+?)\}\}/g, (_match: string, path: string) => String(bag[path.trim()] ?? ''))
+      }
+      subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
+      const { immediateExecutions } = await this.execute(subWarp, [])
+      const inlineResult = immediateExecutions[0]
+      if (inlineResult) {
+        await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: inlineResult, tx: null }))
+        return { tx: null, chain: null, immediateExecution: inlineResult, executable: null }
+      }
       return { tx: null, chain: null, immediateExecution: null, executable: null }
     }
 

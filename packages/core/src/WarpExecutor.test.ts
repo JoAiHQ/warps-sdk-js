@@ -1714,7 +1714,7 @@ describe('WarpExecutor — host-managed action types (state, mount, unmount)', (
     return a
   })()
 
-  it.each(['state', 'mount', 'unmount'] as const)('%s returns null immediateExecution without calling the chain adapter', async (type) => {
+  it.each(['state', 'mount', 'unmount'] as const)('%s action returns null immediateExecution', async (type) => {
     const onExecuted = jest.fn()
     const onActionExecuted = jest.fn()
     const executor = new WarpExecutor(config, [adapter], { onExecuted, onActionExecuted })
@@ -1729,5 +1729,140 @@ describe('WarpExecutor — host-managed action types (state, mount, unmount)', (
 
     expect(result.immediateExecutions).toHaveLength(0)
     expect(onActionExecuted).not.toHaveBeenCalled()
+  })
+})
+
+describe('WarpExecutor — inline action', () => {
+  const config: WarpClientConfig = {
+    env: 'devnet',
+    user: { wallets: { multiversx: 'erd1...' } },
+    clientUrl: 'https://anyclient.com',
+    currentUrl: 'https://anyclient.com',
+  }
+  const adapter = (() => {
+    const a = createMockAdapter()
+    a.chain = WarpChainName.Multiversx
+    a.prefix = WarpChainName.Multiversx
+    return a
+  })()
+
+  const subWarp: Warp = {
+    protocol: 'warp:3.0.0',
+    name: 'Sub Action',
+    title: 'Sub',
+    description: '',
+    chain: WarpChainName.Multiversx,
+    actions: [{ type: 'collect', label: 'Sub Step', destination: 'https://example.com/api', inputs: [{ name: 'Name', as: 'name', type: 'string', source: 'field', required: true }] }],
+    meta: { identifier: '@joai/sub-action', chain: WarpChainName.Multiversx, hash: 'h', creator: '', createdAt: '', query: null },
+  }
+
+  const baseWarp: Warp = {
+    protocol: 'warp:3.0.0',
+    name: 'Parent',
+    title: 'Parent',
+    description: '',
+    chain: WarpChainName.Multiversx,
+    actions: [],
+  }
+
+  beforeEach(() => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'contact-123' }) })
+  })
+
+  it('executes an inline sub-warp when resolveWarp is set', async () => {
+    const onExecuted = jest.fn()
+    const onActionExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted, onActionExecuted })
+    executor.setWarpResolver(async () => subWarp)
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(onActionExecuted).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes query params from the warp identifier to the sub-warp', async () => {
+    const onExecuted = jest.fn()
+    const onActionExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted, onActionExecuted })
+    executor.setWarpResolver(async (id) => {
+      expect(id).toBe('@joai/sub-action?name=TestCo')
+      return { ...subWarp, meta: { ...subWarp.meta!, identifier: id, query: { name: 'TestCo' } } }
+    })
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=TestCo' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+  })
+
+  it('resolves template variables in query params from envs', async () => {
+    const onExecuted = jest.fn()
+    const onActionExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted, onActionExecuted })
+    executor.setWarpResolver(async (id) => {
+      expect(id).toBe('@joai/sub-action?name={{customer}}')
+      return { ...subWarp, meta: { ...subWarp.meta!, identifier: id, query: { name: '{{customer}}' } } }
+    })
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name={{customer}}' }] }, [], { envs: { customer: 'Acme GmbH' } })
+    expect(result.immediateExecutions).toHaveLength(1)
+  })
+
+  it('returns empty when resolveWarp is not set', async () => {
+    const onExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted })
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(0)
+  })
+
+  it('skips inline execution when when condition is false', async () => {
+    const onExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted })
+    executor.setWarpResolver(async () => subWarp)
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action', when: 'false' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(0)
+  })
+
+  it('executes inline when when condition is true', async () => {
+    const onExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted })
+    executor.setWarpResolver(async () => subWarp)
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'contact-123' }) })
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action', when: 'true' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+  })
+
+  it('passes output from one inline action to the next via envs', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'contact-123', name: 'Acme GmbH' }) })
+
+    const resolveCalls: string[] = []
+    const resolver = async (id: string) => {
+      resolveCalls.push(id)
+      return { ...subWarp, meta: { ...subWarp.meta!, identifier: id, query: id.includes('?') ? Object.fromEntries(new URLSearchParams(id.split('?')[1])) : {} } }
+    }
+
+    const executor = new WarpExecutor(config, [adapter], {})
+    executor.setWarpResolver(resolver)
+
+    const result = await executor.execute({
+      ...baseWarp,
+      actions: [
+        { type: 'inline', label: 'A', warp: '@joai/step-a?name=First' },
+        { type: 'inline', label: 'B', warp: '@joai/step-b?parent={{name}}' },
+      ],
+    }, [])
+
+    expect(result.immediateExecutions).toHaveLength(2)
+    expect(resolveCalls).toEqual(['@joai/step-a?name=First', '@joai/step-b?parent={{name}}'])
+  })
+
+  it('handles sub-warp not found gracefully', async () => {
+    const onExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onExecuted })
+    executor.setWarpResolver(async () => null)
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/missing' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(0)
   })
 })
