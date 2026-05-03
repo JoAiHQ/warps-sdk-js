@@ -208,14 +208,58 @@ describe('extractCollectOutput', () => {
   })
 
   describe('extractCollectOutput mapped field', () => {
-    // ... (reusing existing tests structure without changes logic-wise, just need them to pass compilation)
     it('maps inputs by name when no inputs provided', async () => {
         const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
         const response = {}
         const { values } = await extractCollectOutput(warp, response, 1, [], new WarpSerializer(), testConfig)
         expect(values.mapped).toEqual({})
     })
-    // ... skipping other detailed input tests for brevity as they are unchanged logic-wise
+  })
+
+  describe('extractCollectOutput with local-positioned inputs', () => {
+    it('includes local-positioned inputs in mapped output', async () => {
+      const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
+      const response = {}
+      const inputs = [
+        { input: { name: 'customer', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
+        { input: { name: 'hours', type: 'string', source: 'field', position: 'local' }, value: 'string:2.5' },
+      ]
+      const { values } = await extractCollectOutput(warp, response, 1, inputs, new WarpSerializer(), testConfig)
+      expect(values.mapped.customer).toBe('Müller GmbH')
+      expect(values.mapped.hours).toBe('2.5')
+    })
+
+    it('includes local inputs alongside non-local inputs', async () => {
+      const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
+      const response = {}
+      const inputs = [
+        { input: { name: 'name', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
+        { input: { name: 'email', type: 'string', source: 'field' }, value: 'string:test@test.com' },
+      ]
+      const { values } = await extractCollectOutput(warp, response, 1, inputs, new WarpSerializer(), testConfig)
+      expect(values.mapped.name).toBe('Müller GmbH')
+      expect(values.mapped.email).toBe('test@test.com')
+    })
+
+    it('skips local inputs with null values', async () => {
+      const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
+      const response = {}
+      const inputs = [
+        { input: { name: 'customer', type: 'string', source: 'field', position: 'local' }, value: null },
+      ]
+      const { values } = await extractCollectOutput(warp, response, 1, inputs, new WarpSerializer(), testConfig)
+      expect(values.mapped).toEqual({})
+    })
+
+    it('excludes local inputs from HTTP body via buildMappedOutput', async () => {
+      const { buildMappedOutput } = await import('./payload.js')
+      const serializer = new WarpSerializer()
+      const resolvedInputs = [
+        { input: { name: 'name', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
+      ]
+      const mapped = buildMappedOutput(resolvedInputs, serializer)
+      expect(mapped).toEqual({})
+    })
   })
 })
 
