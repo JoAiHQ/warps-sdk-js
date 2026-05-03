@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.25.2
+
+### Patch Changes
+
+- 86a3775: fix: add debug logging for inline template resolution to trace [object Object] bug
+
 ## 4.25.1
 
 ### Patch Changes
