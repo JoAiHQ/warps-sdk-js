@@ -216,6 +216,28 @@ describe('WarpExecutor', () => {
     })
   })
 
+  describe('warp vars resolution', () => {
+    it('resolves var references in warp vars before processing actions', async () => {
+      const warpWithVars: Warp = {
+        ...createMockWarp(),
+        chain: WarpChainName.Multiversx,
+        vars: { MY_VAR: 'resolved_value' },
+        actions: [
+          {
+            type: 'inline',
+            warp: '@test-warp?param={{MY_VAR}}',
+            label: 'Test',
+          },
+        ],
+      }
+
+      await executor.execute(warpWithVars, [], {})
+
+      const inlineAction = warpWithVars.actions[0] as any
+      expect(inlineAction.warp).toBe('@test-warp?param=resolved_value')
+    })
+  })
+
   describe('collect actions', () => {
     it('handles collect actions correctly', async () => {
       // Mock successful fetch response
