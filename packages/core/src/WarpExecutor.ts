@@ -49,11 +49,7 @@ export type ExecutionHandlers = {
   onPromptGenerate?: (prompt: string, expect?: string | Record<string, any>) => string | null | Promise<string | null>
   onMountAction?: (params: { action: WarpAction; actionIndex: WarpActionIndex; warp: Warp }) => void | Promise<void>
   onLoop?: (params: { warp: Warp; inputs: string[]; meta: Record<string, any>; delay: number }) => void
-  onActionProcessing?: (params: {
-    action: WarpActionIndex
-    label: WarpText | null
-    warp: string
-  }) => void
+  onActionProcessing?: (label: string) => void
   onActionExecuted?: (params: {
     action: WarpActionIndex
     chain: WarpChainInfo | null
@@ -244,7 +240,7 @@ export class WarpExecutor {
       const subWarp = await this.warpResolver(inlineAction.warp)
       if (!subWarp) return { tx: null, chain: null, immediateExecution: null, executable: null }
 
-      await this.callHandler(() => this.handlers?.onActionProcessing?.({ action: actionIndex, label: inlineAction.label ?? null, warp: inlineAction.warp }))
+      await this.callHandler(() => this.handlers?.onActionProcessing?.(resolvePlatformValue(inlineAction.label ?? inlineAction.warp, this.config.platform)))
 
       const bag = { ...this.config.vars, ...(meta.envs || {}), ...(meta.queries || {}) }
       const resolvedQuery: Record<string, string> = {}
