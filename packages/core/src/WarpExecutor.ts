@@ -109,6 +109,18 @@ export class WarpExecutor {
     const mergedMeta = { ...meta, queries: mergedQueries }
     const outputBag: Record<string, any> = {}
 
+    // Resolve warp vars before processing any actions so inline URLs have resolved values
+    if (warp.vars) {
+      try {
+        const adapter = this.adapters?.find((a) => a.chainInfo.name === (warp.chain || this.adapters[0]?.chainInfo?.name))
+        if (adapter) {
+          const resolved = await new WarpInterpolator(this.config, adapter, this.adapters).apply(warp, mergedMeta)
+          if (resolved?.actions) warp.actions = resolved.actions
+          if (resolved?.meta) warp.meta = resolved.meta
+        }
+      } catch { /* best-effort */ }
+    }
+
     const { index: inputActionIndex } = getWarpInputAction(warp)
 
     for (let index = 1; index <= warp.actions.length; index++) {
