@@ -1,5 +1,13 @@
 # @joai/warps
 
+## 4.26.0
+
+### Minor Changes
+
+- 7bcabaa: - Add onActionProcessing callback to ExecutionHandlers for inline sub-warp thoughts
+  - Resolve warp vars in execute() so inline actions get resolved values
+  - Add tests for warp vars resolution in inline actions
+
 ## 4.25.3
 
 ### Patch Changes
