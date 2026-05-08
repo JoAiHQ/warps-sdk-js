@@ -2,6 +2,7 @@ import Ajv from 'ajv'
 import { WarpConfig } from './config'
 import { getWarpInputAction } from './helpers'
 import { Warp, WarpClientConfig, WarpCollectDestinationHttp, WarpContractAction, WarpQueryAction } from './types'
+import bundledSchema from '../../../warp-schema.json'
 
 type ValidationResult = {
   valid: boolean
@@ -190,9 +191,7 @@ export class WarpValidator {
 
   private async validateSchema(warp: Warp): Promise<ValidationError[]> {
     try {
-      const schemaUrl = this.config.schema?.warp || WarpConfig.LatestWarpSchemaUrl
-      const schemaResponse = await fetch(schemaUrl)
-      const schema = await schemaResponse.json()
+      const schema = this.config.schema?.warp ? await (await fetch(this.config.schema.warp)).json() : bundledSchema
       const ajv = new Ajv({ strict: false })
       const validate = ajv.compile(schema)
 

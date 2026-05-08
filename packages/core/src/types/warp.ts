@@ -265,6 +265,7 @@ export type WarpPromptAction = {
   inputs?: WarpActionInput[]
   expect?: string | Record<string, any>
 
+  as?: string
   auto?: boolean
   next?: WarpNextConfig
   when?: string

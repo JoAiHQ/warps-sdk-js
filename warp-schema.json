@@ -940,6 +940,10 @@
     "WarpPromptAction": {
       "additionalProperties": false,
       "properties": {
+        "as": {
+          "type": "string",
+          "description": "Variable name to store the LLM-generated response in. Defaults to MESSAGE if not set."
+        },
         "auto": {
           "type": "boolean"
         },

@@ -902,7 +902,10 @@ export class WarpExecutor {
 
       if (this.handlers?.onPromptGenerate) {
         const generated = await this.handlers.onPromptGenerate(interpolatedPrompt, preparedAction.expect)
-        if (generated) output.MESSAGE = generated
+        if (generated) {
+          output.MESSAGE = generated
+          if (preparedAction.as) output[preparedAction.as] = generated
+        }
       }
 
       const destination = resolvedInputs.find((i) => i.input.position === 'destination')?.value || null
