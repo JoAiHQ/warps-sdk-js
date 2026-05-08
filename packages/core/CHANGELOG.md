@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 4.27.0
+
+### Minor Changes
+
+- e16bb29: feat: add `silent` property to `WarpInlineAction` to suppress WARP_VIEW output
+
+  Inline actions can now set `silent: true` to skip emitting a WARP_VIEW
+  embed for that step. This is useful for internal sub-warps (e.g.
+  product listing, activity logging) that should not show UI output.
+
 ## 4.26.0
 
 ### Minor Changes
