@@ -601,6 +601,9 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "silent": {
+          "type": "boolean"
+        },
         "type": {
           "const": "inline",
           "type": "string"

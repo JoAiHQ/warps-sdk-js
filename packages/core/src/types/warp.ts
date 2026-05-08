@@ -145,6 +145,7 @@ export type WarpInlineAction = {
   inputs?: WarpActionInput[]
 
   auto?: boolean
+  silent?: boolean
   when?: string
 }
 
