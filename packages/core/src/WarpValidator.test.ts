@@ -680,4 +680,39 @@ describe('WarpValidator', () => {
       expect(argErrors).toHaveLength(0)
     })
   })
+
+  describe('prompt action with as field', () => {
+    it('allows prompt action with as', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'prompt',
+            label: 'Match',
+            prompt: 'Match these: {{materials}}',
+            as: 'productIds',
+          },
+        ],
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+    })
+
+    it('allows prompt action without as (backward compat)', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          {
+            type: 'prompt',
+            label: 'Simple',
+            prompt: 'Hello world',
+          },
+        ],
+      })
+      const result = await validator.validate(warp)
+      expect(result.valid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+    })
+  })
 })

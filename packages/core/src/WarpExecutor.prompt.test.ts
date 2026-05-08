@@ -738,6 +738,61 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(stored).toEqual({ question: 'What is the meaning of life?', answer: 42 })
   })
 
+  it('should store prompt output in named variable when as is set', async () => {
+    const llmHandlers = {
+      ...handlers,
+      onPromptGenerate: jest.fn().mockResolvedValue('["abc123","def456"]'),
+    }
+    const llmExecutor = new WarpExecutor(config, adapters, llmHandlers)
+
+    const promptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Match Products',
+          prompt: 'Match these: {{materials}}',
+          as: 'productIds',
+          inputs: [{ name: 'Materials', as: 'materials', type: 'string', source: 'field' as const, required: true }],
+        },
+      ],
+    }
+
+    const result = await llmExecutor.execute(promptWarp, ['string:Dichtung'])
+    const execution = result.immediateExecutions[0]
+
+    expect(execution.status).toBe('success')
+    expect(execution.output.MESSAGE).toBe('["abc123","def456"]')
+    expect(execution.output.productIds).toBe('["abc123","def456"]')
+    expect(llmHandlers.onPromptGenerate).toHaveBeenCalledWith('Match these: Dichtung', undefined)
+  })
+
+  it('should not set named variable when as is absent (backward compat)', async () => {
+    const llmHandlers = {
+      ...handlers,
+      onPromptGenerate: jest.fn().mockResolvedValue('Generated response'),
+    }
+    const llmExecutor = new WarpExecutor(config, adapters, llmHandlers)
+
+    const promptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Simple',
+          prompt: 'Hello world',
+        },
+      ],
+    }
+
+    const result = await llmExecutor.execute(promptWarp, [])
+    const execution = result.immediateExecutions[0]
+
+    expect(execution.status).toBe('success')
+    expect(execution.output.MESSAGE).toBe('Generated response')
+    expect(execution.output.productIds).toBeUndefined()
+  })
+
   it('should handle onPromptGenerate that throws an error gracefully', async () => {
     const errorHandlers = {
       ...handlers,
