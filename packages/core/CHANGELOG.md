@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.2
+
+### Patch Changes
+
+- ## 50c4470: fix: escape newlines and special characters in when expression placeholder values — prevents SyntaxError when variable contains multiline content
+
 ## 4.29.1
 
 ### Patch Changes
