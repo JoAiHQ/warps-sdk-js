@@ -417,6 +417,16 @@ describe('replacePlaceholders', () => {
   it('should handle query string style placeholders', () => {
     expect(replacePlaceholders('id={{ID}}&amount={{AMOUNT}}', { ID: 'abc', AMOUNT: 0 })).toBe('id=abc&amount=0')
   })
+
+  it('should JSON-stringify object values', () => {
+    const obj = { name: 'Dichtung', price: 1500 }
+    expect(replacePlaceholders('product: {{PRODUCT}}', { PRODUCT: obj })).toBe('product: {"name":"Dichtung","price":1500}')
+  })
+
+  it('should JSON-stringify array values', () => {
+    const arr = ['abc123', 'def456']
+    expect(replacePlaceholders('ids={{IDS}}', { IDS: arr })).toBe('ids=["abc123","def456"]')
+  })
 })
 
 describe('replacePlaceholdersInWhenExpression', () => {
