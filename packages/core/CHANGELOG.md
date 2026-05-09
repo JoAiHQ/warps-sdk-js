@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.1
+
+### Patch Changes
+
+- ## fae9b15: fix: return empty array for type[] when input value is empty — prevents null crashes in downstream consumers
+
 ## 4.29.0
 
 ### Minor Changes
