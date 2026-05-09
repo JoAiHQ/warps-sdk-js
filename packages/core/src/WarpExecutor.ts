@@ -8,6 +8,7 @@ import {
   getWarpActionByIndex,
   getWarpInputAction,
   isWarpActionAutoExecute,
+  replacePlaceholders,
   replacePlaceholdersInWhenExpression,
   resolvePlatformValue,
 } from './helpers'
@@ -881,11 +882,14 @@ export class WarpExecutor {
 
       const platformPrompt = resolvePlatformValue(preparedAction.prompt, this.config.platform)
 
-      const interpolatedPrompt = interpolator.applyInputs(
+      let interpolatedPrompt = interpolator.applyInputs(
         platformPrompt,
         resolvedInputs,
         this.factory.getSerializer()
       )
+      if (meta.envs) {
+        interpolatedPrompt = replacePlaceholders(interpolatedPrompt, meta.envs)
+      }
 
       const extractedInputs = extractResolvedInputValues(resolvedInputs)
       const wallet = getWarpWalletAddressFromConfig(this.config, chain.name)

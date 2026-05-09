@@ -1879,6 +1879,37 @@ describe('WarpExecutor — inline action', () => {
     expect(resolveCalls).toEqual(['@joai/step-a?name=First', '@joai/step-b?parent={{name}}'])
   })
 
+  it('merges sub-warp output into parent envs for subsequent actions', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'prod-42', name: 'Dichtung', price: 1500 }) })
+
+    const resolveCalls: string[] = []
+    const subWarpWithHttp: Warp = {
+      ...subWarp,
+      actions: [{ type: 'collect' as const, label: 'Fetch', destination: { url: 'https://api.example.com/product', method: 'GET' as const }, inputs: [] }],
+      output: { productId: 'out.id', productName: 'out.name' },
+    }
+    const resolver = async (id: string) => {
+      resolveCalls.push(id)
+      return { ...subWarpWithHttp, meta: { ...subWarpWithHttp.meta!, identifier: id, query: id.includes('?') ? Object.fromEntries(new URLSearchParams(id.split('?')[1])) : {} } }
+    }
+
+    const executor = new WarpExecutor(config, [adapter], {})
+    executor.setWarpResolver(resolver)
+
+    const result = await executor.execute({
+      ...baseWarp,
+      actions: [
+        { type: 'inline', label: 'Load', warp: '@joai/fetch-product' },
+        { type: 'prompt', label: 'Use result', prompt: 'The product is: {{productName}} ({{productId}})', as: 'summary' },
+      ],
+    }, [])
+
+    expect(resolveCalls).toHaveLength(1)
+    expect(result.immediateExecutions).toHaveLength(2)
+    const promptExec = result.immediateExecutions[1]
+    expect(promptExec.output.PROMPT).toBe('The product is: Dichtung (prod-42)')
+  })
+
   it('handles sub-warp not found gracefully', async () => {
     const onExecuted = jest.fn()
     const executor = new WarpExecutor(config, [adapter], { onExecuted })
