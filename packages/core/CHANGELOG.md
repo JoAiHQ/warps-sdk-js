@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.3
+
+### Patch Changes
+
+- ## 562cc62: fix: JSON-stringify plain objects in replacePlaceholders — prevents `[object Object]` when passing structured product data to LLM prompts
+
 ## 4.29.2
 
 ### Patch Changes
