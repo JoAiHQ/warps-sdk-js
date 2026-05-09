@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.4
+
+### Patch Changes
+
+- ## 926f170: fix: JSON-stringify arrays in replacePlaceholders — prevents `[object Object]` for product lists and fixes URL encoding for array params
+
 ## 4.29.3
 
 ### Patch Changes
