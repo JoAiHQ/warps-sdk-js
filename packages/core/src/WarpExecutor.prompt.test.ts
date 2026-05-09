@@ -793,6 +793,102 @@ describe('WarpExecutor - Prompt Actions', () => {
     expect(execution.output.productIds).toBeUndefined()
   })
 
+  it('should preserve multiple named outputs from different prompts', async () => {
+    const llmHandlers = {
+      ...handlers,
+      onPromptGenerate: jest.fn()
+        .mockResolvedValueOnce('["abc123"]')
+        .mockResolvedValueOnce('<html>PDF content</html>'),
+    }
+    const llmExecutor = new WarpExecutor(config, adapters, llmHandlers)
+
+    const promptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Match',
+          prompt: 'Match products',
+          as: 'productIds',
+        },
+        {
+          type: 'prompt',
+          label: 'HTML',
+          prompt: 'Generate HTML',
+          as: 'pdfHtml',
+        },
+      ],
+    }
+
+    const result = await llmExecutor.execute(promptWarp, [])
+    const executions = result.immediateExecutions
+
+    expect(executions).toHaveLength(2)
+    expect(executions[0].output.productIds).toBe('["abc123"]')
+    expect(executions[0].output.MESSAGE).toBe('["abc123"]')
+    expect(executions[1].output.pdfHtml).toBe('<html>PDF content</html>')
+    expect(executions[1].output.MESSAGE).toBe('<html>PDF content</html>')
+    expect(executions[1].output.productIds).toBeUndefined()
+  })
+
+  it('should not set named variable when LLM returns null', async () => {
+    const llmHandlers = {
+      ...handlers,
+      onPromptGenerate: jest.fn().mockResolvedValue(null),
+    }
+    const llmExecutor = new WarpExecutor(config, adapters, llmHandlers)
+
+    const promptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Match',
+          prompt: 'Match products',
+          as: 'productIds',
+        },
+      ],
+    }
+
+    const result = await llmExecutor.execute(promptWarp, [])
+    const execution = result.immediateExecutions[0]
+
+    expect(execution.output.MESSAGE).toBeUndefined()
+    expect(execution.output.productIds).toBeUndefined()
+  })
+
+  it('should make named output available to subsequent actions', async () => {
+    const llmHandlers = {
+      ...handlers,
+      onPromptGenerate: jest.fn().mockResolvedValue('["abc123"]'),
+    }
+    const llmExecutor = new WarpExecutor(config, adapters, llmHandlers)
+
+    const promptWarp: Warp = {
+      ...warp,
+      actions: [
+        {
+          type: 'prompt',
+          label: 'Match',
+          prompt: 'Match products',
+          as: 'productIds',
+        },
+        {
+          type: 'prompt',
+          label: 'Use result',
+          prompt: 'Use {{productIds}} in next step',
+        },
+      ],
+    }
+
+    const result = await llmExecutor.execute(promptWarp, [])
+    const executions = result.immediateExecutions
+
+    expect(executions).toHaveLength(2)
+    expect(executions[0].output.productIds).toBe('["abc123"]')
+    expect(executions[1].output.PROMPT).toBe('Use ["abc123"] in next step')
+  })
+
   it('should handle onPromptGenerate that throws an error gracefully', async () => {
     const errorHandlers = {
       ...handlers,

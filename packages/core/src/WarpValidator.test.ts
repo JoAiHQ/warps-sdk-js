@@ -428,6 +428,22 @@ describe('WarpValidator', () => {
       expect(result.valid).toBe(false)
       expect(result.errors[0]).toContain('Schema validation failed')
     })
+
+    it('uses bundled schema by default without fetching', async () => {
+      const fetchSpy = jest.spyOn(global, 'fetch')
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [
+          { type: 'prompt', label: 'Match', prompt: 'Match products', as: 'productIds' },
+        ],
+      })
+      const result = await validator.validate(warp)
+
+      expect(result.valid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+      expect(fetchSpy).not.toHaveBeenCalled()
+      fetchSpy.mockRestore()
+    })
   })
 
   describe('validateUrlPlaceholdersHaveInputs', () => {
