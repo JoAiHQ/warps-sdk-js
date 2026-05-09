@@ -97,6 +97,10 @@ export class WarpSerializer {
       }
     }
 
+    if (type === 'json') {
+      return type + WarpConstants.ArgParamsSeparator + JSON.stringify(value)
+    }
+
     // Default behavior for standard types
     return type + WarpConstants.ArgParamsSeparator + (value?.toString() ?? '')
   }
@@ -181,6 +185,10 @@ export class WarpSerializer {
         const [_, nativeValue] = this.stringToNative(`${resolvedType}:${val}`)
         return [baseType as WarpActionInputType, nativeValue]
       }
+    }
+
+    if (baseType === 'json') {
+      try { return [baseType, JSON.parse(val)] } catch { return [baseType, val] }
     }
 
     // UI-only input types that serialize as plain strings
