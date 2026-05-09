@@ -322,6 +322,22 @@ describe('WarpSerializer', () => {
       expect(serializer.stringToNative('file:https://example.com/doc.pdf')).toEqual(['file', 'https://example.com/doc.pdf'])
     })
 
+    it('deserializes json input type', () => {
+      expect(serializer.stringToNative('json:["abc123","def456"]')).toEqual(['json', ['abc123', 'def456']])
+    })
+
+    it('serializes json output type', () => {
+      const result = serializer.nativeToString('json', ['abc123', 'def456'])
+      expect(result).toBe('json:["abc123","def456"]')
+    })
+
+    it('roundtrips json values through nativeToString and stringToNative', () => {
+      const serialized = serializer.nativeToString('json', ['abc123', 'def456'])
+      const [type, value] = serializer.stringToNative(serialized)
+      expect(type).toBe('json')
+      expect(value).toEqual(['abc123', 'def456'])
+    })
+
     it('deserializes token values via type registry', () => {
       // Mock type registry with token handler
       const mockTypeRegistry = {
