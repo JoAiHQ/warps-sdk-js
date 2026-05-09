@@ -536,12 +536,34 @@ describe('WarpSerializer', () => {
         expect(serializer.nativeToString('string[]', [])).toBe('string[]:[]')
       })
 
+      it('deserializes empty string[] value as empty array', () => {
+        expect(serializer.stringToNative('string[]:')).toEqual(['string[]', []])
+      })
+
       it('falls back to raw string on malformed JSON', () => {
         expect(serializer.stringToNative('string[]:not-json')).toEqual(['string[]', 'not-json'])
       })
 
       it('serializes address[]', () => {
         expect(serializer.nativeToString('address[]', ['erd1abc', 'erd1def'])).toBe('address[]:["erd1abc","erd1def"]')
+      })
+
+      it('deserializes uint32[] empty value as empty array', () => {
+        expect(serializer.stringToNative('uint32[]:')).toEqual(['uint32[]', []])
+      })
+
+      it('deserializes number[] empty value as empty array', () => {
+        expect(serializer.stringToNative('number[]:')).toEqual(['number[]', []])
+      })
+
+      it('deserializes bool[] empty value as empty array', () => {
+        expect(serializer.stringToNative('bool[]:')).toEqual(['bool[]', []])
+      })
+
+      it('preserves type tag on roundtrip', () => {
+        const serialized = serializer.nativeToString('uint32[]', [1, 2])
+        const [type] = serializer.stringToNative(serialized)
+        expect(type).toBe('uint32[]')
       })
     })
   })

@@ -119,6 +119,7 @@ export class WarpSerializer {
     const val = parts.slice(1).join(WarpConstants.ArgParamsSeparator)
 
     if (arrayOfRe.test(baseType)) {
+      if (!val) return [baseType as WarpActionInputType, []]
       try { return [baseType as WarpActionInputType, JSON.parse(val)] } catch { return [baseType as WarpActionInputType, val] }
     }
 
