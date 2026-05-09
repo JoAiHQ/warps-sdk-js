@@ -28,7 +28,7 @@ export const WarpConfig = {
 
   AvailableActionInputSources: ['field', 'query', WarpConstants.Source.UserWallet, 'hidden'] as WarpActionInputSource[],
 
-  AvailableActionInputTypes: ['string', 'json', 'uint8', 'uint16', 'uint32', 'uint64', 'biguint', 'boolean', 'address'] as WarpActionInputType[],
+  AvailableActionInputTypes: ['string', 'string[]', 'json', 'uint8', 'uint16', 'uint32', 'uint64', 'biguint', 'boolean', 'address'] as WarpActionInputType[],
 
   AvailableActionInputPositions: [
     'receiver',

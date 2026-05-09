@@ -9,6 +9,8 @@ import {
 } from './types'
 
 /** Maps common alternative type names to their canonical WarpInputTypes equivalents. */
+const arrayOfRe = /^(.+)\[\]$/
+
 const TypeAliases: Record<string, string> = {
   boolean: WarpInputTypes.Bool,
   integer: WarpInputTypes.Uint32,
@@ -25,6 +27,9 @@ export class WarpSerializer {
 
   nativeToString(type: WarpActionInputType, value: WarpNativeValue): string {
     type = (TypeAliases[type] ?? type) as WarpActionInputType
+    if (arrayOfRe.test(type)) {
+      return type + WarpConstants.ArgParamsSeparator + JSON.stringify(value)
+    }
     if (type === WarpInputTypes.Tuple && Array.isArray(value)) {
       if (value.length === 0) return type + WarpConstants.ArgParamsSeparator
       if (value.every((v) => typeof v === 'string' && v.includes(WarpConstants.ArgParamsSeparator))) {
@@ -47,24 +52,27 @@ export class WarpSerializer {
       })
       return `${type}(${structName})${WarpConstants.ArgParamsSeparator}${fields.join(WarpConstants.ArgListSeparator)}`
     }
-    if (type === WarpInputTypes.Vector && Array.isArray(value)) {
+    if (type.startsWith(WarpInputTypes.Vector) && Array.isArray(value)) {
       if (value.length === 0) return `${type}${WarpConstants.ArgParamsSeparator}`
-      if (value.every((v) => typeof v === 'string' && v.includes(WarpConstants.ArgParamsSeparator))) {
-        const firstValue = value[0] as string
-        const colonIndex = firstValue.indexOf(WarpConstants.ArgParamsSeparator)
-        const baseType = firstValue.substring(0, colonIndex)
-        const values = value.map((v) => {
-          const colonIndex = (v as string).indexOf(WarpConstants.ArgParamsSeparator)
-          const val = (v as string).substring(colonIndex + 1)
-          return baseType.startsWith(WarpInputTypes.Tuple)
-            ? val.replace(WarpConstants.ArgListSeparator, WarpConstants.ArgCompositeSeparator)
-            : val
-        })
-        // Use struct separator for structs, comma for other types
-        const separator = baseType.startsWith(WarpInputTypes.Struct) ? WarpConstants.ArgStructSeparator : WarpConstants.ArgListSeparator
-        return type + WarpConstants.ArgParamsSeparator + baseType + WarpConstants.ArgParamsSeparator + values.join(separator)
+      const hasExplicitElementType = type.includes(WarpConstants.IdentifierParamSeparator)
+      const elementType = hasExplicitElementType
+        ? type.split(WarpConstants.IdentifierParamSeparator)[1]
+        : (typeof value[0] === 'string' && value[0].includes(WarpConstants.ArgParamsSeparator)
+          ? value[0].substring(0, value[0].indexOf(WarpConstants.ArgParamsSeparator))
+          : null)
+      if (!elementType) {
+        return type + WarpConstants.ArgParamsSeparator + value.join(WarpConstants.ArgListSeparator)
       }
-      return type + WarpConstants.ArgParamsSeparator + value.join(WarpConstants.ArgListSeparator)
+      const values = value.map((v) => {
+        if (typeof v === 'string' && v.includes(WarpConstants.ArgParamsSeparator)) {
+          const colonIndex = v.indexOf(WarpConstants.ArgParamsSeparator)
+          const vv = v.substring(colonIndex + 1)
+          return elementType.startsWith(WarpInputTypes.Tuple) ? vv.replace(WarpConstants.ArgListSeparator, WarpConstants.ArgCompositeSeparator) : vv
+        }
+        return String(v)
+      })
+      const separator = elementType.startsWith(WarpInputTypes.Struct) ? WarpConstants.ArgStructSeparator : WarpConstants.ArgListSeparator
+      return type + WarpConstants.ArgParamsSeparator + elementType + WarpConstants.ArgParamsSeparator + values.join(separator)
     }
     if (type === WarpInputTypes.Asset && typeof value === 'object' && value && 'identifier' in value && 'amount' in value) {
       return 'decimals' in value
@@ -107,8 +115,12 @@ export class WarpSerializer {
 
   stringToNative(value: string): [WarpActionInputType, WarpNativeValue] {
     const parts = value.split(WarpConstants.ArgParamsSeparator)
-    const baseType = TypeAliases[parts[0]] ?? parts[0]
+    let baseType = TypeAliases[parts[0]] ?? parts[0]
     const val = parts.slice(1).join(WarpConstants.ArgParamsSeparator)
+
+    if (arrayOfRe.test(baseType)) {
+      try { return [baseType as WarpActionInputType, JSON.parse(val)] } catch { return [baseType as WarpActionInputType, val] }
+    }
 
     if (baseType === 'null') {
       return [baseType, null]

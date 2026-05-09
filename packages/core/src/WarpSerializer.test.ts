@@ -487,5 +487,46 @@ describe('WarpSerializer', () => {
       expect(serializer.nativeToString('boolean' as any, true)).toBe('bool:true')
       expect(serializer.nativeToString('integer' as any, 42)).toBe('uint32:42')
     })
+
+    describe('array type syntax (type[])', () => {
+      it('deserializes string[]', () => {
+        expect(serializer.stringToNative('string[]:["abc","def"]')).toEqual(['string[]', ['abc', 'def']])
+      })
+
+      it('serializes string[]', () => {
+        expect(serializer.nativeToString('string[]', ['abc', 'def'])).toBe('string[]:["abc","def"]')
+      })
+
+      it('roundtrips string[]', () => {
+        const serialized = serializer.nativeToString('string[]', ['abc', 'def'])
+        const [type, value] = serializer.stringToNative(serialized)
+        expect(type).toBe('string[]')
+        expect(value).toEqual(['abc', 'def'])
+      })
+
+      it('deserializes number[]', () => {
+        expect(serializer.stringToNative('number[]:[42,99]')).toEqual(['number[]', [42, 99]])
+      })
+
+      it('serializes number[]', () => {
+        expect(serializer.nativeToString('number[]', [42, 99])).toBe('number[]:[42,99]')
+      })
+
+      it('deserializes bool[]', () => {
+        expect(serializer.stringToNative('bool[]:[true,false]')).toEqual(['bool[]', [true, false]])
+      })
+
+      it('serializes bool[]', () => {
+        expect(serializer.nativeToString('bool[]', [true, false])).toBe('bool[]:[true,false]')
+      })
+
+      it('deserializes uint32[]', () => {
+        expect(serializer.stringToNative('uint32[]:[1,2,3]')).toEqual(['uint32[]', [1, 2, 3]])
+      })
+
+      it('serializes uint32[]', () => {
+        expect(serializer.nativeToString('uint32[]', [1, 2, 3])).toBe('uint32[]:[1,2,3]')
+      })
+    })
   })
 })

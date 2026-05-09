@@ -275,6 +275,7 @@ export type WarpActionInputSource = 'field' | 'query' | 'user:wallet' | 'hidden'
 
 export type BaseWarpActionInputType =
   | 'string'
+  | 'string[]'
   | 'json'
   | 'uint8'
   | 'uint16'
