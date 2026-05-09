@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.5
+
+### Patch Changes
+
+- ## cb486df: fix: pass accumulated inline action outputs (outputBag) to prompt envs — enables `{{variable}}` from previous steps to resolve in prompt templates
+
 ## 4.29.4
 
 ### Patch Changes
