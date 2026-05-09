@@ -527,6 +527,22 @@ describe('WarpSerializer', () => {
       it('serializes uint32[]', () => {
         expect(serializer.nativeToString('uint32[]', [1, 2, 3])).toBe('uint32[]:[1,2,3]')
       })
+
+      it('deserializes empty string[]', () => {
+        expect(serializer.stringToNative('string[]:[]')).toEqual(['string[]', []])
+      })
+
+      it('serializes empty string[]', () => {
+        expect(serializer.nativeToString('string[]', [])).toBe('string[]:[]')
+      })
+
+      it('falls back to raw string on malformed JSON', () => {
+        expect(serializer.stringToNative('string[]:not-json')).toEqual(['string[]', 'not-json'])
+      })
+
+      it('serializes address[]', () => {
+        expect(serializer.nativeToString('address[]', ['erd1abc', 'erd1def'])).toBe('address[]:["erd1abc","erd1def"]')
+      })
     })
   })
 })
