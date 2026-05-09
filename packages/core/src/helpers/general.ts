@@ -82,7 +82,7 @@ export const replacePlaceholdersInWhenExpression = (expression: string, bag: Rec
     const value = bag[p1]
     if (value === undefined || value === null) return ''
     if (typeof value === 'string') {
-      return `'${value.replace(/'/g, "\\'")}'`
+      return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')}'`
     }
     return String(value)
   })

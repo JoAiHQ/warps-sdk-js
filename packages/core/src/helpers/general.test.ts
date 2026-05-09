@@ -1,6 +1,6 @@
 import { WarpChainName } from '../constants'
 import { Warp, WarpAction, WarpActionType, WarpMeta } from '../types'
-import { doesWarpRequireWallet, evaluateWhenCondition, getWarpInputAction, isWarpActionAutoExecute, replacePlaceholders } from './general'
+import { doesWarpRequireWallet, evaluateWhenCondition, getWarpInputAction, isWarpActionAutoExecute, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
 
 describe('getWarpInputAction', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
@@ -416,6 +416,55 @@ describe('replacePlaceholders', () => {
 
   it('should handle query string style placeholders', () => {
     expect(replacePlaceholders('id={{ID}}&amount={{AMOUNT}}', { ID: 'abc', AMOUNT: 0 })).toBe('id=abc&amount=0')
+  })
+})
+
+describe('replacePlaceholdersInWhenExpression', () => {
+  it('replaces a simple string placeholder wrapped in quotes', () => {
+    expect(replacePlaceholdersInWhenExpression("{{val}} !== '[]'", { val: 'test' })).toBe("'test' !== '[]'")
+  })
+
+  it('escapes single quotes in the value', () => {
+    expect(replacePlaceholdersInWhenExpression('{{val}} !== other', { val: "it's" })).toBe("'it\\'s' !== other")
+  })
+
+  it('escapes newlines in the value', () => {
+    expect(replacePlaceholdersInWhenExpression('{{val}} !== other', { val: "line1\nline2" })).toBe("'line1\\nline2' !== other")
+  })
+
+  it('escapes backslashes in the value', () => {
+    expect(replacePlaceholdersInWhenExpression('{{val}} !== other', { val: "a\\b" })).toBe("'a\\\\b' !== other")
+  })
+
+  it('returns empty string for undefined value', () => {
+    expect(replacePlaceholdersInWhenExpression('{{val}} !== other', {})).toBe(" !== other")
+  })
+
+  it('wraps string values in single quotes', () => {
+    expect(replacePlaceholdersInWhenExpression("{{val}} === 'test'", { val: 'hello' })).toBe("'hello' === 'test'")
+  })
+})
+
+describe('evaluateWhenCondition', () => {
+  it('returns true for truthy expressions', () => {
+    expect(evaluateWhenCondition('true')).toBe(true)
+    expect(evaluateWhenCondition('1')).toBe(true)
+    expect(evaluateWhenCondition("'hello' === 'hello'")).toBe(true)
+  })
+
+  it('returns false for falsy expressions', () => {
+    expect(evaluateWhenCondition('false')).toBe(false)
+    expect(evaluateWhenCondition('0')).toBe(false)
+    expect(evaluateWhenCondition("'hello' === 'world'")).toBe(false)
+  })
+
+  it('evaluates string inequality', () => {
+    expect(evaluateWhenCondition("'[]' !== '[]'")).toBe(false)
+    expect(evaluateWhenCondition("'[\"abc\"]' !== '[]'")).toBe(true)
+  })
+
+  it('returns true for empty expression', () => {
+    expect(evaluateWhenCondition('')).toBe(true)
   })
 })
 
