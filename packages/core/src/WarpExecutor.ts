@@ -280,7 +280,7 @@ export class WarpExecutor {
     }
 
     if (action.type === 'collect') {
-      const result = await this.executeCollect(executable)
+      const result = await this.executeCollect(executable, undefined, meta.envs)
       if (result.status === 'success') {
         await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: result, tx: null }))
         return { tx: null, chain: null, immediateExecution: result, executable }
@@ -418,7 +418,7 @@ export class WarpExecutor {
     }
   }
 
-  private async executeCollect(executable: WarpExecutable, extra?: Record<string, any>): Promise<WarpActionExecutionResult> {
+  private async executeCollect(executable: WarpExecutable, extra?: Record<string, any>, envs?: Record<string, any>): Promise<WarpActionExecutionResult> {
     const wallet = getWarpWalletAddressFromConfig(this.config, executable.chain.name)
     const collectAction = getWarpActionByIndex(executable.warp, executable.action) as WarpCollectAction
 
@@ -426,7 +426,7 @@ export class WarpExecutor {
     const payload = buildMappedOutput(executable.resolvedInputs, serializer)
 
     if (collectAction.destination && typeof collectAction.destination === 'object' && 'url' in collectAction.destination) {
-      return await this.doHttpRequest(executable, collectAction.destination, wallet, payload, extra)
+      return await this.doHttpRequest(executable, collectAction.destination, wallet, payload, extra, envs)
     }
 
     const { values, output } = await extractCollectOutput(
@@ -463,12 +463,13 @@ export class WarpExecutor {
     destination: WarpCollectDestinationHttp,
     wallet: string | null,
     payload: any,
-    extra: Record<string, any> | undefined
+    extra: Record<string, any> | undefined,
+    envs?: Record<string, any>
   ): Promise<WarpActionExecutionResult> {
     const interpolator = new WarpInterpolator(this.config, findWarpAdapterForChain(executable.chain.name, this.adapters), this.adapters)
     const serializer = this.factory.getSerializer()
 
-    const { url, method, headers, body } = await buildHttpRequest(
+    let { url, method, headers, body } = await buildHttpRequest(
       interpolator,
       destination,
       executable,
@@ -478,6 +479,10 @@ export class WarpExecutor {
       extra,
       async (params) => await this.callHandler(() => this.handlers?.onSignRequest?.(params))
     )
+
+    if (envs) {
+      url = replacePlaceholders(url, envs)
+    }
 
     WarpLogger.debug('WarpExecutor: Executing HTTP collect', { url, method, headers, body })
 
