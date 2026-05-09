@@ -74,6 +74,7 @@ export const replacePlaceholders = (message: string, bag: Record<string, any>) =
   message.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
     const value = bag[p1]
     if (value === undefined || value === null) return ''
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) return JSON.stringify(value)
     return String(value)
   })
 
