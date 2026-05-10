@@ -453,6 +453,14 @@ describe('replacePlaceholdersInWhenExpression', () => {
   it('wraps string values in single quotes', () => {
     expect(replacePlaceholdersInWhenExpression("{{val}} === 'test'", { val: 'hello' })).toBe("'hello' === 'test'")
   })
+
+  it('JSON-stringifies arrays and wraps in quotes', () => {
+    expect(replacePlaceholdersInWhenExpression("{{val}} !== '[]'", { val: [] })).toBe("'[]' !== '[]'")
+  })
+
+  it('JSON-stringifies non-empty arrays', () => {
+    expect(replacePlaceholdersInWhenExpression("{{val}} !== '[]'", { val: ['abc'] })).toBe("'[\"abc\"]' !== '[]'")
+  })
 })
 
 describe('evaluateWhenCondition', () => {

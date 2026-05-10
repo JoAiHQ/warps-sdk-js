@@ -85,6 +85,9 @@ export const replacePlaceholdersInWhenExpression = (expression: string, bag: Rec
     if (typeof value === 'string') {
       return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')}'`
     }
+    if (typeof value === 'object' && value !== null) {
+      return `'${JSON.stringify(value).replace(/'/g, "\\'")}'`
+    }
     return String(value)
   })
 }
