@@ -1919,3 +1919,44 @@ describe('WarpExecutor — inline action', () => {
     expect(result.immediateExecutions).toHaveLength(0)
   })
 })
+
+describe('WarpExecutor — collect action with envs in URL', () => {
+  jest.resetAllMocks()
+
+  const envConfig: WarpClientConfig = {
+    env: 'devnet',
+    user: { wallets: { multiversx: 'erd1...' } },
+    clientUrl: 'https://anyclient.com',
+    currentUrl: 'https://anyclient.com',
+  }
+  const envAdapter = createMockAdapter(WarpChainName.Multiversx)
+
+  it('resolves {{envs}} from meta.envs in collect action destination URL', async () => {
+    mockFetch.mockReset()
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ data: [{ id: 'prod-42', name: 'Dichtung' }] }) })
+
+    const collectWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Collect Envs',
+      title: 'Test',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [
+        {
+          type: 'collect' as const,
+          label: 'Fetch',
+          destination: { url: 'https://{{API_BASE}}/v1/products', method: 'GET' as const },
+          inputs: [],
+        } as WarpCollectAction,
+      ],
+    }
+
+    const executor = new WarpExecutor(envConfig, [envAdapter], {})
+    const result = await executor.execute(collectWarp, [], { envs: { API_BASE: 'devnet-api.joai.ai' } })
+
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    const fetchUrl = mockFetch.mock.calls[0][0]
+    expect(fetchUrl).toBe('https://devnet-api.joai.ai/v1/products')
+  })
+})
