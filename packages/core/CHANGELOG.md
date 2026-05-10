@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.6
+
+### Patch Changes
+
+- ## 8bfc8c8: fix: pass envs to destination URL resolution in collect actions — allows `{{JOAI_API_BASE}}` in private warp URLs
+
 ## 4.29.5
 
 ### Patch Changes
