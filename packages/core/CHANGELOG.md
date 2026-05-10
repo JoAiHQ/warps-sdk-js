@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.29.7
+
+### Patch Changes
+
+- ## 0428b76: fix: JSON-stringify arrays in when expression placeholders — prevents SyntaxError when comparing `[]` (empty array) in `when` conditions
+
 ## 4.29.6
 
 ### Patch Changes
