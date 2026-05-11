@@ -1,25 +1,57 @@
 import { WarpChainName, WarpConstants } from '../constants'
 import { ChainAdapter, WarpClientConfig } from '../types'
 import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
-import { Warp, WarpNextConfig } from '../types/warp'
+import { Warp, WarpNextConfig, WarpNextEntry } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
-import { getWarpActionByIndex, replacePlaceholders } from './general'
+import { evaluateWhenCondition, getWarpActionByIndex, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
 import { getWarpInfoFromIdentifier } from './identifier'
 
 const URL_PREFIX = 'https://'
 
-/** Resolve a next config into an array of strings for the given path. */
-export const resolveNextStrings = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error'): string[] | null => {
-  if (!raw) return null
-  if (typeof raw === 'string') return path === 'success' ? [raw] : null
-  if (Array.isArray(raw)) return path === 'success' ? raw : null
-  const val = raw[path]
-  if (!val) return null
-  return Array.isArray(val) ? val : [val]
+/**
+ * Normalize a WarpNextEntry to a string identifier.
+ * Returns null if the entry has a `when` condition that evaluates to false.
+ */
+const entryToIdentifier = (entry: WarpNextEntry, output?: WarpExecutionOutput): string | null => {
+  if (typeof entry === 'string') return entry
+  if (entry.when && output) {
+    const interpolatedWhen = replacePlaceholdersInWhenExpression(entry.when, output)
+    if (!evaluateWhenCondition(interpolatedWhen)) return null
+  }
+  return entry.identifier
 }
 
-export const resolveNextString = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error'): string | null => {
-  return resolveNextStrings(raw, path)?.[0] ?? null
+const isNextConfigObject = (raw: WarpNextConfig): raw is { success?: WarpNextEntry | WarpNextEntry[]; error?: WarpNextEntry | WarpNextEntry[] } =>
+  typeof raw === 'object' && !Array.isArray(raw) && !('identifier' in raw)
+
+/** Resolve a next config into an array of strings for the given path, optionally filtering by when conditions. */
+export const resolveNextStrings = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error', output?: WarpExecutionOutput): string[] | null => {
+  if (!raw) return null
+
+  let entries: WarpNextEntry[]
+  if (typeof raw === 'string') {
+    entries = path === 'success' ? [raw] : []
+  } else if (Array.isArray(raw)) {
+    entries = path === 'success' ? raw : []
+  } else if (isNextConfigObject(raw)) {
+    const val = raw[path]
+    entries = val ? (Array.isArray(val) ? val : [val]) : []
+  } else {
+    entries = path === 'success' ? [raw] : []
+  }
+
+  if (entries.length === 0) return null
+
+  const result: string[] = []
+  for (const entry of entries) {
+    const identifier = entryToIdentifier(entry, output)
+    if (identifier !== null) result.push(identifier)
+  }
+  return result.length > 0 ? result : null
+}
+
+export const resolveNextString = (raw: WarpNextConfig | null | undefined, path: 'success' | 'error', output?: WarpExecutionOutput): string | null => {
+  return resolveNextStrings(raw, path, output)?.[0] ?? null
 }
 
 const resolveNextSingle = (
@@ -90,7 +122,7 @@ export const getNextInfo = (
   output: WarpExecutionOutput
 ): WarpExecutionNextInfo | null => {
   const rawNext = (getWarpActionByIndex(warp, actionIndex) as { next?: WarpNextConfig })?.next || warp.next || null
-  const nexts = resolveNextStrings(rawNext, 'success')
+  const nexts = resolveNextStrings(rawNext, 'success', output)
   if (!nexts) return null
   const result = nexts.flatMap((next) => resolveNextSingle(config, adapters, warp, next, output))
   return result.length > 0 ? result : null
@@ -107,7 +139,7 @@ export const getNextInfoForStatus = (
 ): WarpExecutionNextInfo | null => {
   const path = status === 'error' ? 'error' : 'success'
   const rawNext = (getWarpActionByIndex(warp, actionIndex) as { next?: WarpNextConfig })?.next || warp.next || null
-  const nexts = resolveNextStrings(rawNext, path)
+  const nexts = resolveNextStrings(rawNext, path, output)
   if (!nexts) return null
   const result = nexts.flatMap((next) => resolveNextSingle(config, adapters, warp, next, output))
   return result.length > 0 ? result : null

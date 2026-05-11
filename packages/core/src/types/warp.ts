@@ -37,7 +37,8 @@ export type WarpMessageName = string
 
 export type WarpSchedule = 'minutely' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly'
 
-export type WarpNextConfig = string | string[] | { success?: string | string[]; error?: string | string[] }
+export type WarpNextEntry = string | { identifier: string; when?: string }
+export type WarpNextConfig = WarpNextEntry | WarpNextEntry[] | { success?: WarpNextEntry | WarpNextEntry[]; error?: WarpNextEntry | WarpNextEntry[] }
 
 export type Warp = {
   protocol: string
