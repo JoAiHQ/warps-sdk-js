@@ -258,7 +258,12 @@ export class WarpExecutor {
       const bag = { ...this.config.vars, ...(meta.envs || {}), ...(meta.queries || {}) }
       const resolvedQuery: Record<string, string> = {}
       for (const [key, value] of Object.entries(subWarp.meta?.query || {})) {
-        resolvedQuery[key] = value.replace(/\{\{(.+?)\}\}/g, (_match: string, path: string) => String(bag[path.trim()] ?? ''))
+        resolvedQuery[key] = value.replace(/\{\{(.+?)\}\}/g, (_match: string, path: string) => {
+          const v = bag[path.trim()]
+          if (v === undefined || v === null) return ''
+          if (typeof v === 'object') return JSON.stringify(v)
+          return String(v)
+        })
       }
       subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
