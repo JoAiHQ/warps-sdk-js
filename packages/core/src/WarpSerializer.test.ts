@@ -544,6 +544,21 @@ describe('WarpSerializer', () => {
         expect(serializer.stringToNative('string[]:not-json')).toEqual(['string[]', 'not-json'])
       })
 
+      it('serializes string[] from JSON-string value (query param flow)', () => {
+        expect(serializer.nativeToString('string[]', '["abc","def"]')).toBe('string[]:["abc","def"]')
+      })
+
+      it('roundtrips string[] through nativeToString from JSON-string value', () => {
+        const serialized = serializer.nativeToString('string[]', '["abc","def"]')
+        const [type, value] = serializer.stringToNative(serialized)
+        expect(type).toBe('string[]')
+        expect(value).toEqual(['abc', 'def'])
+      })
+
+      it('serializes empty string[] from empty JSON-string value', () => {
+        expect(serializer.nativeToString('string[]', '[]')).toBe('string[]:[]')
+      })
+
       it('serializes address[]', () => {
         expect(serializer.nativeToString('address[]', ['erd1abc', 'erd1def'])).toBe('address[]:["erd1abc","erd1def"]')
       })

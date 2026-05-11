@@ -8,6 +8,10 @@ import {
   WarpStructValue,
 } from './types'
 
+const tryParseJson = (value: string): any | null => {
+  try { return JSON.parse(value) } catch { return null }
+}
+
 /** Maps common alternative type names to their canonical WarpInputTypes equivalents. */
 const arrayOfRe = /^(.+)\[\]$/
 
@@ -28,7 +32,8 @@ export class WarpSerializer {
   nativeToString(type: WarpActionInputType, value: WarpNativeValue): string {
     type = (TypeAliases[type] ?? type) as WarpActionInputType
     if (arrayOfRe.test(type)) {
-      return type + WarpConstants.ArgParamsSeparator + JSON.stringify(value)
+      const parsed = typeof value === 'string' ? tryParseJson(value) : null
+      return type + WarpConstants.ArgParamsSeparator + JSON.stringify(parsed ?? value)
     }
     if (type === WarpInputTypes.Tuple && Array.isArray(value)) {
       if (value.length === 0) return type + WarpConstants.ArgParamsSeparator
