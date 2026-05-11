@@ -870,14 +870,36 @@
       ],
       "type": "object"
     },
-    "WarpNextConfig": {
+    "WarpNextEntry": {
       "anyOf": [
         {
           "type": "string"
         },
         {
+          "additionalProperties": false,
+          "properties": {
+            "identifier": {
+              "type": "string"
+            },
+            "when": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "WarpNextConfig": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/WarpNextEntry"
+        },
+        {
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/WarpNextEntry"
           },
           "type": "array"
         },
@@ -887,11 +909,11 @@
             "error": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "$ref": "#/definitions/WarpNextEntry"
                 },
                 {
                   "items": {
-                    "type": "string"
+                    "$ref": "#/definitions/WarpNextEntry"
                   },
                   "type": "array"
                 }
@@ -900,11 +922,11 @@
             "success": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "$ref": "#/definitions/WarpNextEntry"
                 },
                 {
                   "items": {
-                    "type": "string"
+                    "$ref": "#/definitions/WarpNextEntry"
                   },
                   "type": "array"
                 }

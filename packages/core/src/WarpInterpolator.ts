@@ -30,7 +30,8 @@ export class WarpInterpolator {
     let modifiable = JSON.stringify(warp)
     for (const [key, value] of Object.entries(envs)) {
       if (value === undefined || value === null) continue
-      const jsonSafeValue = JSON.stringify(String(value)).slice(1, -1)
+      const safeValue = typeof value === 'object' ? JSON.stringify(value) : String(value)
+      const jsonSafeValue = JSON.stringify(safeValue).slice(1, -1)
       modifiable = modifiable.replace(new RegExp(`\\{\\{${escapeRegExp(key)}\\}\\}`, 'g'), jsonSafeValue)
     }
     return JSON.parse(modifiable)

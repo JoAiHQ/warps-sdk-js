@@ -1960,3 +1960,95 @@ describe('WarpExecutor — collect action with envs in URL', () => {
     expect(fetchUrl).toBe('https://devnet-api.joai.ai/v1/products')
   })
 })
+
+describe('WarpExecutor — collect → inline → prompt pipeline', () => {
+  const pipelineConfig: WarpClientConfig = {
+    env: 'devnet',
+    user: { wallets: { multiversx: 'erd1...' } },
+    clientUrl: 'https://anyclient.com',
+    currentUrl: 'https://anyclient.com',
+  }
+  const pipelineAdapter = createMockAdapter(WarpChainName.Multiversx)
+
+  it('passes inline action output to subsequent prompt via envs', async () => {
+    mockFetch.mockReset()
+    // First fetch: inline sub-warp's collect action
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'prod-42', name: 'Dichtung', price: 1500 }) })
+
+    const subWarpPipeline: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Sub',
+      title: '',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [{ type: 'collect' as const, label: 'Get', destination: { url: 'https://api.example.com/product', method: 'GET' as const }, inputs: [] }],
+      output: { productId: 'out.id', productName: 'out.name' },
+      meta: { identifier: '@joai/fetch-product', chain: WarpChainName.Multiversx, hash: 'h', creator: '', createdAt: '', query: null },
+    }
+
+    const resolver = async (id: string) => ({ ...subWarpPipeline, meta: { ...subWarpPipeline.meta!, identifier: id, query: id.includes('?') ? Object.fromEntries(new URLSearchParams(id.split('?')[1])) : {} } })
+
+    const pipelineWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Pipeline',
+      title: '',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [
+        { type: 'collect' as const, label: 'Get details', inputs: [{ name: 'Name', as: 'name', type: 'string', source: 'field' as const, required: true }] } as WarpCollectAction,
+        { type: 'inline' as const, label: 'Load', warp: '@joai/fetch-product' },
+        { type: 'prompt' as const, label: 'Use', prompt: 'Item: {{productName}} ({{productId}})', as: 'summary' },
+      ],
+    }
+
+    const executor = new WarpExecutor(pipelineConfig, [pipelineAdapter], {})
+    executor.setWarpResolver(resolver)
+    const result = await executor.execute(pipelineWarp, ['string:TestCo'])
+
+    expect(result.immediateExecutions.length).toBeGreaterThanOrEqual(2)
+    const promptExec = result.immediateExecutions[result.immediateExecutions.length - 1]
+    expect(promptExec.output.PROMPT).toContain('Dichtung')
+    expect(promptExec.output.PROMPT).toContain('prod-42')
+  })
+
+  it('preserves inline output through collect action output accumulation', async () => {
+    mockFetch.mockReset()
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ data: [{ id: 'DgeqE1RZkrAJ', name: 'Dichtung' }] }) })
+
+    const subWarpProducts: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Products',
+      title: '',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [{ type: 'collect' as const, label: 'Get', destination: { url: 'https://api.example.com/products', method: 'GET' as const }, inputs: [] }],
+      output: { products: 'out.data', productsList: 'out' },
+      meta: { identifier: '@joai/product-list', chain: WarpChainName.Multiversx, hash: 'h', creator: '', createdAt: '', query: null },
+    }
+
+    const resolver = async (id: string) => ({ ...subWarpProducts, meta: { ...subWarpProducts.meta!, identifier: id, query: id.includes('?') ? Object.fromEntries(new URLSearchParams(id.split('?')[1])) : {} } })
+
+    const pipelineWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Pipeline',
+      title: '',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [
+        { type: 'collect' as const, label: 'Enter name', inputs: [{ name: 'Name', as: 'name', type: 'string', source: 'field' as const, required: true }] } as WarpCollectAction,
+        { type: 'inline' as const, label: 'Load', warp: '@joai/product-list' },
+        { type: 'collect' as const, label: 'Another collect', inputs: [] } as WarpCollectAction,
+        { type: 'prompt' as const, label: 'Match', prompt: 'Materials: 1x Dichtung\n\nProducts: {{products}}\n\nOutput ONLY a JSON array', as: 'productIds' },
+      ],
+    }
+
+    const executor = new WarpExecutor(pipelineConfig, [pipelineAdapter], {})
+    executor.setWarpResolver(resolver)
+    const result = await executor.execute(pipelineWarp, ['string:TestCo'])
+
+    expect(result.immediateExecutions).toHaveLength(4)
+    const matchExec = result.immediateExecutions[3]
+    expect(matchExec.output.PROMPT).toContain('Products: [{"id":"DgeqE1RZkrAJ","name":"Dichtung"}]')
+    expect(matchExec.output.PROMPT).toContain('Materials: 1x Dichtung')
+  })
+})
