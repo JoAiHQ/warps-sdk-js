@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 4.30.0
+
+### Minor Changes
+
+- c78fd05: feat: add conditional next chains — `WarpNextEntry` objects now support a `when` field with a JS expression (`{{VAR}}` placeholders interpolated from execution output). Next entries whose `when` condition evaluates to false are skipped, allowing warps to conditionally chain only when output variables meet criteria (e.g. only send a message when `{{MESSAGE}}` is non-empty).
+
+### Patch Changes
+
+- ## f9db8cf: fix: JSON-stringify objects/arrays in inline action URL query params — prevents `[object Object]` and empty-string collapses for array/object values
+
 ## 4.29.7
 
 ### Patch Changes
