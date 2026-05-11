@@ -723,6 +723,34 @@ describe('WarpInterpolator applyEnvs', () => {
     const result = await interpolator.apply(warp, { envs: { 'state.active': true } })
     expect((result.actions[0] as any).when).toBe('true === true')
   })
+
+  it('JSON-stringifies array env values into prompt templates', () => {
+    const warp = makeWarpWithWhen('{{products}} !== \'[]\'')
+    const result = interpolator.applyEnvs(warp, { products: [] })
+    expect((result.actions[0] as any).when).toBe('[] !== \'[]\'')
+  })
+
+  it('JSON-stringifies object env values into prompt templates', () => {
+    const warp = makeWarpWithWhen('data: {{products}}')
+    const result = interpolator.applyEnvs(warp, { products: { data: [{ id: 'abc', name: 'Dichtung' }] } })
+    expect((result.actions[0] as any).when).toBe('data: {"data":[{"id":"abc","name":"Dichtung"}]}')
+  })
+
+  it('JSON-stringifies array env values into prompt action text', () => {
+    const warp: Warp = {
+      ...createMockWarp(),
+      actions: [
+        {
+          type: 'prompt' as const,
+          label: 'Match',
+          prompt: 'Products: {{products}}',
+        },
+      ],
+    }
+    const result = interpolator.applyEnvs(warp, { products: [{ id: 'abc', name: 'Dichtung' }] })
+    const prompt = (result.actions[0] as any).prompt as string
+    expect(prompt).toBe('Products: [{"id":"abc","name":"Dichtung"}]')
+  })
 })
 
 describe('WarpInterpolator chain-specific placeholders', () => {
