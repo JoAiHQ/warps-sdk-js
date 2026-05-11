@@ -1,5 +1,13 @@
 # @joai/warps
 
+## 4.31.1
+
+### Patch Changes
+
+- 5732140: fix: JSON-stringify objects/arrays in `WarpInterpolator.applyEnvs` — prevents `[object Object]` when env values are arrays/objects replacing `{{placeholders}}` in warp templates
+
+  ## Also adds 2 pipeline tests (collect → inline → prompt) that verify the full output flow end-to-end.
+
 ## 4.30.0
 
 ### Minor Changes
