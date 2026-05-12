@@ -309,4 +309,20 @@ describe('resolveRelatedEntries', () => {
   it('handles empty related array', () => {
     expect(resolveRelatedEntries([], {})).toEqual([])
   })
+
+  it('resolves identifiers without placeholders unchanged', () => {
+    const result = resolveRelatedEntries(
+      ['simple-warp', 'another-warp'],
+      { someKey: 'value' }
+    )
+    expect(result).toEqual(['simple-warp', 'another-warp'])
+  })
+
+  it('resolves multiple entries with mixed placeholder patterns', () => {
+    const result = resolveRelatedEntries(
+      ['static', 'dynamic?key={{val}}', '{{prefix}}-suffix'],
+      { val: '123', prefix: 'pre' }
+    )
+    expect(result).toEqual(['static', 'dynamic?key=123', 'pre-suffix'])
+  })
 })
