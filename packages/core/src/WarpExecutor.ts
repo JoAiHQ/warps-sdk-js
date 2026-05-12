@@ -270,7 +270,10 @@ export class WarpExecutor {
         })
       }
       subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
+      const prev = this.handlers?.onActionExecuted
+      if (inlineAction.silent) this.handlers!.onActionExecuted = undefined as any
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
+      if (inlineAction.silent) this.handlers!.onActionExecuted = prev
       const inlineResult = immediateExecutions[0]
       if (inlineResult) {
         if (!inlineAction.silent) {

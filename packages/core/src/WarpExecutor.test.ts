@@ -2265,7 +2265,7 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
       expect(result.immediateExecutions[1].envs!.initial).toBe('value')
     })
 
-    it('does not fire onActionExecuted for the inline wrapper when silent', async () => {
+    it('suppresses all onActionExecuted for silent inline actions', async () => {
       const onActionExecuted = jest.fn()
       const resolver = async () => subWarp
       const executor = new WarpExecutor(config, [adapter], { onActionExecuted })
@@ -2276,9 +2276,7 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
         actions: [{ type: 'inline', label: 'Silent', warp: '@joai/sub-action', silent: true }],
       }, [])
 
-      // Sub-warp's own action still fires onActionExecuted
-      expect(onActionExecuted).toHaveBeenCalledTimes(1)
-      expect(onActionExecuted.mock.calls[0][0].action).toBe(1)
+      expect(onActionExecuted).not.toHaveBeenCalled()
     })
 
     it('fires onActionExecuted for both inline wrapper and sub-warp when not silent', async () => {
