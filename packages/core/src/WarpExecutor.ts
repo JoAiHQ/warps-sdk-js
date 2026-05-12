@@ -14,7 +14,7 @@ import {
 } from './helpers'
 import { extractInlineOutput, extractPromptOutput } from './helpers/output'
 import { buildHttpRequest } from './helpers/http'
-import { applyOutputToMessages } from './helpers/messages'
+import { applyOutputToMessages, resolveActionMessages } from './helpers/messages'
 import { buildMappedOutput, extractResolvedInputValues } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 import { getMppFetch } from './helpers/mpp'

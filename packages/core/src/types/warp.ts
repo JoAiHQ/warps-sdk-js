@@ -99,6 +99,7 @@ export type WarpStateAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpMountAction = {
@@ -111,6 +112,7 @@ export type WarpMountAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpUnmountAction = {
@@ -123,6 +125,7 @@ export type WarpUnmountAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpLoopAction = {
@@ -134,6 +137,7 @@ export type WarpLoopAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
   delay?: number // ms between iterations, default 0
   maxIterations?: number // hard cap, default 10_000
 }
@@ -148,6 +152,7 @@ export type WarpInlineAction = {
   auto?: boolean
   silent?: boolean
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
   output?: Record<string, string>
 }
 
@@ -164,6 +169,7 @@ export type WarpTransferAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpContractAction = {
@@ -182,6 +188,7 @@ export type WarpContractAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpQueryAction = {
@@ -197,6 +204,7 @@ export type WarpQueryAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpCollectAction = {
@@ -209,6 +217,7 @@ export type WarpCollectAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpComputeAction = {
@@ -220,6 +229,7 @@ export type WarpComputeAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpCollectDestination = WarpCollectDestinationHttp | string
@@ -239,6 +249,7 @@ export type WarpLinkAction = {
 
   auto?: boolean
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpMcpAction = {
@@ -251,6 +262,7 @@ export type WarpMcpAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpMcpDestination = {
@@ -271,6 +283,7 @@ export type WarpPromptAction = {
   auto?: boolean
   next?: WarpNextConfig
   when?: string
+  messages?: Record<WarpMessageName, WarpText>
 }
 
 export type WarpActionInputSource = 'field' | 'query' | 'user:wallet' | 'hidden'
