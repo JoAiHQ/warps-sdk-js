@@ -2245,5 +2245,24 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
       const promptExec = result.immediateExecutions[0]
       expect(promptExec.output.PROMPT).toBe('Skipped: ')
     })
+
+    it('includes accumulated envs on each execution result', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Step A', warp: '@joai/sub-action' },
+          { type: 'prompt', label: 'Step B', prompt: 'ok', as: 'result' },
+        ],
+      }, [], { envs: { initial: 'value' } })
+
+      expect(result.immediateExecutions).toHaveLength(2)
+      // Both actions carry the envs that were available when they started
+      expect(result.immediateExecutions[0].envs!.initial).toBe('value')
+      expect(result.immediateExecutions[1].envs!.initial).toBe('value')
+    })
   })
 })

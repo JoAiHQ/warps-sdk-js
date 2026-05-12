@@ -99,6 +99,7 @@ export class WarpExecutor {
     chain: WarpChainInfo | null
     immediateExecutions: WarpActionExecutionResult[]
     resolvedInputs: string[]
+    outputs: Record<string, any>
   }> {
     let txs: WarpAdapterGenericTransaction[] = []
     let chainInfo: WarpChainInfo | null = null
@@ -136,7 +137,10 @@ export class WarpExecutor {
       const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
       if (tx) txs.push(tx)
       if (chain) chainInfo = chain
-      if (immediateExecution) immediateExecutions.push(immediateExecution)
+      if (immediateExecution) {
+        immediateExecution.envs = actionMeta.envs
+        immediateExecutions.push(immediateExecution)
+      }
 
       // Accumulate outputs for subsequent actions
       if (immediateExecution?.output) {
@@ -165,7 +169,7 @@ export class WarpExecutor {
     // Handle loop actions — schedule re-execution if conditions are met
     this.scheduleLoops(warp, inputs, mergedMeta, outputBag)
 
-    return { txs, chain: chainInfo, immediateExecutions, resolvedInputs }
+    return { txs, chain: chainInfo, immediateExecutions, resolvedInputs, outputs: { ...outputBag } }
   }
 
   async executeAction(
@@ -265,7 +269,7 @@ export class WarpExecutor {
           return String(v)
         })
       }
-      subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
+      subWarp.meta = { ...subWarp.meta!, query: resolvedQuery, silent: inlineAction.silent }
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
       const inlineResult = immediateExecutions[0]
       if (inlineResult) {

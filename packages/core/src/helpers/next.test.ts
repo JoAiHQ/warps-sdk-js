@@ -1,6 +1,6 @@
 import { WarpExecutionOutput } from '../types/output'
 import { WarpNextConfig } from '../types/warp'
-import { getNextInfo, getNextInfoForStatus, resolveNextString, resolveNextStrings } from './next'
+import { getNextInfo, getNextInfoForStatus, resolveNextString, resolveNextStrings, resolveRelatedEntries } from './next'
 
 const emptyOutput: WarpExecutionOutput = {}
 
@@ -278,5 +278,35 @@ describe('getNextInfoForStatus', () => {
     const result = getNextInfoForStatus(mockConfig, mockAdapters, warp, 1, output, 'unhandled')
     expect(result![0].identifier).toContain('fallback')
     expect(result!.length).toBe(1)
+  })
+})
+
+describe('resolveRelatedEntries', () => {
+  it('resolves string entries with placeholders from envs', () => {
+    const result = resolveRelatedEntries(
+      ['bill?contactId={{contactId}}', 'email?to={{email}}'],
+      { contactId: 'abc123', email: 'test@test.com' }
+    )
+    expect(result).toEqual(['bill?contactId=abc123', 'email?to=test@test.com'])
+  })
+
+  it('resolves object entries by identifier', () => {
+    const result = resolveRelatedEntries(
+      [{ identifier: 'bill?contactId={{contactId}}', bot: 'Ask' }],
+      { contactId: 'abc' }
+    )
+    expect(result).toEqual(['bill?contactId=abc'])
+  })
+
+  it('handles missing envs by replacing with empty string', () => {
+    const result = resolveRelatedEntries(
+      ['warp?key={{missing}}'],
+      {}
+    )
+    expect(result).toEqual(['warp?key='])
+  })
+
+  it('handles empty related array', () => {
+    expect(resolveRelatedEntries([], {})).toEqual([])
   })
 })

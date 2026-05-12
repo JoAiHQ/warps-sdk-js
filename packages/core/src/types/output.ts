@@ -16,6 +16,7 @@ export type WarpActionExecutionResult = {
   messages: WarpExecutionMessages
   destination: string | null
   resolvedInputs: string[]
+  envs?: Record<string, any>
 }
 
 export type WarpExecutionNextInfo = { identifier: string | null; url: string }[]

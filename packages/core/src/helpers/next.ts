@@ -4,6 +4,7 @@ import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
 import { Warp, WarpNextConfig, WarpNextEntry } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
 import { evaluateWhenCondition, getWarpActionByIndex, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
+import type { WarpRelatedEntry } from '../types'
 import { getWarpInfoFromIdentifier } from './identifier'
 
 const URL_PREFIX = 'https://'
@@ -153,6 +154,16 @@ const buildNextUrl = (adapters: ChainAdapter[], identifier: string, config: Warp
   const url = new URL(baseUrl)
   new URLSearchParams(queryString).forEach((value, key) => url.searchParams.set(key, value))
   return url.toString().replace(/\/\?/, '?')
+}
+
+export const resolveRelatedEntries = (related: WarpRelatedEntry[], envs: Record<string, any>): string[] => {
+  const result: string[] = []
+  for (const entry of related) {
+    const id = typeof entry === 'string' ? entry : entry.identifier
+    const resolved = replacePlaceholders(id, envs)
+    if (resolved) result.push(resolved)
+  }
+  return result
 }
 
 const getNestedValue = (obj: any, path: string): any => {
