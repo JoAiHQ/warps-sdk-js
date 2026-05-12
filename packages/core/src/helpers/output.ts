@@ -1,6 +1,6 @@
 import { WarpConstants } from '../constants'
-import { ResolvedInput, TransformRunner, Warp, WarpClientConfig } from '../types'
-import { WarpExecutionOutput } from '../types/output'
+import { ResolvedInput, TransformRunner, Warp, WarpClientConfig, WarpInlineAction } from '../types'
+import { WarpActionExecutionResult, WarpExecutionOutput } from '../types/output'
 import { WarpLogger } from '../WarpLogger'
 import { WarpSerializer } from '../WarpSerializer'
 import { getWarpActionByIndex } from './general'
@@ -179,6 +179,40 @@ export const extractPromptOutput = async (
     values: { string: stringValues, native: nativeValues, mapped: buildMappedOutput(inputs, serializer) },
     output: evaluatedOutput,
   }
+}
+
+const resolveOutPath = (path: string, response: any): any => {
+  const parts = path.split('.')
+  if (parts[0] !== 'out') return path
+  if (parts.length === 1) return response
+  return parts.slice(1).reduce((acc, k) => (acc && acc[k] !== undefined ? acc[k] : null), response)
+}
+
+export const extractInlineOutput = (
+  action: WarpInlineAction,
+  result: WarpActionExecutionResult,
+  envs: Record<string, any> | undefined
+): WarpExecutionOutput => {
+  if (!action.output) return result.output
+
+  const response = { ...(result.output || {}), ...(result.values?.mapped || {}) }
+  const mapped: WarpExecutionOutput = {}
+
+  for (const [key, path] of Object.entries(action.output)) {
+    const append = path.startsWith(WarpConstants.Append.Prefix)
+    const cleanPath = append ? path.slice(WarpConstants.Append.Prefix.length) : path
+    const value = resolveOutPath(cleanPath, response)
+
+    if (append) {
+      const existing = envs?.[key]
+      const base = Array.isArray(existing) ? existing : (existing !== undefined ? [existing] : [])
+      mapped[key] = [...base, value]
+    } else {
+      mapped[key] = value
+    }
+  }
+
+  return { ...result.output, ...mapped }
 }
 
 export const parseOutputOutIndex = (outputPath: string): number | null => {

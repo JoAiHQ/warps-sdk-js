@@ -12,7 +12,7 @@ import {
   replacePlaceholdersInWhenExpression,
   resolvePlatformValue,
 } from './helpers'
-import { extractPromptOutput } from './helpers/output'
+import { extractInlineOutput, extractPromptOutput } from './helpers/output'
 import { buildHttpRequest } from './helpers/http'
 import { applyOutputToMessages } from './helpers/messages'
 import { buildMappedOutput, extractResolvedInputValues } from './helpers/payload'
@@ -270,6 +270,12 @@ export class WarpExecutor {
       const inlineResult = immediateExecutions[0]
       if (inlineResult) {
         await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: inlineResult, tx: null }))
+
+        if (inlineAction.output) {
+          const output = extractInlineOutput(inlineAction, inlineResult, meta.envs)
+          return { tx: null, chain: null, immediateExecution: { ...inlineResult, output }, executable: null }
+        }
+
         return { tx: null, chain: null, immediateExecution: inlineResult, executable: null }
       }
       return { tx: null, chain: null, immediateExecution: null, executable: null }

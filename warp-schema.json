@@ -601,6 +601,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "output": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
         "silent": {
           "type": "boolean"
         },
@@ -870,28 +876,6 @@
       ],
       "type": "object"
     },
-    "WarpNextEntry": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "additionalProperties": false,
-          "properties": {
-            "identifier": {
-              "type": "string"
-            },
-            "when": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "identifier"
-          ],
-          "type": "object"
-        }
-      ]
-    },
     "WarpNextConfig": {
       "anyOf": [
         {
@@ -937,6 +921,28 @@
         }
       ]
     },
+    "WarpNextEntry": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "identifier": {
+              "type": "string"
+            },
+            "when": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "WarpPlatformValue<string>": {
       "anyOf": [
         {
@@ -963,8 +969,7 @@
       "additionalProperties": false,
       "properties": {
         "as": {
-          "type": "string",
-          "description": "Variable name to store the LLM-generated response in. Defaults to MESSAGE if not set."
+          "type": "string"
         },
         "auto": {
           "type": "boolean"

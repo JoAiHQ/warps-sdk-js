@@ -1,9 +1,9 @@
 import { createMockConfig } from '../test-utils/mockConfig'
 import { createMockWarp } from '../test-utils/sharedMocks'
-import type { TransformRunner } from '../types'
+import type { TransformRunner, WarpActionExecutionResult, WarpInlineAction } from '../types'
 import { Warp } from '../types'
 import { WarpSerializer } from '../WarpSerializer'
-import { evaluateOutputCommon, extractCollectOutput } from './output'
+import { evaluateOutputCommon, extractCollectOutput, extractInlineOutput } from './output'
 
 const testConfig = createMockConfig()
 
@@ -415,5 +415,58 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     expect(result.TOKEN).toBe('EGLD')
     expect(result.AMOUNT).toBe('1000000000000000000')
     expect(result.IDENTIFIER).toBe('EGLD')
+  })
+})
+
+describe('extractInlineOutput', () => {
+  const makeResult = (output: Record<string, any> = {}, mapped: Record<string, any> = {}): WarpActionExecutionResult =>
+    ({ output, values: { string: [], native: [], mapped }, status: 'success', action: 1, user: null, txHash: null, tx: null, next: null, messages: {}, destination: null, resolvedInputs: [] } as any)
+
+  it('returns raw output when no output mapping on action', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test' } as WarpInlineAction
+    const result = makeResult({ id: 'svc-123' })
+    expect(extractInlineOutput(action, result, {})).toEqual({ id: 'svc-123' })
+  })
+
+  it('maps out.path from execution output', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { serviceId: 'out.id' } } as WarpInlineAction
+    const result = makeResult({ id: 'svc-123', name: 'Rate' })
+    expect(extractInlineOutput(action, result, {})).toEqual({ id: 'svc-123', name: 'Rate', serviceId: 'svc-123' })
+  })
+
+  it('resolves deep nested paths', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { val: 'out.data.items.0.price' } } as WarpInlineAction
+    const result = makeResult({ data: { items: [{ price: 8500 }] } })
+    expect(extractInlineOutput(action, result, {}).val).toBe(8500)
+  })
+
+  it('returns null for missing path', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { missing: 'out.data.nonexistent' } } as WarpInlineAction
+    const result = makeResult({ data: {} })
+    expect(extractInlineOutput(action, result, {}).missing).toBeNull()
+  })
+
+  it('appends to existing array with append: prefix', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { ids: 'append:out.id' } } as WarpInlineAction
+    const result = makeResult({ id: 'svc-789' })
+    expect(extractInlineOutput(action, result, { ids: ['svc-001'] }).ids).toEqual(['svc-001', 'svc-789'])
+  })
+
+  it('creates array when appending and env key does not exist', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { ids: 'append:out.id' } } as WarpInlineAction
+    const result = makeResult({ id: 'svc-789' })
+    expect(extractInlineOutput(action, result, {}).ids).toEqual(['svc-789'])
+  })
+
+  it('wraps scalar in array when appending to non-array value', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { ids: 'append:out.id' } } as WarpInlineAction
+    const result = makeResult({ id: 'svc-789' })
+    expect(extractInlineOutput(action, result, { ids: 'single' }).ids).toEqual(['single', 'svc-789'])
+  })
+
+  it('reads from values.mapped when output key not in result.output', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { hours: 'out.hours' } } as WarpInlineAction
+    const result = makeResult({}, { hours: 2.5 })
+    expect(extractInlineOutput(action, result, {}).hours).toBe(2.5)
   })
 })

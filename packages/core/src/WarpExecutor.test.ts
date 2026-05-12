@@ -2051,4 +2051,199 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
     expect(matchExec.output.PROMPT).toContain('Products: [{"id":"DgeqE1RZkrAJ","name":"Dichtung"}]')
     expect(matchExec.output.PROMPT).toContain('Materials: 1x Dichtung')
   })
+
+  describe('inline action output mapping', () => {
+    const config: WarpClientConfig = {
+      env: 'devnet',
+      user: { wallets: { multiversx: 'erd1...' } },
+      clientUrl: 'https://anyclient.com',
+      currentUrl: 'https://anyclient.com',
+    }
+    const adapter = (() => {
+      const a = createMockAdapter()
+      a.chain = WarpChainName.Multiversx
+      a.prefix = WarpChainName.Multiversx
+      return a
+    })()
+
+    const subWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Sub Action',
+      title: 'Sub',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [{ type: 'collect', label: 'Fetch', destination: { url: 'https://api.example.com/service', method: 'GET' }, inputs: [] }],
+      output: { id: 'out.id', name: 'out.name' },
+      meta: { identifier: '@joai/sub-action', chain: WarpChainName.Multiversx, hash: 'h', creator: '', createdAt: '', query: null },
+    }
+
+    const baseWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Parent',
+      title: 'Parent',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [],
+    }
+
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'svc-789', name: 'Hourly Rate', price: 8500 }) })
+    })
+
+    it('maps output from inline sub-warp using output field', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { newServiceId: 'out.id' } },
+          { type: 'prompt', label: 'Confirm', prompt: 'New service: {{newServiceId}}', as: 'summary' },
+        ],
+      }, [])
+
+      expect(result.immediateExecutions).toHaveLength(2)
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('New service: svc-789')
+    })
+
+    it('appends to existing array with + suffix', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { serviceIds: 'append:out.id' } },
+          { type: 'prompt', label: 'Confirm', prompt: 'Services: {{serviceIds}}', as: 'summary' },
+        ],
+      }, [], { envs: { serviceIds: ['svc-001'] } })
+
+      expect(result.immediateExecutions).toHaveLength(2)
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('Services: ["svc-001","svc-789"]')
+    })
+
+    it('creates new array when appending to non-existent key', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { tags: 'append:out.id' } },
+          { type: 'prompt', label: 'Confirm', prompt: 'Tags: {{tags}}', as: 'summary' },
+        ],
+      }, [], { envs: {} })
+
+      expect(result.immediateExecutions).toHaveLength(2)
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('Tags: ["svc-789"]')
+    })
+
+    it('ignores output field when not set', async () => {
+      const resolveCalls: string[] = []
+      const resolver = async (id: string) => {
+        resolveCalls.push(id)
+        return subWarp
+      }
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [{ type: 'inline', label: 'Run', warp: '@joai/sub-action' }],
+      }, [])
+
+      expect(result.immediateExecutions).toHaveLength(1)
+    })
+
+    it('handles empty output object', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Run', warp: '@joai/sub-action', output: {} },
+          { type: 'prompt', label: 'Check', prompt: 'ok', as: 'result' },
+        ],
+      }, [])
+
+      expect(result.immediateExecutions).toHaveLength(2)
+    })
+
+    it('maps multiple output fields', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { serviceId: 'out.id', serviceName: 'out.name' } },
+          { type: 'prompt', label: 'Confirm', prompt: '{{serviceId}}: {{serviceName}}', as: 'summary' },
+        ],
+      }, [])
+
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('svc-789: Hourly Rate')
+    })
+
+    it('handles missing path gracefully', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { missing: 'out.data.nonexistent' } },
+          { type: 'prompt', label: 'Confirm', prompt: 'Value: {{missing}}', as: 'summary' },
+        ],
+      }, [])
+
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('Value: ')
+    })
+
+    it('appends when existing value is not an array', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Create', warp: '@joai/sub-action', output: { current: 'append:out.id' } },
+          { type: 'prompt', label: 'Confirm', prompt: 'Current: {{current}}', as: 'summary' },
+        ],
+      }, [], { envs: { current: 'single-value' } })
+
+      const promptExec = result.immediateExecutions[1]
+      expect(promptExec.output.PROMPT).toBe('Current: ["single-value","svc-789"]')
+    })
+
+    it('ignores output when when condition skips inline execution', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [
+          { type: 'inline', label: 'Skip', warp: '@joai/sub-action', output: { skippedId: 'out.id' }, when: 'false' },
+          { type: 'prompt', label: 'Confirm', prompt: 'Skipped: {{skippedId}}', as: 'summary' },
+        ],
+      }, [], { envs: {} })
+
+      expect(result.immediateExecutions).toHaveLength(1)
+      const promptExec = result.immediateExecutions[0]
+      expect(promptExec.output.PROMPT).toBe('Skipped: ')
+    })
+  })
 })

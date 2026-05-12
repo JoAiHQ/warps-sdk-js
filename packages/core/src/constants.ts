@@ -91,6 +91,10 @@ export const WarpConstants = {
   ArgListSeparator: ',',
   ArgStructSeparator: ';',
 
+  Append: {
+    Prefix: 'append:',
+  },
+
   Transform: {
     Prefix: 'transform:',
   },

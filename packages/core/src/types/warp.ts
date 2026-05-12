@@ -148,6 +148,7 @@ export type WarpInlineAction = {
   auto?: boolean
   silent?: boolean
   when?: string
+  output?: Record<string, string>
 }
 
 export type WarpTransferAction = {
