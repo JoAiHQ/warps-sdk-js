@@ -40,6 +40,8 @@ export type WarpSchedule = 'minutely' | 'hourly' | 'daily' | 'weekly' | 'monthly
 export type WarpNextEntry = string | { identifier: string; when?: string }
 export type WarpNextConfig = WarpNextEntry | WarpNextEntry[] | { success?: WarpNextEntry | WarpNextEntry[]; error?: WarpNextEntry | WarpNextEntry[] }
 
+export type WarpRelatedEntry = string | { identifier: string; bot?: string }
+
 export type Warp = {
   protocol: string
   chain?: WarpChainName
@@ -55,7 +57,7 @@ export type Warp = {
   output?: Record<WarpOutputName, WarpResulutionPath>
   messages?: Record<WarpMessageName, WarpText>
   ui?: string
-  related?: string[]
+  related?: WarpRelatedEntry[]
   schedule?: WarpSchedule
   sections?: WarpSection[]
   meta?: WarpMeta

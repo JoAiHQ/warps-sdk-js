@@ -56,7 +56,7 @@
         },
         "related": {
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/WarpRelatedEntry"
           },
           "type": "array"
         },
@@ -1138,6 +1138,28 @@
         "label"
       ],
       "type": "object"
+    },
+    "WarpRelatedEntry": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bot": {
+              "type": "string"
+            },
+            "identifier": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "type": "object"
+        }
+      ]
     },
     "WarpResulutionPath": {
       "type": "string"

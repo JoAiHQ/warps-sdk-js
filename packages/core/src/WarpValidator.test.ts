@@ -730,5 +730,30 @@ describe('WarpValidator', () => {
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })
+
+    it('validates related with object entries', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [{ type: 'transfer', label: 'T', description: 'test', address: 'erd1...' }],
+        related: [
+          'simple-warp-id',
+          { identifier: 'complex-warp', bot: 'Ask the user if they want to proceed' },
+        ],
+      })
+      const result = await validator.validate(warp)
+      if (!result.valid) console.log('ERRORS:', JSON.stringify(result.errors))
+      expect(result.valid).toBe(true)
+    })
+
+    it('validates related with missing optional bot field', async () => {
+      const validator = new WarpValidator(defaultConfig)
+      const warp = createWarp({
+        actions: [{ type: 'transfer', label: 'T', description: 'test', address: 'erd1...' }],
+        related: [{ identifier: 'minimal-warp' }],
+      })
+      const result = await validator.validate(warp)
+      if (!result.valid) console.log('ERRORS:', JSON.stringify(result.errors))
+      expect(result.valid).toBe(true)
+    })
   })
 })
