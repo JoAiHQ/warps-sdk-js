@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.35.1
+
+### Patch Changes
+
+- ca087b1: Add encodeQueryValues helper to URL-encode query param values in warp identifiers. Used by the suggestions system to encode JSON array values in suggestion URLs so they round-trip correctly through the command parser.
+
 ## 4.35.0
 
 ### Minor Changes
