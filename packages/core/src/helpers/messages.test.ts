@@ -1,6 +1,6 @@
 import { WarpChainName } from '../constants'
-import { Warp, WarpClientConfig } from '../types'
-import { applyOutputToMessages } from './messages'
+import { Warp, WarpClientConfig, WarpPromptAction } from '../types'
+import { applyOutputToMessages, resolveActionMessages } from './messages'
 
 describe('applyOutputToMessages', () => {
   const createMockWarp = (messages?: Record<string, any>): Warp => ({
@@ -164,5 +164,37 @@ describe('applyOutputToMessages', () => {
     expect(result).toEqual({
       success: 'Result: from-output',
     })
+  })
+})
+
+describe('resolveActionMessages', () => {
+  it('returns empty when action has no messages', () => {
+    const action = { type: 'prompt', label: 'Test', prompt: 'hello' } as WarpPromptAction
+    expect(resolveActionMessages(action, {})).toEqual({})
+  })
+
+  it('resolves action messages with placeholders from output', () => {
+    const action = {
+      type: 'prompt', label: 'Test', prompt: 'hello',
+      messages: { success: 'Worked for {{hours}}h' },
+    } as WarpPromptAction
+    expect(resolveActionMessages(action, { hours: '2.5' })).toEqual({ success: 'Worked for 2.5h' })
+  })
+
+  it('resolves localized action messages', () => {
+    const action = {
+      type: 'prompt', label: 'Test', prompt: 'hello',
+      messages: { success: { en: '{{hours}} hours worked', de: '{{hours}} Stunden' } },
+    } as WarpPromptAction
+    const config: WarpClientConfig = { env: 'devnet', preferences: { locale: 'de' } }
+    expect(resolveActionMessages(action, { hours: '2.5' }, config)).toEqual({ success: '2.5 Stunden' })
+  })
+
+  it('handles missing placeholder values gracefully', () => {
+    const action = {
+      type: 'prompt', label: 'Test', prompt: 'hello',
+      messages: { error: 'Missing: {{missing}}' },
+    } as WarpPromptAction
+    expect(resolveActionMessages(action, {})).toEqual({ error: 'Missing: ' })
   })
 })
