@@ -269,11 +269,13 @@ export class WarpExecutor {
           return String(v)
         })
       }
-      subWarp.meta = { ...subWarp.meta!, query: resolvedQuery, silent: inlineAction.silent }
+      subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
       const inlineResult = immediateExecutions[0]
       if (inlineResult) {
-        await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: inlineResult, tx: null }))
+        if (!inlineAction.silent) {
+          await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: inlineResult, tx: null }))
+        }
 
         if (inlineAction.output) {
           const output = extractInlineOutput(inlineAction, inlineResult, meta.envs)
