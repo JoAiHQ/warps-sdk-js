@@ -2264,5 +2264,50 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
       expect(result.immediateExecutions[0].envs!.initial).toBe('value')
       expect(result.immediateExecutions[1].envs!.initial).toBe('value')
     })
+
+    it('does not fire onActionExecuted for the inline wrapper when silent', async () => {
+      const onActionExecuted = jest.fn()
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], { onActionExecuted })
+      executor.setWarpResolver(resolver)
+
+      await executor.execute({
+        ...baseWarp,
+        actions: [{ type: 'inline', label: 'Silent', warp: '@joai/sub-action', silent: true }],
+      }, [])
+
+      // Sub-warp's own action still fires onActionExecuted
+      expect(onActionExecuted).toHaveBeenCalledTimes(1)
+      expect(onActionExecuted.mock.calls[0][0].action).toBe(1)
+    })
+
+    it('fires onActionExecuted for both inline wrapper and sub-warp when not silent', async () => {
+      const onActionExecuted = jest.fn()
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], { onActionExecuted })
+      executor.setWarpResolver(resolver)
+
+      await executor.execute({
+        ...baseWarp,
+        actions: [{ type: 'inline', label: 'Normal', warp: '@joai/sub-action' }],
+      }, [])
+
+      // Parent inline wrapper + sub-warp's action
+      expect(onActionExecuted).toHaveBeenCalledTimes(2)
+    })
+
+    it('returns outputs on execute result', async () => {
+      const resolver = async () => subWarp
+      const executor = new WarpExecutor(config, [adapter], {})
+      executor.setWarpResolver(resolver)
+
+      const result = await executor.execute({
+        ...baseWarp,
+        actions: [{ type: 'inline', label: 'Step', warp: '@joai/sub-action' }],
+      }, [])
+
+      expect(result.outputs).toBeDefined()
+      expect(typeof result.outputs).toBe('object')
+    })
   })
 })
