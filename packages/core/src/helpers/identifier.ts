@@ -190,6 +190,16 @@ export const removeWarpChainPrefix = (identifier: string): string => {
   return (info ? info.identifierBase : cleanWarpIdentifier(identifier)).trim()
 }
 
+export const encodeQueryValues = (url: string): string => {
+  const queryIndex = url.indexOf('?')
+  if (queryIndex === -1) return url
+  const params = new URLSearchParams(url.slice(queryIndex + 1))
+  const encoded = Array.from(params.entries())
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&')
+  return url.slice(0, queryIndex) + '?' + encoded
+}
+
 export const getWarpIdentifierWithQuery = (warp: Warp): string => {
   const identifier = warp.meta?.identifier
   if (!identifier) return ''

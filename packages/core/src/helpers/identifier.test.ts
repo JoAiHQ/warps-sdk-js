@@ -2,6 +2,7 @@ import { WarpChainName } from '../constants'
 import {
   cleanWarpIdentifier,
   createWarpIdentifier,
+  encodeQueryValues,
   extractIdentifierInfoFromUrl,
   extractQueryStringFromIdentifier,
   extractQueryStringFromUrl,
@@ -756,5 +757,21 @@ describe('getWarpIdentifierWithQuery', () => {
   it('handles query values with special characters', () => {
     const warp = createWarpWithMeta('mywarp', { msg: 'hello world' })
     expect(getWarpIdentifierWithQuery(warp)).toBe('mywarp?msg=hello+world')
+  })
+
+  describe('encodeQueryValues', () => {
+    it('returns url unchanged when no query params', () => {
+      expect(encodeQueryValues('@my-warp')).toBe('@my-warp')
+    })
+
+    it('encodes query values with special characters', () => {
+      expect(encodeQueryValues('@order?contactId=abc123&productIds=["p1","p2"]'))
+        .toBe('@order?contactId=abc123&productIds=%5B%22p1%22%2C%22p2%22%5D')
+    })
+
+    it('encodes empty brackets', () => {
+      expect(encodeQueryValues('@order?ids=[]'))
+        .toBe('@order?ids=%5B%5D')
+    })
   })
 })
