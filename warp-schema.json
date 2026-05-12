@@ -403,6 +403,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -481,6 +487,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -544,6 +556,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -601,6 +619,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "output": {
           "additionalProperties": {
             "type": "string"
@@ -653,6 +677,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "type": {
           "$ref": "#/definitions/WarpActionType"
         },
@@ -701,6 +731,12 @@
         "maxIterations": {
           "type": "number"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -745,6 +781,12 @@
         },
         "label": {
           "$ref": "#/definitions/WarpText"
+        },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
         },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
@@ -854,6 +896,12 @@
         },
         "label": {
           "$ref": "#/definitions/WarpText"
+        },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
         },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
@@ -1003,6 +1051,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -1062,6 +1116,12 @@
         },
         "label": {
           "$ref": "#/definitions/WarpText"
+        },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
         },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
@@ -1156,6 +1216,12 @@
         "label": {
           "$ref": "#/definitions/WarpText"
         },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
@@ -1226,6 +1292,12 @@
         },
         "label": {
           "$ref": "#/definitions/WarpText"
+        },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
         },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
@@ -1339,6 +1411,12 @@
         },
         "label": {
           "$ref": "#/definitions/WarpText"
+        },
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/definitions/WarpText"
+          },
+          "type": "object"
         },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
