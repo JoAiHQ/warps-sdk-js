@@ -814,6 +814,23 @@ describe('WarpFactory', () => {
 
       expect(result).toEqual(['string:Note: this is a message'])
     })
+
+    it('passes through already-typed array inputs without double-serializing', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action: WarpAction = {
+        type: 'transfer',
+        label: 'Test',
+        address: 'erd1dest',
+        value: '0',
+        inputs: [
+          { name: 'ids', type: 'string[]', source: 'field' },
+        ],
+      }
+
+      const result = factory.getStringTypedInputs(action, ['string[]:["a","b"]'])
+
+      expect(result).toEqual(['string[]:["a","b"]'])
+    })
   })
 
   describe('primary input references', () => {
