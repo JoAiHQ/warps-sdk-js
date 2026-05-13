@@ -18,5 +18,6 @@ export const hasInputPrefix = (input: string): boolean => {
   }
 
   const type = splitInput(input)[0]
-  return inputTypes.has(type)
+  const baseType = type.endsWith('[]') ? type.slice(0, -2) : type
+  return inputTypes.has(baseType)
 }

@@ -61,4 +61,11 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix('string:value:with:colons')).toBe(true)
     expect(hasInputPrefix('invalid:value:with:colons')).toBe(false)
   })
+
+  it('should return true for array type prefixes', () => {
+    expect(hasInputPrefix('string[]:["a","b"]')).toBe(true)
+    expect(hasInputPrefix('uint64[]:[1,2]')).toBe(true)
+    expect(hasInputPrefix('bool[]:[true,false]')).toBe(true)
+    expect(hasInputPrefix('address[]:["erd1"]')).toBe(true)
+  })
 })
