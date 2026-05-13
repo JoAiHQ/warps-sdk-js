@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.35.4
+
+### Patch Changes
+
+- c3b1e88: Fix `hasKnownTypePrefix` in `WarpFactory` to also recognize `type[]` prefixes. This is the function actually used by `getStringTypedInputs` to decide whether an input already has a type prefix. Without this fix, `string[]:` prefixed values were double-serialized by `nativeToString`.
+
 ## 4.35.3
 
 ### Patch Changes
