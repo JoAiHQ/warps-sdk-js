@@ -1,5 +1,13 @@
 # @joai/warps
 
+## 4.35.5
+
+### Patch Changes
+
+- 1cc66cf: fix: guard hasInputPrefix against non-string values
+
+  hasInputPrefix calls input.includes() which throws on non-string values (objects, booleans, numbers). Added a typeof guard to safely return false, allowing nativeToString to handle native type conversion instead.
+
 ## 4.35.4
 
 ### Patch Changes
