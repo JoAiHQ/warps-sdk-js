@@ -1,6 +1,6 @@
 import { createMockConfig } from '../test-utils/mockConfig'
 import { createMockWarp } from '../test-utils/sharedMocks'
-import type { TransformRunner, WarpActionExecutionResult, WarpInlineAction } from '../types'
+import type { ResolvedInput, TransformRunner, WarpActionExecutionResult, WarpInlineAction } from '../types'
 import { Warp } from '../types'
 import { WarpSerializer } from '../WarpSerializer'
 import { evaluateOutputCommon, extractCollectOutput, extractInlineOutput } from './output'
@@ -220,7 +220,7 @@ describe('extractCollectOutput', () => {
     it('includes local-positioned inputs in mapped output', async () => {
       const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
       const response = {}
-      const inputs = [
+      const inputs: ResolvedInput[] = [
         { input: { name: 'customer', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
         { input: { name: 'hours', type: 'string', source: 'field', position: 'local' }, value: 'string:2.5' },
       ]
@@ -232,7 +232,7 @@ describe('extractCollectOutput', () => {
     it('includes local inputs alongside non-local inputs', async () => {
       const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
       const response = {}
-      const inputs = [
+      const inputs: ResolvedInput[] = [
         { input: { name: 'name', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
         { input: { name: 'email', type: 'string', source: 'field' }, value: 'string:test@test.com' },
       ]
@@ -244,7 +244,7 @@ describe('extractCollectOutput', () => {
     it('skips local inputs with null values', async () => {
       const warp = { protocol: 'test', name: 'test', title: 'test', description: 'test', actions: [] } as Warp
       const response = {}
-      const inputs = [
+      const inputs: ResolvedInput[] = [
         { input: { name: 'customer', type: 'string', source: 'field', position: 'local' }, value: null },
       ]
       const { values } = await extractCollectOutput(warp, response, 1, inputs, new WarpSerializer(), testConfig)
@@ -254,7 +254,7 @@ describe('extractCollectOutput', () => {
     it('excludes local inputs from HTTP body via buildMappedOutput', async () => {
       const { buildMappedOutput } = await import('./payload.js')
       const serializer = new WarpSerializer()
-      const resolvedInputs = [
+      const resolvedInputs: ResolvedInput[] = [
         { input: { name: 'name', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
       ]
       const mapped = buildMappedOutput(resolvedInputs, serializer)

@@ -12,7 +12,6 @@ describe('convertMcpArgsToWarpInputs', () => {
         type: 'contract',
         label: { en: 'Test Action' },
         inputs,
-        primary: true,
         gasLimit: 100000,
       },
     ],

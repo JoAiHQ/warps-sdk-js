@@ -1,5 +1,5 @@
 import { WarpExecutionOutput } from '../types/output'
-import { WarpNextConfig } from '../types/warp'
+import { Warp, WarpNextConfig } from '../types/warp'
 import { getNextInfo, getNextInfoForStatus, resolveNextString, resolveNextStrings, resolveRelatedEntries } from './next'
 
 const emptyOutput: WarpExecutionOutput = {}
@@ -145,7 +145,7 @@ describe('getNextInfo', () => {
   const mockConfig = {} as any
   const mockAdapters = [] as any
 
-  const makeWarp = (next?: WarpNextConfig) => ({
+  const makeWarp = (next?: WarpNextConfig): Warp => ({
     protocol: 'warp:3.0.0',
     chain: 'multiversx',
     name: 'test',
@@ -153,7 +153,7 @@ describe('getNextInfo', () => {
     description: null,
     actions: [{ type: 'prompt' as const, label: 'Prompt' }],
     next,
-  })
+  } as Warp)
 
   it('returns null when no next is configured', () => {
     const warp = makeWarp()
@@ -213,7 +213,7 @@ describe('getNextInfoForStatus', () => {
   const mockConfig = {} as any
   const mockAdapters = [] as any
 
-  const makeWarp = (next?: WarpNextConfig) => ({
+  const makeWarp = (next?: WarpNextConfig): Warp => ({
     protocol: 'warp:3.0.0',
     chain: 'multiversx',
     name: 'test',
@@ -221,7 +221,7 @@ describe('getNextInfoForStatus', () => {
     description: null,
     actions: [{ type: 'collect' as const, label: 'Collect' }],
     next,
-  })
+  } as Warp)
 
   it('uses error path when status is error', () => {
     const warp = makeWarp({ success: '@on-ok', error: '@on-err' })

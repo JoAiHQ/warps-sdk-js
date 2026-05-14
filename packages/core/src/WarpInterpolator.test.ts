@@ -1,6 +1,6 @@
 import { WarpChainName } from './constants'
 import { createMockAdapter, createMockChainInfo, createMockConfig, createMockWarp } from './test-utils/sharedMocks'
-import { WarpTransferAction } from './types'
+import { WarpTransferAction, Warp } from './types'
 import { WarpCache } from './WarpCache'
 import { WarpInterpolator } from './WarpInterpolator'
 
