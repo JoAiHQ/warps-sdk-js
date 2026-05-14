@@ -21,6 +21,7 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@joai/warps$': '<rootDir>/../core/src/index.ts',
+    '^mppx/client$': '<rootDir>/../core/src/__mocks__/mppx-client.ts',
     '^@solana/kit$': '<rootDir>/jest.setup.ts',
     '^@x402/svm/exact/client$': '<rootDir>/jest.setup.ts',
     '^@scure/bip39/wordlists/(.*)\\.js$': '@scure/bip39/wordlists/$1.js',

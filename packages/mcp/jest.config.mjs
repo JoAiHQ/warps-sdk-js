@@ -4,6 +4,7 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^mppx/client$': '<rootDir>/../core/src/__mocks__/mppx-client.ts',
   },
   transform: {
     '^.+\\.tsx?$': [

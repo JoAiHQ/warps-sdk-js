@@ -14,6 +14,7 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@joai/warps$': '<rootDir>/../../core/src/index.ts',
+    '^mppx/client$': '<rootDir>/../../core/src/__mocks__/mppx-client.ts',
   },
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   passWithNoTests: true,
