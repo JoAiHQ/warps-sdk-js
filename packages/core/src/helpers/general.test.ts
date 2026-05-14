@@ -363,8 +363,11 @@ describe('evaluateWhenCondition', () => {
     expect(evaluateWhenCondition('true || false')).toBe(true)
   })
 
-  it('should throw error for invalid expressions', () => {
-    expect(() => evaluateWhenCondition('invalid syntax !!!')).toThrow()
+  it('should return false for invalid syntax expressions', () => {
+    expect(evaluateWhenCondition('invalid syntax !!!')).toBe(false)
+  })
+
+  it('should throw error for undefined function calls', () => {
     expect(() => evaluateWhenCondition('undefinedFunction()')).toThrow()
   })
 })

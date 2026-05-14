@@ -113,6 +113,10 @@ export const evaluateWhenCondition = (expression: string): boolean => {
     const result = new Function(`return ${expression}`)()
     return Boolean(result)
   } catch (error) {
+    // Handle SyntaxError specifically - malformed expressions should evaluate to false
+    if (error instanceof SyntaxError) {
+      return false
+    }
     throw new Error(`Failed to evaluate 'when' condition: ${expression}. Error: ${error}`)
   }
 }
