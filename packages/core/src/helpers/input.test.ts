@@ -68,4 +68,13 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix('bool[]:[true,false]')).toBe(true)
     expect(hasInputPrefix('address[]:["erd1"]')).toBe(true)
   })
+
+  it('should return false for non-string inputs', () => {
+    expect(hasInputPrefix(null as unknown as string)).toBe(false)
+    expect(hasInputPrefix(undefined as unknown as string)).toBe(false)
+    expect(hasInputPrefix(123 as unknown as string)).toBe(false)
+    expect(hasInputPrefix(true as unknown as string)).toBe(false)
+    expect(hasInputPrefix({} as unknown as string)).toBe(false)
+    expect(hasInputPrefix([] as unknown as string)).toBe(false)
+  })
 })

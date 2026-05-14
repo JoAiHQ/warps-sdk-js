@@ -11,6 +11,8 @@ export const splitInput = (input: string): [WarpActionInputType, string] => {
 }
 
 export const hasInputPrefix = (input: string): boolean => {
+  if (typeof input !== 'string') return false
+
   const inputTypes = new Set(Object.values(WarpInputTypes))
 
   if (!input.includes(WarpConstants.ArgParamsSeparator)) {
