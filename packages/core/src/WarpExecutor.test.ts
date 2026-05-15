@@ -1986,6 +1986,40 @@ describe('WarpExecutor — collect action with envs in URL', () => {
     const fetchUrl = mockFetch.mock.calls[0][0]
     expect(fetchUrl).toBe('https://devnet-api.joai.ai/v1/products')
   })
+
+  it('resolves {{envs}} from meta.envs in collect action headers', async () => {
+    mockFetch.mockReset()
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ data: { id: 'item-1' } }) })
+
+    const headerWarp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Collect Headers',
+      title: 'Test',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      actions: [
+        {
+          type: 'collect' as const,
+          label: 'Fetch',
+          destination: {
+            url: 'https://api.example.com/items',
+            method: 'GET' as const,
+            headers: { 'X-Api-Key': '{{API_KEY}}' },
+          },
+          inputs: [],
+        } as WarpCollectAction,
+      ],
+    }
+
+    const executor = new WarpExecutor(envConfig, [envAdapter], {})
+    await executor.execute(headerWarp, [], { envs: { API_KEY: 'sk-test-123' } })
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    const fetchHeaders = mockFetch.mock.calls[0][1]?.headers as Record<string, string> | Headers
+    // Headers object spreads as plain object in the mock
+    const headerValue = fetchHeaders instanceof Headers ? fetchHeaders.get('X-Api-Key') : fetchHeaders?.['X-Api-Key']
+    expect(headerValue).toBe('sk-test-123')
+  })
 })
 
 describe('WarpExecutor — collect → inline → prompt pipeline', () => {
