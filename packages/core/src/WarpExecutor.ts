@@ -514,6 +514,9 @@ export class WarpExecutor {
 
     if (envs) {
       url = replacePlaceholders(url, envs)
+      for (const [key, value] of headers.entries()) {
+        headers.set(key, replacePlaceholders(value, envs))
+      }
     }
 
     WarpLogger.debug('WarpExecutor: Executing HTTP collect', { url, method, headers, body })
