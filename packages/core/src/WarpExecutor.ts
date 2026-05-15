@@ -136,13 +136,22 @@ export class WarpExecutor {
 
       const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
 
-      // Accumulate outputs so subsequent actions can reference them
+      // Accumulate outputs and resolved inputs so subsequent actions can reference them
       if (immediateExecution?.output) {
         const { _DATA, ...rest } = immediateExecution.output
         Object.assign(outputBag, rest)
       }
       if (immediateExecution?.values?.mapped) {
         Object.assign(outputBag, immediateExecution.values.mapped)
+      }
+      if (executable?.resolvedInputs) {
+        for (const ri of executable.resolvedInputs) {
+          const key = ri.input.as
+          if (key && ri.value !== null && ri.value !== undefined) {
+            const [, native] = this.factory.getSerializer().stringToNative(ri.value)
+            outputBag[key] = native ?? ri.value
+          }
+        }
       }
 
       // Set envs after output is merged so the action's own output is included

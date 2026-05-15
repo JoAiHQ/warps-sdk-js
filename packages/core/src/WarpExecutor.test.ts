@@ -1051,6 +1051,33 @@ describe('WarpExecutor', () => {
 
       await executor.execute(multiActionWarp, [])
     })
+
+    it('forwards resolved inputs between actions via outputBag', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: { items: [] } }),
+      })
+
+      const testWarp: Warp = {
+        ...warp,
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'First',
+            destination: { url: 'https://api.example.com/items?days={{DAYS_BEFORE}}', method: 'GET' as const },
+            inputs: [
+              { as: 'DAYS_BEFORE', name: 'Days Before', type: 'uint64' as const, source: 'field' as const },
+            ],
+          },
+        ],
+      }
+
+      const result = await executor.execute(testWarp, ['13'])
+
+      expect(result.immediateExecutions).toHaveLength(1)
+      // First action's input should be in outputBag → outputs
+      expect(result.outputs.DAYS_BEFORE).toBe(13n)
+    })
   })
 
   describe('execution handlers - async vs sync', () => {
