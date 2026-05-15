@@ -2260,9 +2260,14 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
       }, [], { envs: { initial: 'value' } })
 
       expect(result.immediateExecutions).toHaveLength(2)
-      // Both actions carry the envs that were available when they started
+      // Each action carries envs available at its time
       expect(result.immediateExecutions[0].envs!.initial).toBe('value')
       expect(result.immediateExecutions[1].envs!.initial).toBe('value')
+      // Each action's own output is in its own envs (including the last action)
+      expect(result.immediateExecutions[0].envs!.id).toBe('svc-789')
+      expect(result.immediateExecutions[1].envs!.result).toBe('ok')
+      // Earlier action outputs are passed to later actions
+      expect(result.immediateExecutions[1].envs!.id).toBe('svc-789')
     })
 
     it('suppresses all onActionExecuted for silent inline actions', async () => {

@@ -135,14 +135,8 @@ export class WarpExecutor {
         : mergedMeta
 
       const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
-      if (tx) txs.push(tx)
-      if (chain) chainInfo = chain
-      if (immediateExecution) {
-        immediateExecution.envs = actionMeta.envs
-        immediateExecutions.push(immediateExecution)
-      }
 
-      // Accumulate outputs for subsequent actions
+      // Accumulate outputs so subsequent actions can reference them
       if (immediateExecution?.output) {
         const { _DATA, ...rest } = immediateExecution.output
         Object.assign(outputBag, rest)
@@ -150,6 +144,15 @@ export class WarpExecutor {
       if (immediateExecution?.values?.mapped) {
         Object.assign(outputBag, immediateExecution.values.mapped)
       }
+
+      // Set envs after output is merged so the action's own output is included
+      if (immediateExecution) {
+        immediateExecution.envs = { ...actionMeta.envs, ...outputBag }
+        immediateExecutions.push(immediateExecution)
+      }
+
+      if (tx) txs.push(tx)
+      if (chain) chainInfo = chain
 
       // Extract resolved inputs from the input-defining action
       if (executable && index === inputActionIndex + 1 && executable.resolvedInputs) {
