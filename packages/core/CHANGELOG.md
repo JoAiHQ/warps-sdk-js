@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 4.36.1
+
+### Patch Changes
+
+- 3a168dc: fix: resolve env placeholders in collect action headers
+
+  Headers now go through replacePlaceholders with envs, matching the
+  existing URL behavior. This ensures `{{JOAI_AGENT_AUTH_KEY}}` and
+  similar env vars are resolved in collect request headers.
+
 ## 4.36.0
 
 ### Minor Changes
