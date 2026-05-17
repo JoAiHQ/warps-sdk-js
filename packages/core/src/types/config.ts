@@ -6,6 +6,7 @@ export type { ClientCacheConfig, WarpCacheAdapter } from './cache'
 import { WarpChainAccount, WarpChainAction, WarpChainAsset } from './chain'
 import { WarpChainEnv, WarpTheme } from './general'
 import { WarpLocale } from './i18n'
+import { LogLevel } from '../WarpLogger'
 import { WarpActionExecutionResult } from './output'
 import { WarpRegistryConfigInfo, WarpRegistryInfo } from './registry'
 import { ClientIndexConfig } from './search'
@@ -73,6 +74,7 @@ export type WarpClientConfig = {
   cache?: ClientCacheConfig
   transform?: ClientTransformConfig
   index?: ClientIndexConfig
+  logLevel?: LogLevel
   interceptors?: {
     openLink?: (url: string) => Promise<void>
   }
