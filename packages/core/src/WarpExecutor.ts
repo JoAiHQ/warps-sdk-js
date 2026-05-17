@@ -135,17 +135,33 @@ export class WarpExecutor {
         ? { ...mergedMeta, envs: { ...mergedMeta.envs, ...outputBag } }
         : mergedMeta
 
+      WarpLogger.debug(`[WarpExecutor] action ${index}/${warp.actions.length}:`, {
+        type: action.type,
+        label: action.label || action.as || '',
+        when: action.when || null,
+      })
+
       const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
 
       // Accumulate outputs and resolved inputs so subsequent actions can reference them
       if (immediateExecution?.output) {
         const { _DATA, ...rest } = immediateExecution.output
+        const keys = Object.keys(rest)
+        WarpLogger.debug(`[WarpExecutor] action ${index} output keys:`, keys.length > 0 ? keys : '(empty)')
         Object.assign(outputBag, rest)
+      } else {
+        WarpLogger.debug(`[WarpExecutor] action ${index}: no output`)
       }
       if (immediateExecution?.values?.mapped) {
+        const mappedKeys = Object.keys(immediateExecution.values.mapped)
+        WarpLogger.debug(`[WarpExecutor] action ${index} mapped keys:`, mappedKeys)
         Object.assign(outputBag, immediateExecution.values.mapped)
       }
       if (executable?.resolvedInputs) {
+        const inputEntries = executable.resolvedInputs
+          .filter((ri) => ri.input.as)
+          .map((ri) => [ri.input.as, ri.value])
+        WarpLogger.debug(`[WarpExecutor] action ${index} resolved inputs:`, Object.fromEntries(inputEntries))
         for (const ri of executable.resolvedInputs) {
           const key = ri.input.as
           if (key && ri.value !== null && ri.value !== undefined) {
@@ -154,6 +170,8 @@ export class WarpExecutor {
           }
         }
       }
+
+      WarpLogger.debug(`[WarpExecutor] action ${index} outputBag keys:`, Object.keys(outputBag))
 
       // Set envs after output is merged so the action's own output is included
       if (immediateExecution) {
@@ -267,8 +285,12 @@ export class WarpExecutor {
       }
 
       const inlineAction = action as WarpInlineAction
+      WarpLogger.debug(`[WarpExecutor] resolving inline warp:`, { identifier: inlineAction.warp, query: inlineAction.warp?.split('?')[1] })
       const subWarp = await this.warpResolver(inlineAction.warp)
-      if (!subWarp) return { tx: null, chain: null, immediateExecution: null, executable: null }
+      if (!subWarp) {
+        WarpLogger.debug(`[WarpExecutor] inline warp not found:`, { identifier: inlineAction.warp })
+        return { tx: null, chain: null, immediateExecution: null, executable: null }
+      }
 
       await this.callHandler(() => this.handlers?.onActionProcessing?.(action))
 
@@ -288,6 +310,12 @@ export class WarpExecutor {
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
       if (inlineAction.silent) this.handlers!.onActionExecuted = prev
       const inlineResult = immediateExecutions[0]
+      WarpLogger.debug(`[WarpExecutor] inline warp result:`, {
+        identifier: inlineAction.warp,
+        hasOutput: !!inlineResult?.output,
+        outputKeys: inlineResult?.output ? Object.keys(inlineResult.output).filter((k) => k !== '_DATA') : [],
+        status: inlineResult?.status,
+      })
       if (inlineResult) {
         if (!inlineAction.silent) {
           await this.callHandler(() => this.handlers?.onActionExecuted?.({ action: actionIndex, chain: null, execution: inlineResult, tx: null }))
