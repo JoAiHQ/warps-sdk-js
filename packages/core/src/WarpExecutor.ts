@@ -137,7 +137,7 @@ export class WarpExecutor {
 
       WarpLogger.debug(`[WarpExecutor] action ${index}/${warp.actions.length}:`, {
         type: action.type,
-        label: action.label || action.as || '',
+        label: action.label || (action as any).as || '',
         when: action.when || null,
       })
 
