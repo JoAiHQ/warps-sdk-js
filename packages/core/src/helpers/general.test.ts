@@ -464,6 +464,24 @@ describe('replacePlaceholdersInWhenExpression', () => {
   it('JSON-stringifies non-empty arrays', () => {
     expect(replacePlaceholdersInWhenExpression("{{val}} !== '[]'", { val: ['abc'] })).toBe("'[\"abc\"]' !== '[]'")
   })
+
+  it('substitutes number zero directly', () => {
+    expect(replacePlaceholdersInWhenExpression('{{count}} === 0', { count: 0 })).toBe('0 === 0')
+  })
+
+  it('substitutes positive number directly', () => {
+    expect(replacePlaceholdersInWhenExpression('{{count}} === 0', { count: 3 })).toBe('3 === 0')
+  })
+
+  it('evaluates number zero when condition to true', () => {
+    const expr = replacePlaceholdersInWhenExpression('{{count}} === 0', { count: 0 })
+    expect(evaluateWhenCondition(expr)).toBe(true)
+  })
+
+  it('evaluates positive number when condition to false', () => {
+    const expr = replacePlaceholdersInWhenExpression('{{count}} === 0', { count: 3 })
+    expect(evaluateWhenCondition(expr)).toBe(false)
+  })
 })
 
 describe('evaluateWhenCondition', () => {

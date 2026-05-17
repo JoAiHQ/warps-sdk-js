@@ -469,4 +469,16 @@ describe('extractInlineOutput', () => {
     const result = makeResult({}, { hours: 2.5 })
     expect(extractInlineOutput(action, result, {}).hours).toBe(2.5)
   })
+
+  it('resolves array length for empty array', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { count: 'out.data.length' } } as WarpInlineAction
+    const result = makeResult({ data: [] })
+    expect(extractInlineOutput(action, result, {}).count).toBe(0)
+  })
+
+  it('resolves array length for non-empty array', () => {
+    const action = { type: 'inline', label: 'Test', warp: '@test', output: { count: 'out.data.length' } } as WarpInlineAction
+    const result = makeResult({ data: [{ id: '1' }, { id: '2' }] })
+    expect(extractInlineOutput(action, result, {}).count).toBe(2)
+  })
 })
