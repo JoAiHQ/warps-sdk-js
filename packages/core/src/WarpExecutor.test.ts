@@ -1816,6 +1816,11 @@ describe('WarpExecutor — inline action', () => {
 
   beforeEach(() => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'contact-123' }) })
+    // Clear checkpoint cache to prevent cross-test pollution (MemoryCacheStrategy is static)
+    const cleanup = new WarpExecutor(config, [adapter], {})
+    cleanup.factory.getCache().delete('warp-checkpoint:default:')
+    cleanup.factory.getCache().delete('warp-checkpoint:default:@joai/parent')
+    cleanup.factory.getCache().delete('warp-checkpoint:test-room:@joai/parent')
   })
 
   it('executes an inline sub-warp when resolveWarp is set', async () => {
@@ -1944,6 +1949,316 @@ describe('WarpExecutor — inline action', () => {
 
     const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/missing' }] }, [])
     expect(result.immediateExecutions).toHaveLength(0)
+  })
+
+  it('provides already-collected values to onInputRequest', async () => {
+    const onInputRequest = jest.fn().mockResolvedValue({ price: '5000' })
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }] }, [])
+
+    expect(onInputRequest).toHaveBeenCalledTimes(1)
+    const [, missing, provided] = onInputRequest.mock.calls[0]
+    expect(missing).toHaveLength(1)
+    expect(missing[0].as).toBe('price')
+    expect(provided.name).toBe('Hourly')
+  })
+
+  it('does not execute sub-warp when required field inputs are missing', async () => {
+    const onInputRequest = jest.fn().mockResolvedValue({ price: '5000' })
+    mockFetch.mockImplementation(async (url: string, opts: any) => {
+      return { ok: true, json: async () => ({ id: 'svc-123' }) }
+    })
+
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }] }, [])
+
+    // Sub-warp was NOT executed — execution was skipped due to missing required field input (price)
+    expect(onInputRequest).toHaveBeenCalledTimes(1)
+    expect(result.immediateExecutions).toHaveLength(0)
+  })
+
+  it('gracefully handles onInputRequest returning empty object', async () => {
+    const onInputRequest = jest.fn().mockResolvedValue({})
+    const onActionExecuted = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest, onActionExecuted })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }] }, [])
+
+    expect(result.immediateExecutions).toHaveLength(0)
+    expect(onActionExecuted).not.toHaveBeenCalled()
+  })
+
+  it('calls onInputRequest with missing inputs and provided values', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }] }, [])
+
+    expect(onInputRequest).toHaveBeenCalledTimes(1)
+    const [warp, missing, provided] = onInputRequest.mock.calls[0]
+    expect(warp).toBeDefined()
+    expect(missing).toHaveLength(1)
+    expect(missing[0].as).toBe('price')
+    expect(provided.name).toBe('Hourly')
+    expect(result.immediateExecutions).toHaveLength(0)
+  })
+
+  it('skips onInputRequest when all inputs are provided', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({ ...subWarp, meta: { ...subWarp.meta!, query: { name: 'TestCo' } } }))
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'result' }) })
+    const result = await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=TestCo' }] }, [])
+    expect(result.immediateExecutions).toHaveLength(1)
+    expect(onInputRequest).not.toHaveBeenCalled()
+  })
+
+  it('provides multiple missing inputs to onInputRequest', async () => {
+    const onInputRequest = jest.fn().mockResolvedValue({ name: 'Fix', price: '5000' })
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: {} },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    await executor.execute({ ...baseWarp, actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action' }] }, [])
+
+    expect(onInputRequest).toHaveBeenCalledTimes(1)
+    const [, missing, provided] = onInputRequest.mock.calls[0]
+    expect(missing).toHaveLength(2)
+  })
+
+  it('returns checkpoint from execute when inline action fires onInputRequest', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ customer: 'Acme' }) })
+    const parentWarp = {
+      ...baseWarp,
+      meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
+      actions: [
+        { type: 'collect', label: 'Step 1', destination: 'https://example.com/step1' },
+        { type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' },
+      ],
+    }
+
+    const result = await executor.execute(parentWarp, [])
+
+    expect(result.checkpoint).toBeDefined()
+    expect(result.checkpoint!.identifier).toMatch('@joai/parent')
+    expect(result.checkpoint!.actionIndex).toBe(2)
+    expect(typeof result.checkpoint!.outputs).toBe('object')
+  })
+
+  it('resume skips checkpoint action', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ key: 'action-1-output' }) })
+
+    const parentWarp = {
+      ...baseWarp,
+      meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
+      actions: [
+        { type: 'collect', label: 'Step 1', destination: 'https://example.com/step1' },
+        { type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' },
+      ],
+    }
+
+    // First execution — stops at action 2 with checkpoint
+    const firstResult = await executor.execute(parentWarp, [], { scope: 'test-room' })
+    expect(firstResult.checkpoint).toBeDefined()
+
+    // Resume — same scope triggers auto-resume from stored checkpoint.
+    // Skips actions 1 (collect) and 2 (inline), onInputRequest is NOT called again.
+    const secondResult = await executor.execute(parentWarp, [], { scope: 'test-room' })
+    expect(secondResult.checkpoint).toBeUndefined()
+    expect(onInputRequest).toHaveBeenCalledTimes(1)    // only called the first time
+
+    // Third execution — checkpoint was cleaned up after resume, so no auto-resume.
+    // onInputRequest fires again (normal path).
+    const thirdResult = await executor.execute(parentWarp, [], { scope: 'test-room' })
+    expect(thirdResult.checkpoint).toBeDefined()       // new checkpoint, not stale auto-resume
+    expect(onInputRequest).toHaveBeenCalledTimes(2)    // called again — checkpoint was cleaned up
+  })
+
+  it('different warp identifier does not trigger auto-resume', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) })
+
+    const parentWarp = {
+      ...baseWarp,
+      meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
+      actions: [
+        { type: 'collect', label: 'Step 1', destination: 'https://example.com/step1' },
+        { type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' },
+      ],
+    }
+
+    // First execution creates checkpoint for '@joai/parent'
+    const firstResult = await executor.execute(parentWarp, [], { scope: 'test-room' })
+    expect(firstResult.checkpoint).toBeDefined()
+
+    // Executing a DIFFERENT warp (no meta.identifier = empty string) in the same scope
+    // should NOT trigger auto-resume — the checkpoint identifier doesn't match
+    const differentWarp = {
+      ...baseWarp,
+      actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }],
+    }
+    const secondResult = await executor.execute(differentWarp, [], { scope: 'test-room' })
+    expect(secondResult.checkpoint).toBeDefined()     // new checkpoint (not a resume)
+    expect(onInputRequest).toHaveBeenCalledTimes(2)   // called again for the new warp
+  })
+
+  it('different scopes keep independent checkpoints', async () => {
+    const onInputRequest = jest.fn()
+    const executor = new WarpExecutor(config, [adapter], { onInputRequest })
+    executor.setWarpResolver(async () => ({
+      ...subWarp,
+      meta: { ...subWarp.meta!, query: { name: 'Hourly' } },
+      actions: [{
+        type: 'collect' as const,
+        label: 'Sub Step',
+        destination: 'https://example.com/api',
+        inputs: [
+          { name: 'Name', as: 'name', type: 'string', source: 'field', required: true },
+          { name: 'Price', as: 'price', type: 'number', source: 'field', required: true },
+        ],
+      }],
+    }))
+
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) })
+
+    const parentWarp = {
+      ...baseWarp,
+      meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
+      actions: [
+        { type: 'collect', label: 'Step 1', destination: 'https://example.com/step1' },
+        { type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' },
+      ],
+    }
+
+    // Checkpoint in scope-A
+    const scopeAResult = await executor.execute(parentWarp, [], { scope: 'scope-a' })
+    expect(scopeAResult.checkpoint).toBeDefined()
+
+    // Checkpoint in scope-B (independent)
+    const scopeBResult = await executor.execute(parentWarp, [], { scope: 'scope-b' })
+    expect(scopeBResult.checkpoint).toBeDefined()
+
+    // Resume scope-A — works independently
+    const resumeA = await executor.execute(parentWarp, [], { scope: 'scope-a' })
+    expect(resumeA.checkpoint).toBeUndefined()
+    expect(onInputRequest).toHaveBeenCalledTimes(2)   // called for A then B, NOT again for A's resume
+
+    // Resume scope-B — still available, independent of scope-A's resume
+    const resumeB = await executor.execute(parentWarp, [], { scope: 'scope-b' })
+    expect(resumeB.checkpoint).toBeUndefined()
   })
 })
 

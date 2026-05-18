@@ -25,6 +25,7 @@ import {
   WarpAction,
   WarpActionExecutionResult,
   WarpActionIndex,
+  WarpActionInput,
   WarpAdapterGenericTransaction,
   WarpChainAction,
   WarpChainInfo,
@@ -47,6 +48,7 @@ export type ExecutionHandlers = {
   onExecuted?: (result: WarpActionExecutionResult) => void | Promise<void>
   onError?: (params: { message: string; result: WarpActionExecutionResult }) => void
   onSignRequest?: (params: { message: string; chain: WarpChainInfo }) => string | Promise<string>
+  onInputRequest?: (warp: Warp, missingInputs: WarpActionInput[], providedValues: Record<string, string>) => Record<string, string> | Promise<Record<string, string>>
   onPromptGenerate?: (prompt: string, expect?: string | Record<string, any>) => string | null | Promise<string | null>
   onMountAction?: (params: { action: WarpAction; actionIndex: WarpActionIndex; warp: Warp }) => void | Promise<void>
   onLoop?: (params: { warp: Warp; inputs: string[]; meta: Record<string, any>; delay: number }) => void
@@ -65,11 +67,18 @@ export type ExecutionHandlers = {
   }) => void
 }
 
+export type WarpExecutorCheckpoint = {
+  identifier: string
+  actionIndex: number
+  outputs: Record<string, any>
+}
+
 export class WarpExecutor {
   private factory: WarpFactory
   private loopIterations = new Map<string, number>()
   private active = true
   private warpResolver: ((identifier: string) => Promise<Warp | null>) | null = null
+  private _checkpointIndex: number | null = null
 
   constructor(
     private config: WarpClientConfig,
@@ -101,6 +110,7 @@ export class WarpExecutor {
     immediateExecutions: WarpActionExecutionResult[]
     resolvedInputs: string[]
     outputs: Record<string, any>
+    checkpoint?: WarpExecutorCheckpoint
   }> {
     let txs: WarpAdapterGenericTransaction[] = []
     let chainInfo: WarpChainInfo | null = null
@@ -111,6 +121,16 @@ export class WarpExecutor {
     const mergedQueries = { ...warpQueries, ...meta.queries }
     const mergedMeta = { ...meta, queries: mergedQueries }
     const outputBag: Record<string, any> = {}
+    const scopeKey = meta.scope || 'default'
+    const warpIdentifier = warp.meta?.identifier || ''
+    const checkpointKey = `warp-checkpoint:${scopeKey}:${warpIdentifier}`
+
+    // Auto-resume from stored checkpoint if one exists for this scope + warp
+    const storedCheckpoint = await this.factory.getCache().get<WarpExecutorCheckpoint>(checkpointKey)
+    const resumeCheckpoint = storedCheckpoint?.identifier === warpIdentifier ? storedCheckpoint : undefined
+    if (resumeCheckpoint) {
+      Object.assign(outputBag, resumeCheckpoint.outputs)
+    }
 
     // Resolve warp vars before processing any actions so inline URLs have resolved values
     if (warp.vars) {
@@ -130,6 +150,14 @@ export class WarpExecutor {
       const action = getWarpActionByIndex(warp, index)
       if (!isWarpActionAutoExecute(action)) continue
 
+      // On checkpoint resume: skip all actions up to and including the checkpoint
+      // action (the inline action that fired onInputRequest was already handled by the
+      // sub-warp's standalone evaluator execution). Restore its outputs from the bag.
+      if (resumeCheckpoint && index <= resumeCheckpoint.actionIndex) {
+        WarpLogger.debug(`[WarpExecutor] skipping action ${index} (checkpoint resume)`)
+        continue
+      }
+
       // Pass accumulated outputs from previous actions as envs
       const actionMeta = Object.keys(outputBag).length > 0
         ? { ...mergedMeta, envs: { ...mergedMeta.envs, ...outputBag } }
@@ -141,7 +169,15 @@ export class WarpExecutor {
         when: action.when || null,
       })
 
+      this._checkpointIndex = null
       const { tx, chain, immediateExecution, executable } = await this.executeAction(warp, index, inputs, actionMeta)
+
+      // If onInputRequest was fired for an inline action, save checkpoint and stop
+      if (this._checkpointIndex !== null) {
+        const checkpoint = { identifier: warpIdentifier, actionIndex: this._checkpointIndex, outputs: { ...outputBag } }
+        await this.factory.getCache().set(checkpointKey, checkpoint)
+        return { txs, chain: chainInfo, immediateExecutions, resolvedInputs, outputs: { ...outputBag }, checkpoint }
+      }
 
       // Accumulate outputs and resolved inputs so subsequent actions can reference them
       if (immediateExecution?.output) {
@@ -199,6 +235,14 @@ export class WarpExecutor {
 
     // Handle loop actions — schedule re-execution if conditions are met
     this.scheduleLoops(warp, inputs, mergedMeta, outputBag)
+
+    // If this was a resumed execution that completed without creating a new checkpoint, clear it
+    if (resumeCheckpoint) {
+      const current = await this.factory.getCache().get<{ identifier: string }>(checkpointKey)
+      if (current?.identifier === warpIdentifier) {
+        await this.factory.getCache().delete(checkpointKey)
+      }
+    }
 
     return { txs, chain: chainInfo, immediateExecutions, resolvedInputs, outputs: { ...outputBag } }
   }
@@ -305,6 +349,19 @@ export class WarpExecutor {
         })
       }
       subWarp.meta = { ...subWarp.meta!, query: resolvedQuery }
+
+      // If the sub-warp has required field inputs not yet provided via query, skip execution
+      // entirely — we cannot assume it is safe to run with partial data (it could be a contract,
+      // transfer, or compute action). Delegate to onInputRequest instead.
+      const providedKeys = new Set(Object.keys(resolvedQuery))
+      const missingFieldInputs = subWarp.actions?.flatMap((a) => a.inputs || []).filter((i) => i.source === 'field' && i.required && !providedKeys.has(i.as || i.name)) || []
+      if (missingFieldInputs.length > 0 && this.handlers?.onInputRequest) {
+        const providedValues = Object.fromEntries(Object.entries(resolvedQuery).map(([k, v]) => [k, String(v)]))
+        this._checkpointIndex = actionIndex
+        await this.handlers.onInputRequest(subWarp, missingFieldInputs, providedValues)
+        return { tx: null, chain: null, immediateExecution: null, executable: null }
+      }
+
       const prev = this.handlers?.onActionExecuted
       if (inlineAction.silent) this.handlers!.onActionExecuted = undefined as any
       const { immediateExecutions } = await this.execute(subWarp, [], meta)
@@ -328,6 +385,7 @@ export class WarpExecutor {
 
         return { tx: null, chain: null, immediateExecution: inlineResult, executable: null }
       }
+
       return { tx: null, chain: null, immediateExecution: null, executable: null }
     }
 
