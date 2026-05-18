@@ -17,7 +17,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
-    "@joai/warps": "4.30.0"
+    "@joai/warps": "^4.37.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
