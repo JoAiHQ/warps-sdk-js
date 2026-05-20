@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.38.1
+
+### Patch Changes
+
+- Add `stripWarpQuery` helper and update `isEqualWarpIdentifier` to ignore query parameters when comparing warp identifiers. WARP_VIEW identifiers may include `?key=value` for display context — matching should ignore the query portion.
+
 ## 4.38.0
 
 ### Minor Changes
