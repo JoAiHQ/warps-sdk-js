@@ -11,6 +11,7 @@ import {
   isEqualWarpIdentifier,
   parseWarpQueryStringToObject,
   removeWarpChainPrefix,
+  stripWarpQuery,
 } from './identifier'
 import { Warp } from '../types'
 
@@ -37,6 +38,27 @@ describe('cleanWarpIdentifier', () => {
 
   it('handles complex identifier with @ prefix', () => {
     expect(cleanWarpIdentifier('@sui:alias:mywarp')).toBe('sui:alias:mywarp')
+  })
+})
+
+describe('stripWarpQuery', () => {
+  it('returns the identifier unchanged when there is no query string', () => {
+    expect(stripWarpQuery('mywarp')).toBe('mywarp')
+    expect(stripWarpQuery('@mywarp')).toBe('@mywarp')
+    expect(stripWarpQuery('sui:alias:mywarp')).toBe('sui:alias:mywarp')
+  })
+
+  it('strips query parameters after ?', () => {
+    expect(stripWarpQuery('mywarp?param=1')).toBe('mywarp')
+    expect(stripWarpQuery('@mywarp?key=val&other=123')).toBe('@mywarp')
+  })
+
+  it('preserves @ prefix while stripping query', () => {
+    expect(stripWarpQuery('@mywarp?param=1')).toBe('@mywarp')
+  })
+
+  it('handles empty string', () => {
+    expect(stripWarpQuery('')).toBe('')
   })
 })
 
@@ -72,6 +94,8 @@ describe('isEqualWarpIdentifier', () => {
   it('handles identifiers with query parameters', () => {
     expect(isEqualWarpIdentifier('@mywarp?param=1', 'mywarp?param=1')).toBe(true)
     expect(isEqualWarpIdentifier('mywarp?param=1', '@mywarp?param=1')).toBe(true)
+    expect(isEqualWarpIdentifier('@mywarp?param=1', 'mywarp')).toBe(true)
+    expect(isEqualWarpIdentifier('mywarp', '@mywarp?param=1')).toBe(true)
   })
 })
 

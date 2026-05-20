@@ -7,9 +7,15 @@ export const cleanWarpIdentifier = (identifier: string): string => {
     : identifier
 }
 
+/** Strips query parameters from a warp identifier (e.g. '@warp?key=val' → '@warp'). */
+export const stripWarpQuery = (identifier: string): string => {
+  const idx = identifier.indexOf('?')
+  return idx === -1 ? identifier : identifier.slice(0, idx)
+}
+
 export const isEqualWarpIdentifier = (identifier1: string | null | undefined, identifier2: string | null | undefined): boolean => {
   if (!identifier1 || !identifier2) return false
-  return cleanWarpIdentifier(identifier1) === cleanWarpIdentifier(identifier2)
+  return stripWarpQuery(cleanWarpIdentifier(identifier1)) === stripWarpQuery(cleanWarpIdentifier(identifier2))
 }
 
 export const createWarpIdentifier = (chain: WarpChainName | null, type: WarpIdentifierType, identifier: string) => {
