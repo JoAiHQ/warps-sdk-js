@@ -1057,6 +1057,9 @@
           },
           "type": "object"
         },
+        "model": {
+          "type": "string"
+        },
         "next": {
           "$ref": "#/definitions/WarpNextConfig"
         },
