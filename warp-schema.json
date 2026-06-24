@@ -140,6 +140,12 @@
     "WarpActionInput": {
       "additionalProperties": false,
       "properties": {
+        "accept": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "as": {
           "type": "string"
         },

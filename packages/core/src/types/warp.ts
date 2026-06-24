@@ -352,6 +352,7 @@ export type WarpActionInput = {
   max?: number | WarpVarPlaceholder
   pattern?: string
   patternDescription?: WarpText
+  accept?: string[]
   options?: string[] | { [key: string]: WarpText }
   modifier?: string
   default?: string | number | boolean
