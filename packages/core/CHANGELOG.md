@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.39.1
+
+### Patch Changes
+
+- a509531: Add accept metadata arrays to Warp action inputs for file upload controls.
+
 ## 4.39.0
 
 ### Minor Changes
