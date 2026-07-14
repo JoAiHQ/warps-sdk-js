@@ -1,5 +1,12 @@
 # @joai/warps
 
+## 4.39.2
+
+### Patch Changes
+
+- 3217b24: Fix buildNestedPayload double-nesting when position key matches field name.
+  Now correctly produces { key: value } instead of { key: { key: value } }.
+
 ## 4.39.1
 
 ### Patch Changes
