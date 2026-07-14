@@ -7,4 +7,7 @@ export default {
     '^.+\\.tsx?$': ['ts-jest', { useESM: true, diagnostics: false }],
   },
   transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
+  moduleNameMapper: {
+    '^mppx/client$': '<rootDir>/packages/core/src/__mocks__/mppx-client.ts',
+  },
 }

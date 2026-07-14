@@ -1,5 +1,5 @@
 ---
-"@joai/core": patch
+"@joai/warps": patch
 ---
 
 Fix buildNestedPayload double-nesting when position key matches field name.

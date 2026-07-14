@@ -135,8 +135,8 @@ describe('resolveNextString', () => {
 })
 
 describe('edge cases', () => {
-  it('throws when when expression has invalid syntax', () => {
-    const config: WarpNextConfig = { identifier: '@warp', when: 'invalid syntax !!!' }
+  it('throws when when expression calls undefined function', () => {
+    const config: WarpNextConfig = { identifier: '@warp', when: 'undefinedFunction()' }
     expect(() => resolveNextStrings(config, 'success', emptyOutput)).toThrow()
   })
 })
