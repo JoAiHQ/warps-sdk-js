@@ -252,7 +252,7 @@ describe('extractCollectOutput', () => {
     })
 
     it('excludes local inputs from HTTP body via buildMappedOutput', async () => {
-      const { buildMappedOutput } = await import('./payload.js')
+      const { buildMappedOutput } = await import('./payload')
       const serializer = new WarpSerializer()
       const resolvedInputs: ResolvedInput[] = [
         { input: { name: 'name', type: 'string', source: 'field', position: 'local' }, value: 'string:Müller GmbH' },
