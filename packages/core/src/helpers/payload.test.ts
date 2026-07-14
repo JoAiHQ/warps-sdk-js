@@ -52,6 +52,17 @@ describe('buildNestedPayload', () => {
   })
 })
 
+  it('should not double-nest when position key matches field name', () => {
+    const result = buildNestedPayload('payload:integration', 'integration', 'email')
+    expect(result).toEqual({ integration: 'email' })
+  })
+
+  it('should nest under position key when it differs from field name', () => {
+    const result = buildNestedPayload('payload:meta.form', 'email', 'test@example.com')
+    expect(result).toEqual({ meta: { form: { email: 'test@example.com' } } })
+  })
+})
+
 describe('mergeNestedPayload', () => {
   it('should merge basic flat objects', () => {
     const target = { a: 1 }

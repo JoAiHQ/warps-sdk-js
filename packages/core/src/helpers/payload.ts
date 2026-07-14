@@ -16,7 +16,11 @@ export function buildNestedPayload(position: string, fieldName: string, value: a
   return position
     .slice(WarpConstants.Position.Payload.length)
     .split('.')
-    .reduceRight((acc, key, i, arr) => ({ [key]: i === arr.length - 1 ? { [fieldName]: value } : acc }), {})
+    .reduceRight((acc, key, i, arr) => {
+      if (i === arr.length - 1 && key === fieldName) return { [key]: value }
+      if (i === arr.length - 1) return { [key]: { [fieldName]: value } }
+      return { [key]: acc }
+    }, {})
 }
 
 /**
