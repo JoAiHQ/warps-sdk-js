@@ -111,7 +111,8 @@ export class WarpSerializer {
     }
 
     if (type === 'json') {
-      return type + WarpConstants.ArgParamsSeparator + JSON.stringify(value)
+      const raw = typeof value === 'string' ? value : JSON.stringify(value)
+      return type + WarpConstants.ArgParamsSeparator + raw
     }
 
     // Default behavior for standard types

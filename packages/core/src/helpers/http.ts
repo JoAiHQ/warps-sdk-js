@@ -27,7 +27,7 @@ export const getJsonFromInput = (resolvedInputs: ResolvedInput[], inputName: str
   const input = resolvedInputs.find((ri) => ri.input.as === inputName || ri.input.name === inputName)
   if (!input?.value) return null
   const [, nativeValue] = serializer.stringToNative(input.value)
-  return typeof nativeValue === 'string' ? nativeValue : String(nativeValue)
+  return typeof nativeValue === 'string' ? nativeValue : JSON.stringify(nativeValue)
 }
 
 export const parseJsonSafely = (json: string): any => {

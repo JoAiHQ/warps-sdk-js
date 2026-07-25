@@ -129,6 +129,7 @@ export const WarpInputTypes = {
   Email: 'email',
   Textarea: 'textarea',
   File: 'file',
+  Json: 'json',
 }
 
 export const safeWindow = typeof window !== 'undefined' ? window : ({ open: () => {} } as Window)

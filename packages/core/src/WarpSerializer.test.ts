@@ -1,4 +1,5 @@
 import { WarpSerializer } from './WarpSerializer'
+import { WarpFactory } from './WarpFactory'
 import { WarpConstants, WarpInputTypes } from './constants'
 import { WarpStructValue } from './types'
 
@@ -336,6 +337,37 @@ describe('WarpSerializer', () => {
       const [type, value] = serializer.stringToNative(serialized)
       expect(type).toBe('json')
       expect(value).toEqual(['abc123', 'def456'])
+    })
+
+    it('handles json objects', () => {
+      const tagline = '{"de":"Handball aus Hollabrunn","en":"Handball from Hollabrunn"}'
+      const typed = serializer.nativeToString('json', tagline)
+      expect(typed).toBe('json:{"de":"Handball aus Hollabrunn","en":"Handball from Hollabrunn"}')
+      const [type, value] = serializer.stringToNative(typed)
+      expect(type).toBe('json')
+      expect(value).toEqual({ de: 'Handball aus Hollabrunn', en: 'Handball from Hollabrunn' })
+    })
+
+    it('handles json array of invite objects', () => {
+      const invites = [{ email: 'a@b.com', role: 'admin' }]
+      const typed = serializer.nativeToString('json', JSON.stringify(invites))
+      expect(typed).toBe('json:[{"email":"a@b.com","role":"admin"}]')
+      const [type, value] = serializer.stringToNative(typed)
+      expect(type).toBe('json')
+      expect(value).toEqual([{ email: 'a@b.com', role: 'admin' }])
+    })
+
+    it('handles getStringTypedInputs for json fields', () => {
+      const factory = new WarpFactory({ currentUrl: 'https://test.com' } as any, {} as any, serializer)
+      const action = {
+        inputs: [
+          { name: 'Tagline', as: 'tagline', type: 'json' as any, source: 'field' as any },
+          { name: 'Name', as: 'name', type: 'string' as any, source: 'field' as any },
+        ],
+      } as any
+      const typed = factory.getStringTypedInputs(action, ['{"de":"test"}', 'MyTeam'])
+      expect(typed[0]).toBe('json:{"de":"test"}')
+      expect(typed[1]).toBe('string:MyTeam')
     })
 
     it('deserializes token values via type registry', () => {

@@ -64,6 +64,8 @@ export function toInputPayloadValue(resolvedInput: ResolvedInput, serializer: Wa
   } else if (resolvedInput.input.type === 'asset') {
     const { identifier, amount } = value as WarpChainAssetValue
     return { identifier, amount: amount.toString() }
+  } else if (resolvedInput.input.type === 'json' && typeof value === 'string') {
+    try { return JSON.parse(value) } catch { return value }
   } else {
     return value
   }
