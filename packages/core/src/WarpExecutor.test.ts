@@ -2335,6 +2335,59 @@ describe('WarpExecutor — collect action with envs in URL', () => {
     const headerValue = fetchHeaders instanceof Headers ? fetchHeaders.get('X-Api-Key') : fetchHeaders?.['X-Api-Key']
     expect(headerValue).toBe('sk-test-123')
   })
+
+  it('resolves an input default from envs and sends it as a header placeholder', async () => {
+    mockFetch.mockReset()
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ data: { id: 'svc-1' } }) })
+
+    const warp: Warp = {
+      protocol: 'warp:3.0.0',
+      name: 'Collect Team Scoped',
+      title: 'Test',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      vars: {
+        JOAI_AGENT_AUTH_KEY: 'env:JOAI_AGENT_AUTH_KEY',
+        JOAI_TEAM_SLUG: 'env:JOAI_TEAM_SLUG',
+      },
+      actions: [
+        {
+          type: 'collect' as const,
+          label: 'Create',
+          destination: {
+            url: 'https://api.example.com/services',
+            method: 'POST' as const,
+            headers: {
+              'X-Agent-Auth-Key': '{{JOAI_AGENT_AUTH_KEY}}',
+              'X-Team': '{{team}}',
+            },
+          },
+          inputs: [
+            {
+              name: 'Team',
+              as: 'team',
+              type: 'string' as const,
+              source: 'field' as const,
+              required: false,
+              default: '{{JOAI_TEAM_SLUG}}',
+            },
+            { name: 'Name', as: 'name', type: 'string' as const, source: 'field' as const, required: true },
+          ],
+        } as WarpCollectAction,
+      ],
+    }
+
+    const executor = new WarpExecutor(envConfig, [envAdapter], {})
+    // Omit `team` — it must fall back to the JOAI_TEAM_SLUG env default
+    await executor.execute(warp, [], { envs: { JOAI_AGENT_AUTH_KEY: 'key-123', JOAI_TEAM_SLUG: 'ssd-hausbetreuung' } })
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    const fetchHeaders = mockFetch.mock.calls[0][1]?.headers as Record<string, string> | Headers
+    const authValue = fetchHeaders instanceof Headers ? fetchHeaders.get('X-Agent-Auth-Key') : fetchHeaders?.['X-Agent-Auth-Key']
+    const teamValue = fetchHeaders instanceof Headers ? fetchHeaders.get('X-Team') : fetchHeaders?.['X-Team']
+    expect(authValue).toBe('key-123')
+    expect(teamValue).toBe('ssd-hausbetreuung')
+  })
 })
 
 describe('WarpExecutor — collect → inline → prompt pipeline', () => {
