@@ -1,13 +1,42 @@
 import { WarpChainName, WarpConstants } from '../constants'
 import { ChainAdapter, WarpClientConfig } from '../types'
 import { WarpExecutionNextInfo, WarpExecutionOutput } from '../types/output'
-import { Warp, WarpNextConfig, WarpNextEntry } from '../types/warp'
+import { Warp, WarpNextConfig, WarpNextEntry, ResolvedInput } from '../types/warp'
 import { WarpLinkBuilder } from '../WarpLinkBuilder'
+import { WarpSerializer } from '../WarpSerializer'
 import { evaluateWhenCondition, getWarpActionByIndex, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
 import type { WarpRelatedEntry } from '../types'
 import { getWarpInfoFromIdentifier } from './identifier'
 
 const URL_PREFIX = 'https://'
+
+/**
+ * Builds the variable bag passed to next-URL interpolation. Includes the
+ * resolved inputs as native values under their plain key, merged with the
+ * output, so `{{name}}` and output names resolve consistently across action types.
+ */
+export const buildNextVars = (
+  resolvedInputs: ResolvedInput[] | null | undefined,
+  output: Record<string, any>,
+  serializer: WarpSerializer
+): Record<string, any> => {
+  const bag: Record<string, any> = {}
+  for (const ri of resolvedInputs ?? []) {
+    const key = ri.input.as || ri.input.name
+    if (!key || !ri.value) continue
+    let native: unknown = ri.value
+    try {
+      native = serializer.stringToNative(ri.value)[1]
+    } catch {
+      // Values may already be native (e.g. on-chain cached resolved inputs).
+    }
+    bag[key] = native
+  }
+  for (const [key, value] of Object.entries(output)) {
+    if (value !== null && value !== undefined) bag[key] = value
+  }
+  return bag
+}
 
 /**
  * Normalize a WarpNextEntry to a string identifier.

@@ -1,4 +1,4 @@
-import { findWarpAdapterForChain, getNextInfo, getWarpInfoFromIdentifier, getWarpInputAction } from './helpers'
+import { buildNextVars, findWarpAdapterForChain, getNextInfo, getWarpInfoFromIdentifier, getWarpInputAction } from './helpers'
 import { resolveWarpText } from './helpers/i18n'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 
@@ -168,7 +168,7 @@ export class WarpClient {
     const index = actionIndex ?? getWarpInputAction(warp).index + 1
     const adapter = findWarpAdapterForChain(chain, this.chains)
     const result = await adapter.output.getActionExecution(warp, index, tx)
-    result.next = getNextInfo(this.config, this.chains, warp, index, result.output)
+    result.next = getNextInfo(this.config, this.chains, warp, index, buildNextVars(result.resolvedInputs, result.output, this.factory.getSerializer()))
     return result
   }
 

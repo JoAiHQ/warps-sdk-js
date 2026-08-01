@@ -2743,3 +2743,42 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
     })
   })
 })
+
+describe('collect next interpolation', () => {
+  const handlers = { onExecuted: jest.fn(), onError: jest.fn() }
+  const config = {
+    env: 'devnet' as const,
+    user: { wallets: { multiversx: 'erd1...' } },
+    clientUrl: 'https://anyclient.com',
+    currentUrl: 'https://anyclient.com',
+  }
+  const adapters = [createMockAdapter()]
+  adapters[0].chain = WarpChainName.Multiversx
+  adapters[0].prefix = WarpChainName.Multiversx
+  const executor = new WarpExecutor(config, adapters, handlers)
+
+  it('interpolates collected inputs in the next identifier', async () => {
+    const formWarp = {
+      protocol: 'warp' as const,
+      name: 'form',
+      title: 'Form',
+      description: '',
+      chain: WarpChainName.Multiversx,
+      meta: { chain: 'multiversx', identifier: 'private_test', hash: 'hash1', creator: '', createdAt: '', query: null },
+      actions: [
+        {
+          type: 'collect' as const,
+          label: 'Form',
+          next: { success: 'next-warp?name={{name}}&email={{field_2}}' },
+          inputs: [
+            { name: 'name', type: 'string' as const, source: 'field' as const },
+            { name: 'field_2', type: 'string' as const, source: 'field' as const },
+          ],
+        } as WarpCollectAction,
+      ],
+    }
+    const result = await executor.execute(formWarp, ['string:Max', 'string:max@example.com'])
+    const execution = result.immediateExecutions[0]
+    expect(execution.next?.[0]?.identifier).toBe('next-warp?name=Max&email=max@example.com')
+  })
+})

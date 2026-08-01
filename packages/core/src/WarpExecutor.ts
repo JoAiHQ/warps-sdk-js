@@ -1,5 +1,6 @@
 import { safeWindow } from './constants'
 import {
+  buildNextVars,
   evaluateWhenCondition,
   extractCollectOutput,
   findWarpAdapterForChain,
@@ -507,7 +508,7 @@ export class WarpExecutor {
             }
           }
           const result = await adapter.output.getActionExecution(warp, currentActionIndex, chainAction.tx, resolvedInputs)
-          const nextVars = buildNextVars(resolvedInputs, result.output)
+          const nextVars = buildNextVars(resolvedInputs, result.output, this.factory.getSerializer())
           result.next = getNextInfoForStatus(this.config, this.adapters, warp, currentActionIndex, nextVars, result.status)
 
           if (result.status === 'success') {
@@ -836,7 +837,15 @@ export class WarpExecutor {
     output: any,
     rawData?: any
   ): WarpActionExecutionResult {
-    const next = getNextInfoForStatus(this.config, this.adapters, executable.warp, executable.action, output, status)
+    // Expose resolved inputs to next-URL interpolation, consistently with the on-chain and prompt paths via buildNextVars.
+    const next = getNextInfoForStatus(
+      this.config,
+      this.adapters,
+      executable.warp,
+      executable.action,
+      buildNextVars(executable.resolvedInputs, output, this.factory.getSerializer()),
+      status
+    )
 
     const resolvedInputs = extractResolvedInputValues(executable.resolvedInputs)
     return {
@@ -1048,7 +1057,7 @@ export class WarpExecutor {
         user: wallet,
         txHash: null,
         tx: null,
-        next: getNextInfo(this.config, this.adapters, preparedWarp, actionIndex, output),
+        next: getNextInfo(this.config, this.adapters, preparedWarp, actionIndex, buildNextVars(resolvedInputs, output, this.factory.getSerializer())),
         values,
         output,
         messages: applyOutputToMessages(preparedWarp, { ...values.mapped, ...output }, this.config),
@@ -1108,22 +1117,6 @@ export class WarpExecutor {
     WarpLogger.debug('[WarpExecutor] when condition:', { action: action.label || action.type, expression: action.when, interpolated: interpolatedWhen, mergedBag })
     return evaluateWhenCondition(interpolatedWhen)
   }
-}
-
-/**
- * Builds the variable bag passed to getNextInfo.
- * Resolved inputs are the base (always available from cache).
- * Non-null output values override inputs (on-chain output takes precedence).
- */
-const buildNextVars = (resolvedInputs: ResolvedInput[] | null | undefined, output: Record<string, any>): Record<string, any> => {
-  const inputVars = Object.fromEntries(
-    (resolvedInputs ?? []).flatMap((r) => {
-      const key = r.input.as || r.input.name
-      return key ? [[key, r.value]] : []
-    })
-  )
-  const outputVars = Object.fromEntries(Object.entries(output).filter(([, v]) => v !== null && v !== undefined))
-  return { ...inputVars, ...outputVars }
 }
 
 const parseStateValue = (value: string): string | number | boolean => {

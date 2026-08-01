@@ -1,6 +1,7 @@
 import { WarpExecutionOutput } from '../types/output'
-import { Warp, WarpNextConfig } from '../types/warp'
-import { getNextInfo, getNextInfoForStatus, resolveNextString, resolveNextStrings, resolveRelatedEntries } from './next'
+import { Warp, WarpNextConfig, ResolvedInput } from '../types/warp'
+import { WarpSerializer } from '../WarpSerializer'
+import { buildNextVars, getNextInfo, getNextInfoForStatus, resolveNextString, resolveNextStrings, resolveRelatedEntries } from './next'
 
 const emptyOutput: WarpExecutionOutput = {}
 
@@ -324,5 +325,39 @@ describe('resolveRelatedEntries', () => {
       { val: '123', prefix: 'pre' }
     )
     expect(result).toEqual(['static', 'dynamic?key=123', 'pre-suffix'])
+  })
+})
+
+describe('buildNextVars', () => {
+  const serializer = new WarpSerializer()
+
+  const input = (name: string, value: string, as?: string): ResolvedInput => ({
+    input: { name, ...(as ? { as } : {}), type: 'string', source: 'field' },
+    value,
+  })
+
+  it('exposes resolved inputs as native values under their plain key', () => {
+    const bag = buildNextVars([input('name', 'string:Max'), input('field_2', 'string:max@example.com')], {}, serializer)
+    expect(bag).toEqual({ name: 'Max', field_2: 'max@example.com' })
+  })
+
+  it('keys by the as alias when present', () => {
+    const bag = buildNextVars([input('Meeting Title', 'string:Intro Call', 'MEETING_TITLE')], {}, serializer)
+    expect(bag.MEETING_TITLE).toBe('Intro Call')
+  })
+
+  it('merges output over inputs', () => {
+    const bag = buildNextVars([input('name', 'string:Max')], { name: 'OutputName' }, serializer)
+    expect(bag.name).toBe('OutputName')
+  })
+
+  it('skips inputs without a value', () => {
+    const bag = buildNextVars([input('name', ''), input('email', 'string:max@example.com')], {}, serializer)
+    expect(bag).toEqual({ email: 'max@example.com' })
+  })
+
+  it('falls back to the raw value when it is not serialized', () => {
+    const bag = buildNextVars([input('TOKEN', 'abc-123')], {}, serializer)
+    expect(bag.TOKEN).toBe('abc-123')
   })
 })
