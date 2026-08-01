@@ -282,8 +282,8 @@ describe('WarpValidator', () => {
     })
   })
 
-  describe('validatePrimaryAction', () => {
-    it('validates successfully when non-detectable action is marked as primary', async () => {
+  describe('validateHasActions', () => {
+    it('validates successfully when only non-detectable actions exist', async () => {
       const validator = new WarpValidator(defaultConfig)
       const warp = createWarp({
         actions: [
@@ -306,7 +306,7 @@ describe('WarpValidator', () => {
       expect(result.errors).toContain('Warp has no actions: undefined')
     })
 
-    it('validates successfully when single non-detectable action is marked as primary', async () => {
+    it('validates successfully when a single non-detectable action exists', async () => {
       const validator = new WarpValidator(defaultConfig)
       const warp = createWarp({
         actions: [{ type: 'link', label: 'test link', url: 'https://test.com' }],
@@ -316,7 +316,7 @@ describe('WarpValidator', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('validates successfully when only non-detectable actions exist without primary flag', async () => {
+    it('validates successfully when actions exist without an explicit input action', async () => {
       const validator = new WarpValidator(defaultConfig)
       const warp = createWarp({
         actions: [{ type: 'link', label: 'test link', url: 'https://test.com' }],
@@ -339,7 +339,7 @@ describe('WarpValidator', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('validates successfully when action has primary flag', async () => {
+    it('validates successfully when a transfer action exists', async () => {
       const configWithoutSchema = createMockConfig({ schema: undefined })
       const validator = new WarpValidator(configWithoutSchema)
       const warp = createWarp({

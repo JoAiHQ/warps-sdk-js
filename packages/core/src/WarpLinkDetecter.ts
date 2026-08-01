@@ -71,6 +71,8 @@ export class WarpLinkDetecter {
 
     try {
       const { type, identifierBase } = identifierResult
+      // The chain is optional on identifiers; default to the first adapter (SDK convention).
+      const chain = identifierResult.chain ?? this.adapters[0]?.chainInfo.name ?? null
       let warp: Warp | null = null
       let registryInfo: WarpRegistryInfo | null = null
       let brand: WarpBrand | null = null
@@ -86,7 +88,7 @@ export class WarpLinkDetecter {
         if (type === 'hash') {
           result = await this.resolver.getByHash(identifierBase, cache)
         } else if (type === 'alias') {
-          const fullKey = `${identifierResult.chain}:${identifierBase}`
+          const fullKey = `${chain}:${identifierBase}`
           result = await this.resolver.getByAlias(fullKey, cache)
             || await this.resolver.getByAlias(identifierBase, cache)
         }
@@ -97,8 +99,8 @@ export class WarpLinkDetecter {
           brand = result.brand
         }
       } else {
-        if (!identifierResult.chain) throw new Error(`WarpLinkDetecter: chain is required for identifier ${identifierResult.identifier}`)
-        const adapter = findWarpAdapterForChain(identifierResult.chain, this.adapters)
+        if (!chain) throw new Error(`WarpLinkDetecter: chain is required for identifier ${identifierResult.identifier}`)
+        const adapter = findWarpAdapterForChain(chain, this.adapters)
 
         if (type === 'hash') {
           warp = await adapter.builder().createFromTransactionHash(identifierBase, cache)
@@ -116,7 +118,7 @@ export class WarpLinkDetecter {
       }
 
       if (warp && warp.meta) {
-        modifyWarpMetaIdentifier(warp, identifierResult.chain, registryInfo, identifierResult.identifier)
+        modifyWarpMetaIdentifier(warp, chain, registryInfo, identifierResult.identifier)
         warp.meta.query = queryString ? parseWarpQueryStringToObject(queryString) : null
       }
 
@@ -124,7 +126,7 @@ export class WarpLinkDetecter {
         return emptyResult
       }
 
-      const warpChain = warp.chain || identifierResult.chain || null
+      const warpChain = warp.chain || chain || null
       const warpAdapter = warpChain ? this.adapters.find((a) => a.chainInfo.name.toLowerCase() === warpChain.toLowerCase()) : null
       const preparedWarp = warpAdapter
         ? await new WarpInterpolator(this.config, warpAdapter, this.adapters).apply(warp)

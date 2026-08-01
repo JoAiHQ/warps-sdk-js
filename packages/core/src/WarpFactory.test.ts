@@ -20,7 +20,7 @@ describe('getNextInfo', () => {
     }
     const adapter = createMockAdapter()
     const result = getNextInfo(testConfig, [adapter], warp, 0, {})
-    expect(result?.[0].url).toBe('https://devnet.usewarp.to/multiversx%3Amywarp')
+    expect(result?.[0].url).toBe('https://devnet.usewarp.to/%40mywarp')
   })
 
   it('returns info for a warp with next', () => {
@@ -30,7 +30,7 @@ describe('getNextInfo', () => {
     }
     const adapter = createMockAdapter()
     const result = getNextInfo(testConfig, [adapter], warp, 0, {})
-    expect(result?.[0].url).toBe('https://devnet.usewarp.to/multiversx%3Anext-warp')
+    expect(result?.[0].url).toBe('https://devnet.usewarp.to/%40next-warp')
   })
 
   it('returns info for a warp with hash', () => {
@@ -40,7 +40,7 @@ describe('getNextInfo', () => {
     }
     const adapter = createMockAdapter()
     const result = getNextInfo(testConfig, [adapter], warp, 0, {})
-    expect(result?.[0].url).toBe('https://devnet.usewarp.to/multiversx%3Ahash%3A123')
+    expect(result?.[0].url).toBe('https://devnet.usewarp.to/%40123')
   })
 
   it('returns info for a warp with query params', () => {
@@ -50,7 +50,7 @@ describe('getNextInfo', () => {
     }
     const adapter = createMockAdapter()
     const result = getNextInfo(testConfig, [adapter], warp, 0, {})
-    expect(result?.[0].url).toBe('https://devnet.usewarp.to/multiversx%3Amywarp?param1=value1&param2=value2')
+    expect(result?.[0].url).toBe('https://devnet.usewarp.to/%40mywarp?param1=value1&param2=value2')
   })
 
   it('returns info for multiple results', () => {
@@ -61,8 +61,8 @@ describe('getNextInfo', () => {
     const adapter = createMockAdapter()
     const result = getNextInfo(testConfig, [adapter], warp, 0, { address: ['ABC', 'DEF'] })
     expect(result).toEqual([
-      { identifier: 'mywarp?address=ABC', url: 'https://devnet.usewarp.to/multiversx%3Amywarp?address=ABC' },
-      { identifier: 'mywarp?address=DEF', url: 'https://devnet.usewarp.to/multiversx%3Amywarp?address=DEF' },
+      { identifier: 'mywarp?address=ABC', url: 'https://devnet.usewarp.to/%40mywarp?address=ABC' },
+      { identifier: 'mywarp?address=DEF', url: 'https://devnet.usewarp.to/%40mywarp?address=DEF' },
     ])
   })
 
@@ -74,7 +74,7 @@ describe('getNextInfo', () => {
     }
     const adapter = createMockAdapter()
     const result = getNextInfo(config, [adapter], warp, 0, {})
-    expect(result?.[0].url).toBe('https://usewarp.to/multiversx%3Amywarp?param1=value1&param2=value2')
+    expect(result?.[0].url).toBe('https://usewarp.to/%40mywarp?param1=value1&param2=value2')
   })
 
   // --- Object next config: success path ---
@@ -833,8 +833,8 @@ describe('WarpFactory', () => {
     })
   })
 
-  describe('primary input references', () => {
-    it('interpolates primary input references in non-primary action args', async () => {
+  describe('input reference interpolation via envs', () => {
+    it('interpolates env values in action args', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -844,35 +844,18 @@ describe('WarpFactory', () => {
             label: 'Approve',
             address: 'erd1token',
             func: 'approve',
-            args: ['address:{{BRIDGE}}', '{{primary.AMOUNT}}'],
+            args: ['address:{{BRIDGE}}', '{{AMOUNT}}'],
             gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
-            inputs: [
-              { name: 'Token', as: 'TOKEN', type: 'address', position: 'arg:1', source: 'field' },
-              { name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:2', source: 'field' },
-              { name: 'Receiver', as: 'RECEIVER', type: 'string', position: 'arg:3', source: 'field' },
-            ],
           } as WarpContractAction,
         ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
+        vars: { BRIDGE: 'erd1bridge' },
       }
-      const result = await factory.createExecutable(warp, 1, ['address:erd1token', 'uint256:1000', 'string:erd1receiver'])
+      const result = await factory.createExecutable(warp, 1, [], { envs: { AMOUNT: '1000' } })
       expect(result.args[0]).toBe('address:erd1bridge')
       expect(result.args[1]).toBe('1000')
     })
 
-    it('interpolates primary input references in non-primary action address', async () => {
+    it('interpolates env values in action address', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -880,37 +863,21 @@ describe('WarpFactory', () => {
           {
             type: 'contract',
             label: 'Approve',
-            address: '{{primary.TOKEN}}',
+            address: '{{TOKEN}}',
             func: 'approve',
-            args: ['address:{{BRIDGE}}', '{{primary.AMOUNT}}'],
+            args: ['address:{{BRIDGE}}', '{{AMOUNT}}'],
             gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
-            inputs: [
-              { name: 'Token', as: 'TOKEN', type: 'address', position: 'arg:1', source: 'field' },
-              { name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:2', source: 'field' },
-            ],
           } as WarpContractAction,
         ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
+        vars: { BRIDGE: 'erd1bridge' },
       }
-      const result = await factory.createExecutable(warp, 1, ['address:erd1token', 'uint256:1000'])
+      const result = await factory.createExecutable(warp, 1, [], { envs: { TOKEN: 'erd1token', AMOUNT: '1000' } })
       expect(result.destination).toBe('erd1token')
       expect(result.args[0]).toBe('address:erd1bridge')
       expect(result.args[1]).toBe('1000')
     })
 
-    it('interpolates primary input references in non-primary action value', async () => {
+    it('interpolates env values in action value', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -919,24 +886,15 @@ describe('WarpFactory', () => {
             type: 'transfer',
             label: 'Pre-transfer',
             address: 'erd1dest',
-            value: '{{primary.AMOUNT}}',
-            primary: false,
-          },
-          {
-            type: 'transfer',
-            label: 'Main Transfer',
-            address: 'erd1dest',
-            value: '0',
-            primary: true,
-            inputs: [{ name: 'Amount', as: 'AMOUNT', type: 'biguint', position: 'value', source: 'field' }],
+            value: '{{AMOUNT}}',
           },
         ],
       }
-      const result = await factory.createExecutable(warp, 1, ['biguint:500'])
+      const result = await factory.createExecutable(warp, 1, [], { envs: { AMOUNT: '500' } })
       expect(result.value).toBe(BigInt(500))
     })
 
-    it('primary action resolves its own inputs', async () => {
+    it('action resolves its own inputs', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -948,20 +906,17 @@ describe('WarpFactory', () => {
             func: 'deposit',
             args: [],
             gasLimit: 200000,
-            primary: true,
             inputs: [{ name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' }],
           } as WarpContractAction,
         ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
+        vars: { BRIDGE: 'erd1bridge' },
       }
       const result = await factory.createExecutable(warp, 1, ['uint256:1000'])
       expect(result.args[0]).toBe('uint256:1000')
       expect(result.destination).toBe('erd1bridge')
     })
 
-    it('handles multiple primary input references in same arg', async () => {
+    it('interpolates multiple env references in the same arg', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -971,35 +926,16 @@ describe('WarpFactory', () => {
             label: 'Approve',
             address: 'erd1token',
             func: 'approve',
-            args: ['address:{{BRIDGE}}', '{{primary.AMOUNT}}'],
+            args: ['{{TOKEN}}-{{AMOUNT}}'],
             gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
-            inputs: [
-              { name: 'Token', as: 'TOKEN', type: 'address', position: 'arg:1', source: 'field' },
-              { name: 'Amount', as: 'AMOUNT', type: 'uint256', position: 'arg:2', source: 'field' },
-              { name: 'Receiver', as: 'RECEIVER', type: 'string', position: 'arg:3', source: 'field' },
-            ],
           } as WarpContractAction,
         ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
       }
-      const result = await factory.createExecutable(warp, 1, ['address:erd1token', 'uint256:1000', 'string:erd1receiver'])
-      expect(result.args[0]).toBe('address:erd1bridge')
-      expect(result.args[1]).toBe('1000')
+      const result = await factory.createExecutable(warp, 1, [], { envs: { TOKEN: 'abc', AMOUNT: '1000' } })
+      expect(result.args[0]).toBe('abc-1000')
     })
 
-    it('handles primary input references when primary action has no inputs', async () => {
+    it('interpolates nested asset properties from envs', async () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const warp: any = {
         meta: { hash: 'abc' },
@@ -1007,108 +943,23 @@ describe('WarpFactory', () => {
           {
             type: 'contract',
             label: 'Approve',
-            address: 'erd1token',
+            address: '{{asset.token}}',
             func: 'approve',
-            args: ['address:{{BRIDGE}}', '{{primary.AMOUNT}}'],
+            args: ['address:{{BRIDGE}}', 'uint256:{{asset.amount}}'],
             gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
           } as WarpContractAction,
         ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
+        vars: { BRIDGE: 'erd1bridge' },
       }
-      const result = await factory.createExecutable(warp, 1, [])
-      expect(result.args[0]).toBe('address:erd1bridge')
-      expect(result.args[1]).toBe('')
-    })
-
-    it('interpolates primary input references by name when as is not present', async () => {
-      const factory = new WarpFactory(config, [createMockAdapter()])
-      const warp: any = {
-        meta: { hash: 'abc' },
-        actions: [
-          {
-            type: 'contract',
-            label: 'Approve',
-            address: 'erd1token',
-            func: 'approve',
-            args: ['address:{{BRIDGE}}', '{{primary.AMOUNT}}'],
-            gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
-            inputs: [{ name: 'AMOUNT', type: 'uint256', position: 'arg:1', source: 'field' }],
-          } as WarpContractAction,
-        ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
-      }
-      const result = await factory.createExecutable(warp, 1, ['uint256:1000'])
-      expect(result.args[0]).toBe('address:erd1bridge')
-      expect(result.args[1]).toBe('1000')
-    })
-
-    it('interpolates nested asset properties in non-primary action', async () => {
-      const factory = new WarpFactory(config, [createMockAdapter()])
-      const warp: any = {
-        meta: { hash: 'abc' },
-        actions: [
-          {
-            type: 'contract',
-            label: 'Approve',
-            address: '{{primary.asset.token}}',
-            func: 'approve',
-            args: ['address:{{BRIDGE}}', 'uint256:{{primary.asset.amount}}'],
-            gasLimit: 200000,
-            primary: false,
-          } as WarpContractAction,
-          {
-            type: 'contract',
-            label: 'Deposit',
-            address: '{{BRIDGE}}',
-            func: 'deposit',
-            args: [],
-            gasLimit: 200000,
-            primary: true,
-            inputs: [
-              {
-                name: 'Asset',
-                as: 'asset',
-                type: 'asset',
-                position: { token: 'arg:1', amount: 'arg:2' },
-                source: 'field',
-              },
-            ],
-          } as WarpContractAction,
-        ],
-        vars: {
-          BRIDGE: 'erd1bridge',
-        },
-      }
-      const result = await factory.createExecutable(warp, 1, ['asset:EGLD|1'])
+      const result = await factory.createExecutable(warp, 1, [], {
+        envs: { 'asset.token': 'EGLD', 'asset.amount': '1000000000000000000' },
+      })
       expect(result.destination).toBe('EGLD')
       expect(result.args[0]).toBe('address:erd1bridge')
       expect(result.args[1]).toBe('uint256:1000000000000000000')
     })
   })
+
 
   describe('mcp actions', () => {
     it('resolves inputs for mcp actions', async () => {

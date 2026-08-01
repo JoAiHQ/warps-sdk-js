@@ -170,7 +170,7 @@ describe('WarpExecutor — compute action', () => {
 })
 
 describe('getWarpInputAction — compute type', () => {
-  it('detects compute as primary action when mixed with non-detectable types', async () => {
+  it('detects compute as the input action when mixed with non-detectable types', async () => {
     const { getWarpInputAction } = await import('./helpers/general')
     const warp = {
       ...createMockWarp(),

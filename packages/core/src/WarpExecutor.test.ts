@@ -1262,7 +1262,6 @@ describe('WarpExecutor', () => {
             func: 'approve',
             args: ['address:erd1bridge', 'uint256:1000'],
             gasLimit: 200000,
-            primary: true,
             inputs: [
               {
                 name: 'Token',
@@ -1280,7 +1279,7 @@ describe('WarpExecutor', () => {
             func: 'deposit',
             args: [],
             gasLimit: 200000,
-            when: "{{primary.TOKEN}} === '0x0000000000000000000000000000000000000000'",
+            when: "{{TOKEN}} === '0x0000000000000000000000000000000000000000'",
           },
         ],
       }
@@ -1301,7 +1300,6 @@ describe('WarpExecutor', () => {
             func: 'approve',
             args: ['address:erd1bridge', 'uint256:1000'],
             gasLimit: 200000,
-            primary: true,
             inputs: [
               {
                 name: 'Token',
@@ -1319,7 +1317,7 @@ describe('WarpExecutor', () => {
             func: 'deposit',
             args: [],
             gasLimit: 200000,
-            when: "{{primary.TOKEN}} === 'erd1token'",
+            when: "{{TOKEN}} === 'erd1token'",
           },
         ],
       }
@@ -1348,7 +1346,7 @@ describe('WarpExecutor', () => {
       expect(result.txs.length).toBe(1)
     })
 
-    it('should handle when condition with primary asset properties', async () => {
+    it('should handle when condition referencing asset properties', async () => {
       const contractWarp = {
         ...warp,
         chain: WarpChainName.Multiversx,
@@ -1360,7 +1358,6 @@ describe('WarpExecutor', () => {
             func: 'deposit',
             args: [],
             gasLimit: 200000,
-            primary: true,
             inputs: [
               {
                 name: 'Asset',
@@ -1374,11 +1371,11 @@ describe('WarpExecutor', () => {
           {
             type: 'contract' as const,
             label: 'Approve',
-            address: '{{primary.asset.token}}',
+            address: '{{asset.token}}',
             func: 'approve',
-            args: ['address:erd1bridge', 'uint256:{{primary.asset.amount}}'],
+            args: ['address:erd1bridge', 'uint256:{{asset.amount}}'],
             gasLimit: 200000,
-            when: "{{primary.asset.token}} === 'EGLD'",
+            when: "{{asset.token}} === 'EGLD'",
           },
         ],
       }
@@ -1403,7 +1400,6 @@ describe('WarpExecutor', () => {
             func: 'deposit',
             args: [],
             gasLimit: 200000,
-            primary: true,
             inputs: [
               {
                 name: 'Token',
@@ -1418,7 +1414,7 @@ describe('WarpExecutor', () => {
             type: 'link' as const,
             label: 'External Link',
             url: 'https://example.com',
-            when: "{{primary.TOKEN}} === '0x0000000000000000000000000000000000000000'",
+            when: "{{TOKEN}} === '0x0000000000000000000000000000000000000000'",
           },
         ],
       }
@@ -1435,7 +1431,6 @@ describe('WarpExecutor', () => {
           {
             type: 'collect' as const,
             label: 'Announce',
-            primary: true,
             auto: true,
             when: '{{state.active}} === true',
             inputs: [],
@@ -1455,7 +1450,6 @@ describe('WarpExecutor', () => {
           {
             type: 'collect' as const,
             label: 'Announce',
-            primary: true,
             auto: true,
             when: '{{state.active}} === true',
             inputs: [],
@@ -1557,7 +1551,6 @@ describe('WarpExecutor', () => {
             label: 'MCP Tool',
             destination: undefined,
             inputs: [],
-            primary: true,
           } as WarpMcpAction,
         ],
       }
@@ -1594,7 +1587,6 @@ describe('WarpExecutor', () => {
                 position: 'payload:name',
               },
             ],
-            primary: true,
           } as WarpMcpAction,
         ],
       }
@@ -1818,9 +1810,9 @@ describe('WarpExecutor — inline action', () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'contact-123' }) })
     // Clear checkpoint cache to prevent cross-test pollution (MemoryCacheStrategy is static)
     const cleanup = new WarpExecutor(config, [adapter], {})
-    cleanup.factory.getCache().delete('warp-checkpoint:default:')
-    cleanup.factory.getCache().delete('warp-checkpoint:default:@joai/parent')
-    cleanup.factory.getCache().delete('warp-checkpoint:test-room:@joai/parent')
+    cleanup['factory'].getCache().delete('warp-checkpoint:default:')
+    cleanup['factory'].getCache().delete('warp-checkpoint:default:@joai/parent')
+    cleanup['factory'].getCache().delete('warp-checkpoint:test-room:@joai/parent')
   })
 
   it('executes an inline sub-warp when resolveWarp is set', async () => {

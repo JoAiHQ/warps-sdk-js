@@ -204,6 +204,14 @@ export class WarpExecutor {
           if (key && ri.value !== null && ri.value !== undefined) {
             const [, native] = this.factory.getSerializer().stringToNative(ri.value)
             outputBag[key] = native ?? ri.value
+            if (ri.input.type === 'asset' && typeof native === 'object' && native !== null) {
+              const asset = native as { identifier?: string; amount?: bigint }
+              if ('identifier' in asset && 'amount' in asset) {
+                outputBag[`${key}.token`] = asset.identifier
+                outputBag[`${key}.identifier`] = asset.identifier
+                outputBag[`${key}.amount`] = String(asset.amount)
+              }
+            }
           }
         }
       }

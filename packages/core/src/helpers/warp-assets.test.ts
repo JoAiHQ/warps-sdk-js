@@ -12,7 +12,7 @@ const makeWarp = (type: string, inputs: any[] = []): Warp => ({
   name: 'test-warp',
   title: 'Test Warp',
   description: null,
-  actions: [{ type, label: 'Action', inputs, primary: true } as any],
+  actions: [{ type, label: 'Action', inputs } as any],
 })
 
 const makeAdapter = (assets: any[]) => ({
