@@ -972,7 +972,6 @@ describe('WarpFactory', () => {
             label: 'Transfer',
             address: 'erd1dest',
             value: '0',
-            primary: true,
           },
           {
             type: 'mcp',
@@ -985,7 +984,6 @@ describe('WarpFactory', () => {
               { name: 'Name', type: 'string', position: 'payload:name', source: 'field' },
               { name: 'Quantity', type: 'uint256', position: 'payload:quantity', source: 'field' },
             ],
-            primary: false,
           } as WarpMcpAction,
         ],
       }
@@ -1013,7 +1011,6 @@ describe('WarpFactory', () => {
               tool: 'test_tool',
             },
             inputs: [],
-            primary: true,
           } as WarpMcpAction,
         ],
       }
