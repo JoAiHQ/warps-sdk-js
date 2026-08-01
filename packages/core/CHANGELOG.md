@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.39.4
+
+### Patch Changes
+
+- 8dee6e4: Interpolate resolved inputs in next URLs for collect/compute/mcp/prompt and on-chain actions via a shared `buildNextVars` helper, so `{{inputName}}` placeholders in `next` resolve consistently across all action types.
+
 ## 4.39.3
 
 ### Patch Changes
