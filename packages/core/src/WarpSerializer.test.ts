@@ -358,7 +358,7 @@ describe('WarpSerializer', () => {
     })
 
     it('handles getStringTypedInputs for json fields', () => {
-      const factory = new WarpFactory({ currentUrl: 'https://test.com' } as any, {} as any, serializer)
+      const factory = new WarpFactory({ currentUrl: 'https://test.com' } as any, {} as any)
       const action = {
         inputs: [
           { name: 'Tagline', as: 'tagline', type: 'json' as any, source: 'field' as any },

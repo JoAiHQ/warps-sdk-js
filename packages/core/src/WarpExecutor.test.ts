@@ -2110,7 +2110,7 @@ describe('WarpExecutor — inline action', () => {
     }))
 
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ customer: 'Acme' }) })
-    const parentWarp = {
+    const parentWarp: Warp = {
       ...baseWarp,
       meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
       actions: [
@@ -2146,7 +2146,7 @@ describe('WarpExecutor — inline action', () => {
 
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ key: 'action-1-output' }) })
 
-    const parentWarp = {
+    const parentWarp: Warp = {
       ...baseWarp,
       meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
       actions: [
@@ -2191,7 +2191,7 @@ describe('WarpExecutor — inline action', () => {
 
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) })
 
-    const parentWarp = {
+    const parentWarp: Warp = {
       ...baseWarp,
       meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
       actions: [
@@ -2206,7 +2206,7 @@ describe('WarpExecutor — inline action', () => {
 
     // Executing a DIFFERENT warp (no meta.identifier = empty string) in the same scope
     // should NOT trigger auto-resume — the checkpoint identifier doesn't match
-    const differentWarp = {
+    const differentWarp: Warp = {
       ...baseWarp,
       actions: [{ type: 'inline', label: 'Inline', warp: '@joai/sub-action?name=Hourly' }],
     }
@@ -2234,7 +2234,7 @@ describe('WarpExecutor — inline action', () => {
 
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) })
 
-    const parentWarp = {
+    const parentWarp: Warp = {
       ...baseWarp,
       meta: { identifier: '@joai/parent', chain: WarpChainName.Multiversx, hash: '', creator: '', createdAt: '', query: null },
       actions: [
@@ -2694,7 +2694,7 @@ describe('WarpExecutor — collect → inline → prompt pipeline', () => {
       expect(result.immediateExecutions[1].envs!.initial).toBe('value')
       // Each action's own output is in its own envs (including the last action)
       expect(result.immediateExecutions[0].envs!.id).toBe('svc-789')
-      expect(result.immediateExecutions[1].envs!.result).toBe('ok')
+      expect(result.immediateExecutions[1].envs!.PROMPT).toBe('ok')
       // Earlier action outputs are passed to later actions
       expect(result.immediateExecutions[1].envs!.id).toBe('svc-789')
     })
@@ -2758,13 +2758,13 @@ describe('collect next interpolation', () => {
   const executor = new WarpExecutor(config, adapters, handlers)
 
   it('interpolates collected inputs in the next identifier', async () => {
-    const formWarp = {
+    const formWarp: Warp = {
       protocol: 'warp' as const,
       name: 'form',
       title: 'Form',
       description: '',
       chain: WarpChainName.Multiversx,
-      meta: { chain: 'multiversx', identifier: 'private_test', hash: 'hash1', creator: '', createdAt: '', query: null },
+      meta: { chain: WarpChainName.Multiversx, identifier: 'private_test', hash: 'hash1', creator: '', createdAt: '', query: null },
       actions: [
         {
           type: 'collect' as const,

@@ -50,7 +50,6 @@ describe('buildNestedPayload', () => {
       },
     })
   })
-})
 
   it('should not double-nest when position key matches field name', () => {
     const result = buildNestedPayload('payload:integration', 'integration', 'email')
