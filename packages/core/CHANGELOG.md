@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 4.40.0
+
+### Minor Changes
+
+- 1f3d7a6: Migrate to @modelcontextprotocol v2 (server/client package split). Drops the v1 SDK, `@modelcontextprotocol/ext-apps`, and zod-compat helpers; annotates warp tools from their action types; executes MCP actions via the v2 client.
+
 ## 4.39.4
 
 ### Patch Changes
