@@ -1,5 +1,4 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { Warp, WarpClientConfig } from '@joai/warps'
 import { convertMcpToolToWarp } from './helpers/warps'
 

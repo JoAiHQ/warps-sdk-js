@@ -66,7 +66,7 @@ const convertJsonSchemaTypeToWarpType = (type: string, format?: string): WarpAct
   return 'string'
 }
 
-type JsonSchemaProperty = {
+type ToolSchemaProperty = {
   type?: string
   format?: string
   title?: string
@@ -74,14 +74,26 @@ type JsonSchemaProperty = {
   default?: unknown
 }
 
-type JsonSchema = {
-  properties?: Record<string, JsonSchemaProperty>
-  required?: string[]
+const toToolSchemaProperty = (value: unknown): ToolSchemaProperty => {
+  if (typeof value !== 'object' || value === null) return {}
+  return value as ToolSchemaProperty
+}
+
+type McpToolLike = {
+  name: string
+  description?: string
+  inputSchema?: { properties?: Record<string, unknown>; required?: string[] }
+  outputSchema?: Record<string, unknown>
+}
+
+const getSchemaProperties = (schema: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
+  if (!schema || typeof schema.properties !== 'object' || schema.properties === null) return undefined
+  return schema.properties as Record<string, unknown>
 }
 
 export const convertMcpToolToWarp = async (
   config: WarpClientConfig,
-  tool: { name: string; description?: string; inputSchema?: JsonSchema; outputSchema?: JsonSchema },
+  tool: McpToolLike,
   url: string,
   headers?: Record<string, string>
 ): Promise<Warp> => {
@@ -91,23 +103,22 @@ export const convertMcpToolToWarp = async (
     const properties = tool.inputSchema.properties
     const required = tool.inputSchema.required || []
 
-    Object.entries(properties).forEach(([key, value]: [string, JsonSchemaProperty]) => {
+    Object.entries(properties).forEach(([key, value]) => {
+      const prop = toToolSchemaProperty(value)
       const isRequired = required.includes(key)
-      const inputType = convertJsonSchemaTypeToWarpType(value.type || 'string', value.format)
+      const inputType = convertJsonSchemaTypeToWarpType(prop.type || 'string', prop.format)
 
       const inputDef: WarpActionInput = {
         name: key,
-        label: typeof value.title === 'string' ? { en: value.title } : value.title || { en: key },
-        description: value.description ? { en: value.description.trim() } : null,
+        label: typeof prop.title === 'string' ? { en: prop.title } : { en: key },
+        description: prop.description ? { en: prop.description.trim() } : null,
         type: inputType,
         position: `payload:${key}` as WarpActionInput['position'],
         source: 'field',
         required: isRequired,
-        ...((value.default !== undefined && typeof value.default === 'string') ||
-        typeof value.default === 'number' ||
-        typeof value.default === 'boolean'
-          ? { default: value.default as string | number | boolean }
-          : {}),
+        ...((typeof prop.default === 'string' || typeof prop.default === 'number' || typeof prop.default === 'boolean'
+          ? { default: prop.default }
+          : {})),
       }
 
       inputs.push(inputDef)
@@ -115,8 +126,9 @@ export const convertMcpToolToWarp = async (
   }
 
   const output: Record<string, string> = {}
-  if (tool.outputSchema?.properties) {
-    Object.keys(tool.outputSchema.properties).forEach((key) => {
+  const outputProperties = getSchemaProperties(tool.outputSchema)
+  if (outputProperties) {
+    Object.keys(outputProperties).forEach((key) => {
       output[key] = `out.${key}`
     })
   }

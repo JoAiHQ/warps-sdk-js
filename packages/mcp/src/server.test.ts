@@ -1,20 +1,8 @@
-const mockRegisterAppTool = jest.fn()
-const mockRegisterAppResource = jest.fn()
-const mockNormalizeObjectSchema = jest.fn((schema) => schema)
-
 const mockMcpServerCtor = jest.fn()
 
-jest.mock('@modelcontextprotocol/ext-apps/server', () => ({
-  registerAppTool: mockRegisterAppTool,
-  registerAppResource: mockRegisterAppResource,
-}))
-
-jest.mock('@modelcontextprotocol/sdk/server/zod-compat.js', () => ({
-  normalizeObjectSchema: mockNormalizeObjectSchema,
-}))
-
-jest.mock('@modelcontextprotocol/sdk/server/mcp.js', () => ({
+jest.mock('@modelcontextprotocol/server', () => ({
   McpServer: mockMcpServerCtor,
+  fromJsonSchema: (schema: unknown) => ({ __jsonSchema: schema }),
 }))
 
 import { createMcpServerFromWarps } from './server'
@@ -26,12 +14,15 @@ const createMockServerInstance = () => ({
 })
 
 describe('createMcpServerFromWarps', () => {
+  let server: ReturnType<typeof createMockServerInstance>
+
   beforeEach(() => {
     jest.clearAllMocks()
-    mockMcpServerCtor.mockImplementation(() => createMockServerInstance())
+    server = createMockServerInstance()
+    mockMcpServerCtor.mockImplementation(() => server)
   })
 
-  it('passes MCP app ui permissions through without legacy normalization', async () => {
+  it('passes MCP app ui permissions through on resources', async () => {
     createMcpServerFromWarps(
       { name: 'test-server' },
       [{ name: 'test-warp' } as any],
@@ -56,8 +47,8 @@ describe('createMcpServerFromWarps', () => {
       jest.fn()
     )
 
-    expect(mockRegisterAppResource).toHaveBeenCalledTimes(1)
-    expect(mockRegisterAppResource.mock.calls[0]?.[3]).toMatchObject({
+    expect(server.registerResource).toHaveBeenCalledTimes(1)
+    expect(server.registerResource.mock.calls[0]?.[2]).toMatchObject({
       _meta: {
         ui: {
           permissions: {
@@ -67,10 +58,10 @@ describe('createMcpServerFromWarps', () => {
         },
       },
     })
-    const resourceHandler = mockRegisterAppResource.mock.calls[0]?.[4] as (() => Promise<{ contents: Array<Record<string, any>> }>) | undefined
+    const resourceHandler = server.registerResource.mock.calls[0]?.[3] as () => Promise<{ contents: Array<Record<string, any>> }>
     expect(resourceHandler).toBeDefined()
 
-    const result = await resourceHandler!()
+    const result = await resourceHandler()
     expect(result.contents[0]?._meta?.ui?.permissions).toEqual({
       camera: {},
       clipboardWrite: {},
@@ -100,8 +91,8 @@ describe('createMcpServerFromWarps', () => {
       jest.fn()
     )
 
-    const resourceHandler = mockRegisterAppResource.mock.calls[0]?.[4] as (() => Promise<{ contents: Array<Record<string, any>> }>) | undefined
-    const result = await resourceHandler!()
+    const resourceHandler = server.registerResource.mock.calls[0]?.[3] as () => Promise<{ contents: Array<Record<string, any>> }>
+    const result = await resourceHandler()
 
     expect(result.contents[0]?._meta).toMatchObject({
       ui: { permissions: { microphone: {} } },
@@ -125,7 +116,8 @@ describe('createMcpServerFromWarps', () => {
       jest.fn()
     )
 
-    expect(mockRegisterAppResource).toHaveBeenCalledTimes(1)
-    expect(mockRegisterAppResource.mock.calls[0]?.[2]).toBe('ui://widget/test-no-mime')
+    expect(server.registerResource).toHaveBeenCalledTimes(1)
+    expect(server.registerResource.mock.calls[0]?.[1]).toBe('ui://widget/test-no-mime')
+    expect(server.registerResource.mock.calls[0]?.[2]).toMatchObject({ mimeType: 'text/html;profile=mcp-app' })
   })
 })

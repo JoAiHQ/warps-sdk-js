@@ -1,10 +1,9 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { WarpMcpAction } from '@joai/warps'
 import { WarpMcp } from './WarpMcp'
 
-jest.mock('@modelcontextprotocol/sdk/client/index.js')
-jest.mock('@modelcontextprotocol/sdk/client/streamableHttp.js')
+jest.mock('@modelcontextprotocol/client')
+jest.mock('@modelcontextprotocol/client')
 
 describe('WarpMcp', () => {
   const mockUrl = 'https://mcp.example.com'

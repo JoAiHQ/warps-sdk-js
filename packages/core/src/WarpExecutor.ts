@@ -692,10 +692,9 @@ export class WarpExecutor {
     let Client: any
     let StreamableHTTPClientTransport: any
     try {
-      const clientModule = await import('@modelcontextprotocol/sdk/client/index.js')
+      const clientModule = await import('@modelcontextprotocol/client')
       Client = clientModule.Client
-      const streamableHttp = await import('@modelcontextprotocol/sdk/client/streamableHttp.js')
-      StreamableHTTPClientTransport = streamableHttp.StreamableHTTPClientTransport
+      StreamableHTTPClientTransport = clientModule.StreamableHTTPClientTransport
     } catch (error) {
       const resolvedInputs = extractResolvedInputValues(executable.resolvedInputs)
       return {
@@ -707,7 +706,7 @@ export class WarpExecutor {
         tx: null,
         next: null,
         values: { string: [], native: [], mapped: {} },
-        output: { _DATA: new Error('Please install @modelcontextprotocol/sdk to execute MCP warps or mcp actions') },
+        output: { _DATA: new Error('Please install @modelcontextprotocol/client to execute MCP warps or mcp actions') },
         messages: {},
         destination: this.getDestinationFromResolvedInputs(executable),
         resolvedInputs,

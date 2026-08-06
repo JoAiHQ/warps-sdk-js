@@ -40,6 +40,7 @@
     "mppx": "^0.4.7",
     "ajv": "^8.18.0",
     "protobufjs": "^8.0.0",
-    "qr-code-styling": "^1.9.2"
+    "qr-code-styling": "^1.9.2",
+    "@modelcontextprotocol/client": "^2.0.0"
   }
 }
