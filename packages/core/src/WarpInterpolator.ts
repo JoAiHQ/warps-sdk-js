@@ -121,13 +121,19 @@ export class WarpInterpolator {
     return JSON.parse(modifiable)
   }
 
-  applyInputs(text: string, resolvedInputs: ResolvedInput[], serializer: WarpSerializer): string {
+  applyInputs(text: string, resolvedInputs: ResolvedInput[], serializer: WarpSerializer, opts: { preserveUnknown?: boolean } = {}): string {
     if (!text || typeof text !== 'string') return text
     if (!text.includes('{{')) return text
 
     let result = this.applyGlobalsToText(text)
     const bag = this.buildInputBag(resolvedInputs, serializer)
-    return replacePlaceholders(result, bag)
+    if (opts.preserveUnknown) {
+      resolvedInputs.forEach(({ input }) => {
+        const key = input.as || input.name
+        if (!Object.prototype.hasOwnProperty.call(bag, key)) bag[key] = ''
+      })
+    }
+    return replacePlaceholders(result, bag, opts.preserveUnknown ?? false)
   }
 
   private applyGlobalsToText(text: string): string {

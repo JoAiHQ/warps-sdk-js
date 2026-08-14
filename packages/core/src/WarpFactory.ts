@@ -176,7 +176,7 @@ export class WarpFactory {
     queries?: Record<string, any>
   ): Promise<ResolvedInput[]> {
     const argInputs = action.inputs || []
-    const interpolatedArgs = inputArgs.map((arg) => interpolator.applyInputs(arg, [], this.serializer))
+    const interpolatedArgs = inputArgs.map((arg) => interpolator.applyInputs(arg, [], this.serializer, { preserveUnknown: true }))
     const preprocessed = await Promise.all(interpolatedArgs.map((arg) => this.preprocessInput(chain, arg)))
 
     const toValueByType = (input: WarpActionInput, index: number) => {
@@ -187,7 +187,7 @@ export class WarpFactory {
 
       if (input.source === 'hidden') {
         if (input.default === undefined) return null
-        const defaultValue = interpolator ? interpolator.applyInputs(String(input.default), [], this.serializer) : String(input.default)
+        const defaultValue = interpolator ? interpolator.applyInputs(String(input.default), [], this.serializer, { preserveUnknown: true }) : String(input.default)
         return this.serializer.nativeToString(input.type, defaultValue)
       }
 
@@ -204,7 +204,7 @@ export class WarpFactory {
       const fallbackDefault =
         input.default !== undefined
           ? interpolator
-            ? interpolator.applyInputs(String(input.default), [], this.serializer)
+            ? interpolator.applyInputs(String(input.default), [], this.serializer, { preserveUnknown: true })
             : String(input.default)
           : undefined
       return {

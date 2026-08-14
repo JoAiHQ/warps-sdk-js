@@ -632,6 +632,19 @@ describe('WarpInterpolator applyInputs', () => {
     const result = interpolator.applyInputs('{{TokenAmount}}', resolvedInputs, serializer)
     expect(result).toBe('500')
   })
+
+  it('preserves unknown placeholders when preserveUnknown is set', () => {
+    const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+    const resolvedInputs: any[] = [{ input: { name: 'known', type: 'string' }, value: null }]
+    const result = interpolator.applyInputs('{{missing}}/{{known}}', resolvedInputs, serializer, { preserveUnknown: true })
+    expect(result).toBe('{{missing}}/')
+  })
+
+  it('keeps emptying unknown placeholders by default', () => {
+    const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+    const result = interpolator.applyInputs('joai-campaign-send-contact?campaign_id=M9AWqkYP&email={{email}}', [], serializer)
+    expect(result).toBe('joai-campaign-send-contact?campaign_id=M9AWqkYP&email=')
+  })
 })
 
 describe('WarpInterpolator applyEnvs', () => {

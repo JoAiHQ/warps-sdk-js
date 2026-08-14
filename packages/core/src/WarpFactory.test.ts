@@ -425,6 +425,28 @@ describe('WarpFactory', () => {
     expect(result[0].value).toBe('address:erd1walletdetails')
   })
 
+  it('getResolvedInputs preserves unknown placeholders in input values', async () => {
+    const config = createMockConfig()
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'transfer',
+      label: 'Test',
+      address: 'erd1dest',
+      value: '0',
+      inputs: [{ name: 'payload', type: 'string', source: 'field' } as any],
+    }
+
+    const result = await factory.getResolvedInputs(
+      WarpChainName.Multiversx,
+      action,
+      ['string:joai-campaign-send-contact?campaign_id=M9AWqkYP&email={{email}}'],
+      interpolator
+    )
+    expect(result[0].value).toBe('string:joai-campaign-send-contact?campaign_id=M9AWqkYP&email={{email}}')
+  })
+
   it('getModifiedInputs applies scale modifier', async () => {
     const factory = new WarpFactory(config, [createMockAdapter()])
     const inputs = [{ input: { name: 'amount', type: 'biguint', modifier: 'scale:2' }, value: 'biguint:5' }]

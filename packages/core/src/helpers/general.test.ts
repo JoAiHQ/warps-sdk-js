@@ -385,6 +385,12 @@ describe('replacePlaceholders', () => {
     expect(replacePlaceholders('{{missing}}', {})).toBe('')
   })
 
+  it('should preserve unknown placeholders when preserveUnknown is set', () => {
+    expect(replacePlaceholders('{{email}}', {}, true)).toBe('{{email}}')
+    expect(replacePlaceholders('prefix={{email}}&x={{known}}', { known: '1' }, true)).toBe('prefix={{email}}&x=1')
+    expect(replacePlaceholders('{{missing}}/{{known}}', { known: null }, true)).toBe('{{missing}}/')
+  })
+
   it('should return empty string for null values', () => {
     expect(replacePlaceholders('{{key}}', { key: null })).toBe('')
   })
@@ -506,4 +512,3 @@ describe('evaluateWhenCondition', () => {
     expect(evaluateWhenCondition('')).toBe(true)
   })
 })
-

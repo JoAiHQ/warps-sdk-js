@@ -70,8 +70,9 @@ export const toPreviewText = (text: string, maxChars = 100) => {
   return sanitized
 }
 
-export const replacePlaceholders = (message: string, bag: Record<string, any>) =>
+export const replacePlaceholders = (message: string, bag: Record<string, any>, preserveUnknown = false) =>
   message.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
+    if (!Object.prototype.hasOwnProperty.call(bag, p1)) return preserveUnknown ? match : ''
     const value = bag[p1]
     if (value === undefined || value === null) return ''
     if (typeof value === 'object' && value !== null) return JSON.stringify(value)
