@@ -1,5 +1,15 @@
 # @joai/warps
 
+## 5.0.0
+
+### Major Changes
+
+- 9311ea2: Input transform callbacks now receive the current native value as their first argument and all named inputs as their second argument. Transform runners and VM entry points now accept an argument array and invoke function transforms with those arguments, while output transform callback semantics remain unchanged.
+
+### Patch Changes
+
+- 4a18331: Preserve unknown placeholders in input values during input resolution so templates intended for downstream actions remain intact.
+
 ## 4.40.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-wallet-remote",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Generic remote wallet provider for signer services",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -34,6 +34,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@joai/warps": "^4.3.0"
+    "@joai/warps": "^5.0.0"
   }
 }

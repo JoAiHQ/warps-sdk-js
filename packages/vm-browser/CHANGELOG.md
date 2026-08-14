@@ -1,5 +1,17 @@
 # @joai/warps-vm-browser
 
+## 2.0.0
+
+### Major Changes
+
+- 9311ea2: Input transform callbacks now receive the current native value as their first argument and all named inputs as their second argument. Transform runners and VM entry points now accept an argument array and invoke function transforms with those arguments, while output transform callback semantics remain unchanged.
+
+### Patch Changes
+
+- Updated dependencies [9311ea2]
+- Updated dependencies [4a18331]
+  - @joai/warps@5.0.0
+
 ## 1.0.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-openapi",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "OpenAPI to Warps converter",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -36,6 +36,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@joai/warps": "^4.5.0"
+    "@joai/warps": "^5.0.0"
   }
 }

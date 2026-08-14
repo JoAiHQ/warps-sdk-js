@@ -1,6 +1,6 @@
 {
   "name": "@warps/playground",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "description": "Playground for testing Warps SDK",
   "private": true,
   "type": "module",
@@ -10,16 +10,16 @@
     "play": "ts-node playground.ts"
   },
   "dependencies": {
-    "@joai/warps": "^4.40.0",
-    "@joai/warps-adapter-evm": "1.4.1",
-    "@joai/warps-adapter-fastset": "1.1.2",
-    "@joai/warps-mcp": "12.2.0",
-    "@joai/warps-adapter-near": "1.2.2",
-    "@joai/warps-adapter-multiversx": "1.7.0",
-    "@joai/warps-adapter-solana": "1.2.3",
-    "@joai/warps-adapter-sui": "1.3.3",
-    "@joai/warps-vm-node": "1.0.3",
-    "@joai/warps-wallet-coinbase": "1.1.0",
+    "@joai/warps": "^5.0.0",
+    "@joai/warps-adapter-evm": "1.4.2",
+    "@joai/warps-adapter-fastset": "1.1.3",
+    "@joai/warps-mcp": "12.2.1",
+    "@joai/warps-adapter-near": "1.2.3",
+    "@joai/warps-adapter-multiversx": "1.7.1",
+    "@joai/warps-adapter-solana": "1.2.4",
+    "@joai/warps-adapter-sui": "1.3.4",
+    "@joai/warps-vm-node": "2.0.0",
+    "@joai/warps-wallet-coinbase": "1.1.1",
     "ethers": "^6.16.0"
   },
   "devDependencies": {
