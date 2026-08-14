@@ -136,7 +136,7 @@ const evaluateTransformOutput = async (
 
   for (const { key, code } of transforms) {
     try {
-      modifiable[key] = await transformRunner!.run(code, context)
+      modifiable[key] = await transformRunner!.run(code, [context])
       context[key] = modifiable[key]
     } catch (err) {
       WarpLogger.error(`Transform error for Warp '${warp.name}' with output '${key}':`, err)

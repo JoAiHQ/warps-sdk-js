@@ -265,7 +265,8 @@ describe('extractCollectOutput', () => {
 
 // Simple mock transformers using eval for testing
 const createMockNodeTransformRunner = (): TransformRunner => ({
-  run: async (code: string, context: any) => {
+  run: async (code: string, args: any[]) => {
+    const context = args[0]
     // Just a simple eval wrapper for the test cases we use
     if (code.includes('context.value * 2')) return context.value * 2
     if (code.includes('context.value + 10')) return context.value + 10
@@ -334,7 +335,8 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     const rawOutput = { status: 'success', value: 42 }
     
     const runner = {
-        run: async (code: string, context: any) => {
+        run: async (code: string, args: any[]) => {
+            const context = args[0]
             if (code.includes('context.out.status')) return context.out.status
             if (code.includes('context.out.value')) return context.out.value
             return null
@@ -363,7 +365,8 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     const rawOutput = { data: [{ value: 2 }, { value: 3 }] }
 
     const runner = {
-      run: async (code: string, context: any) => {
+      run: async (code: string, args: any[]) => {
+        const context = args[0]
         if (code.includes('context.out.reduce')) return context.out.reduce((sum: number, item: any) => sum + item.value, 0)
         if (code.includes('context.out.length')) return context.out.length
         if (code.includes('context.out[0].value')) return context.out[0]?.value
@@ -401,7 +404,8 @@ describe('evaluateOutputCommon with Transform Runners', () => {
     ] as any
 
     const runner = {
-      run: async (code: string, context: any) => {
+      run: async (code: string, args: any[]) => {
+        const context = args[0]
         if (code.includes('context.inputs["asset.token"]')) return context.inputs['asset.token']
         if (code.includes('context.inputs["asset.amount"]')) return context.inputs['asset.amount']
         if (code.includes('context.inputs.asset.identifier')) return context.inputs.asset.identifier

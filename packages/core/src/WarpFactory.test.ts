@@ -434,9 +434,9 @@ describe('WarpFactory', () => {
 
   describe('getModifiedInputs with transform modifier', () => {
     const createMockTransformRunner = (): TransformRunner => ({
-      run: async (code: string, context: any) => {
+      run: async (code: string, args: any[]) => {
         const fn = eval(code)
-        return typeof fn === 'function' ? fn(context) : fn
+        return typeof fn === 'function' ? fn(...args) : fn
       },
     })
 
@@ -447,7 +447,7 @@ describe('WarpFactory', () => {
 
       const inputs = [
         {
-          input: { name: 'Value', type: 'uint256', modifier: 'transform:(inputs) => inputs.Value ? inputs.Value * 3n : 0n' },
+          input: { name: 'Value', type: 'uint256', modifier: 'transform:(value) => value * 3n' },
           value: 'uint256:10',
         },
       ]
@@ -468,7 +468,7 @@ describe('WarpFactory', () => {
             as: 'asset',
             type: 'asset',
             modifier:
-              'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset',
+              'transform:(value) => value?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: value.amount} : value',
           },
           value: 'asset:ETH|1000000000000000000',
         },
@@ -478,24 +478,47 @@ describe('WarpFactory', () => {
       expect(result[0].value).toBe('asset:0x0000000000000000000000000000000000000000|1000000000000000000')
     })
 
-    it('applies transform modifier accessing previous inputs', async () => {
+    it('applies transform modifier accessing all named inputs', async () => {
       const transformRunner = createMockTransformRunner()
       const configWithTransform = createMockConfig({ transform: { runner: transformRunner } })
       const factory = new WarpFactory(configWithTransform, [createMockAdapter()])
 
       const inputs = [
         {
+          input: {
+            name: 'Multiplier',
+            type: 'uint256',
+            modifier: 'transform:(value, inputs) => inputs.Amount && inputs.Memo === null ? inputs.Amount * value : 1n',
+          },
+          value: 'uint256:5',
+        },
+        {
           input: { name: 'Amount', type: 'uint256' },
           value: 'uint256:100',
         },
         {
-          input: { name: 'Multiplier', type: 'uint256', modifier: 'transform:(inputs) => inputs.Amount ? inputs.Amount * 2n : 1n' },
-          value: 'uint256:5',
+          input: { name: 'Memo', type: 'string', required: false },
+          value: null,
         },
       ]
 
       const result = await factory.getModifiedInputs(inputs as any)
-      expect(result[1].value).toBe('uint256:200')
+      expect(result[0].value).toBe('uint256:500')
+    })
+
+    it('preserves asset decimals through an identity transform', async () => {
+      const transformRunner = createMockTransformRunner()
+      const configWithTransform = createMockConfig({ transform: { runner: transformRunner } })
+      const factory = new WarpFactory(configWithTransform, [createMockAdapter()])
+      const inputs = [
+        {
+          input: { name: 'Asset', type: 'asset', modifier: 'transform:(value) => value' },
+          value: 'asset:USDC-123|1000000|6',
+        },
+      ]
+
+      const result = await factory.getModifiedInputs(inputs as any)
+      expect(result[0].value).toBe('asset:USDC-123|1000000|6')
     })
 
     it('applies transform modifier to non-ETH asset without modification', async () => {
@@ -510,7 +533,7 @@ describe('WarpFactory', () => {
             as: 'asset',
             type: 'asset',
             modifier:
-              'transform:(inputs) => inputs.asset?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: inputs.asset.amount} : inputs.asset',
+              'transform:(value) => value?.identifier === "ETH" ? {identifier: "0x0000000000000000000000000000000000000000", amount: value.amount} : value',
           },
           value: 'asset:USDC-123|1000000',
         },
@@ -524,7 +547,7 @@ describe('WarpFactory', () => {
       const factory = new WarpFactory(config, [createMockAdapter()])
       const inputs = [
         {
-          input: { name: 'Asset', type: 'asset', modifier: 'transform:(inputs) => inputs.asset' },
+          input: { name: 'Asset', type: 'asset', modifier: 'transform:(value) => value' },
           value: 'asset:ETH|1000000000000000000',
         },
       ]
@@ -549,7 +572,7 @@ describe('WarpFactory', () => {
             name: 'TokenAddress',
             type: 'address',
             modifier:
-              'transform:(inputs) => inputs["asset.token"] === "ETH" ? "0x0000000000000000000000000000000000000000" : inputs["asset.token"]',
+              'transform:(value, inputs) => inputs["asset.token"] === "ETH" ? "0x0000000000000000000000000000000000000000" : value',
           },
           value: 'address:0x123',
         },

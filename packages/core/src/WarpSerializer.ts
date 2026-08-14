@@ -184,8 +184,9 @@ export class WarpSerializer {
     else if (baseType === WarpInputTypes.Hex) return [baseType, val]
     else if (baseType === WarpInputTypes.Datetime) return [baseType, val]
     else if (baseType === WarpInputTypes.Asset) {
-      const [identifier, amount] = (val as string).split(WarpConstants.ArgCompositeSeparator)
+      const [identifier, amount, decimals] = (val as string).split(WarpConstants.ArgCompositeSeparator)
       const value: WarpChainAssetValue = { identifier, amount: BigInt(amount) }
+      if (decimals !== undefined) value.decimals = Number(decimals)
       return [baseType, value]
     }
 

@@ -509,6 +509,14 @@ describe('WarpSerializer', () => {
       expect(result[1]).toEqual({ identifier: 'AAA-123456-05', amount: BigInt(100) })
     })
 
+    it('roundtrips asset values with decimals', () => {
+      const serialized = 'asset:USDC-123456|1000000|6'
+      const [type, value] = serializer.stringToNative(serialized)
+
+      expect(value).toEqual({ identifier: 'USDC-123456', amount: 1000000n, decimals: 6 })
+      expect(serializer.nativeToString(type, value)).toBe(serialized)
+    })
+
     it('resolves type aliases in stringToNative', () => {
       expect(serializer.stringToNative('boolean:true')).toEqual(['bool', true])
       expect(serializer.stringToNative('boolean:false')).toEqual(['bool', false])

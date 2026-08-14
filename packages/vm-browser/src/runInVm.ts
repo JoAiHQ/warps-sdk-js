@@ -1,6 +1,6 @@
 import type { TransformRunner } from '@joai/warps'
 
-export const runInVm = async (code: string, results: any): Promise<any> => {
+export const runInVm = async (code: string, args: any[]): Promise<any> => {
   return new Promise((resolve, reject) => {
     try {
       const blob = new Blob(
@@ -8,17 +8,21 @@ export const runInVm = async (code: string, results: any): Promise<any> => {
           `
             self.onmessage = function(e) {
               try {
-                const results = e.data;
+                const args = e.data;
+                const results = args[0];
+                const out = results?.out;
+                const inputs = args.length > 1 ? args[1] : results?.inputs;
                 const isFunctionCode =
                   (${JSON.stringify(code.trim())}.startsWith('(') && ${JSON.stringify(code)}.includes('=>')) ||
                   ${JSON.stringify(code.trim())}.startsWith('function');
                 const transformFunction = new Function(
+                  'args',
                   'results',
                   'out',
                   'inputs',
-                  isFunctionCode ? \`return (\${${JSON.stringify(code)}})(results);\` : \`return \${${JSON.stringify(code)}};\`
+                  isFunctionCode ? \`return (\${${JSON.stringify(code)}})(...args);\` : \`return \${${JSON.stringify(code)}};\`
                 );
-                const output = transformFunction(results, results.out, results.inputs);
+                const output = transformFunction(args, results, out, inputs);
                 self.postMessage({ result: output });
               } catch (error) {
                 self.postMessage({ error: error.toString() });
@@ -44,7 +48,7 @@ export const runInVm = async (code: string, results: any): Promise<any> => {
         worker.terminate()
         URL.revokeObjectURL(url)
       }
-      worker.postMessage(results)
+      worker.postMessage(args)
     } catch (err) {
       return reject(err)
     }

@@ -27,13 +27,13 @@ const testConfig: WarpClientConfig = {
   currentUrl: 'https://example.com',
   transform: {
     runner: {
-      run: jest.fn().mockImplementation(async (code: string, context: any) => {
+      run: jest.fn().mockImplementation(async (code: string, args: any[]) => {
         // Simple mock transform runner for testing
         const codeStr = code.startsWith('transform:') ? code.slice('transform:'.length) : code
         // Create function with 'result' available in scope (matching the transform code)
         // eslint-disable-next-line no-new-func
         const fn = new Function('result', `const transform = ${codeStr}; return transform()`)
-        return fn(context)
+        return fn(args[0])
       }),
     },
   },
@@ -70,11 +70,11 @@ afterEach(() => {
 })
 
 jest.mock('@joai/warps-vm-node', () => ({
-  runInVm: async (code: string, result: any) => {
+  runInVm: async (code: string, args: any[]) => {
     const codeStr = code.startsWith('transform:') ? code.slice('transform:'.length) : code
     // eslint-disable-next-line no-new-func
-    const fn = new Function('result', `return (${codeStr})(result)`)
-    const out = fn(result)
+    const fn = new Function('args', `return (${codeStr})(...args)`)
+    const out = fn(args)
     if (out && typeof out.then === 'function') {
       return await out
     }

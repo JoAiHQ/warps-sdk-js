@@ -119,8 +119,10 @@ export function buildInputsContext(
   const maxIndex = currentIndex !== undefined ? currentIndex : inputs.length
 
   const addInput = (resolvedInput?: ResolvedInput) => {
-    if (!resolvedInput?.value) return
+    if (!resolvedInput) return
     const key = resolvedInput.input.as || resolvedInput.input.name
+    context[key] = null
+    if (!resolvedInput.value) return
     const [, nativeValue] = serializer.stringToNative(resolvedInput.value)
     context[key] = nativeValue
     if (resolvedInput.input.type !== 'asset' || typeof nativeValue !== 'object' || nativeValue === null) return

@@ -1,5 +1,5 @@
-export interface TransformRunner {
-  run(code: string, context: any): Promise<any>
+export type TransformRunner = {
+  run(code: string, args: any[]): Promise<any>
 }
 
 export type ClientTransformConfig = {

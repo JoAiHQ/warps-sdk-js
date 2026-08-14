@@ -39,7 +39,7 @@
           },
           "source": "field",
           "required": true,
-          "modifier": "transform:(inputs) => inputs.asset?.identifier === 'ETH' ? {identifier: '0x0000000000000000000000000000000000000000', amount: inputs.asset.amount} : inputs.asset"
+          "modifier": "transform:(value) => value?.identifier === 'ETH' ? {identifier: '0x0000000000000000000000000000000000000000', amount: value.amount} : value"
         },
         {
           "name": "Receiver",

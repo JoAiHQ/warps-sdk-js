@@ -11,6 +11,7 @@ export type WarpChainAccount = {
 export type WarpChainAssetValue = {
   identifier: string
   amount: bigint
+  decimals?: number
 }
 
 export type WarpChainAssetLogoThemed = Record<WarpTheme, string>

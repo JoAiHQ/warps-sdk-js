@@ -5,7 +5,7 @@ describe('runInVm', () => {
     const code = '(results) => results.value * 2'
     const results = { value: 5 }
 
-    const result = await runInVm(code, results)
+    const result = await runInVm(code, [results])
     expect(result).toBe(10)
   })
 
@@ -13,7 +13,7 @@ describe('runInVm', () => {
     const code = 'function(results) { return results.value + 3 }'
     const results = { value: 7 }
 
-    const result = await runInVm(code, results)
+    const result = await runInVm(code, [results])
     expect(result).toBe(10)
   })
 
@@ -21,7 +21,7 @@ describe('runInVm', () => {
     const code = 'results.value * 3'
     const results = { value: 4 }
 
-    const result = await runInVm(code, results)
+    const result = await runInVm(code, [results])
     expect(result).toBe(12)
   })
 
@@ -29,7 +29,7 @@ describe('runInVm', () => {
     const code = '(results) => results.user.name + " is " + results.user.age + " years old"'
     const results = { user: { name: 'John', age: 30 } }
 
-    const result = await runInVm(code, results)
+    const result = await runInVm(code, [results])
     expect(result).toBe('John is 30 years old')
   })
 
@@ -37,7 +37,7 @@ describe('runInVm', () => {
     const code = '(results) => results.numbers.reduce((sum, num) => sum + num, 0)'
     const results = { numbers: [1, 2, 3, 4, 5] }
 
-    const result = await runInVm(code, results)
+    const result = await runInVm(code, [results])
     expect(result).toBe(15)
   })
 
@@ -46,8 +46,8 @@ describe('runInVm', () => {
     const results1 = { value: 15 }
     const results2 = { value: 5 }
 
-    const result1 = await runInVm(code, results1)
-    const result2 = await runInVm(code, results2)
+    const result1 = await runInVm(code, [results1])
+    const result2 = await runInVm(code, [results2])
 
     expect(result1).toBe('high')
     expect(result2).toBe('low')
@@ -57,7 +57,7 @@ describe('runInVm', () => {
     const code = '() => out.balance'
     const context = { out: { balance: '1000000000000000000' } }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe('1000000000000000000')
   })
 
@@ -65,7 +65,7 @@ describe('runInVm', () => {
     const code = "() => (out?.balance || '0')"
     const context = { out: { balance: '500' } }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe('500')
   })
 
@@ -73,7 +73,7 @@ describe('runInVm', () => {
     const code = '() => out.value + results.PREVIOUS'
     const context = { out: { value: 10 }, PREVIOUS: 5 }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe(15)
   })
 
@@ -81,7 +81,7 @@ describe('runInVm', () => {
     const code = '(ctx) => ctx.out.value'
     const context = { out: { value: 42 } }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe(42)
   })
 
@@ -89,7 +89,7 @@ describe('runInVm', () => {
     const code = 'out.value * 2'
     const context = { out: { value: 7 } }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe(14)
   })
 
@@ -101,22 +101,49 @@ describe('runInVm', () => {
       'asset.token': 'EGLD',
     }
 
-    const result = await runInVm(code, context)
+    const result = await runInVm(code, [context])
     expect(result).toBe(1003)
+  })
+
+  it('should spread two arguments into function code', async () => {
+    const result = await runInVm('(value, inputs) => value * inputs.multiplier', [4, { multiplier: 3 }])
+
+    expect(result).toBe(12)
+  })
+
+  it('should preserve bigint asset values across arguments', async () => {
+    const result = await runInVm('(value, inputs) => value.amount + inputs.fee', [
+      { identifier: 'USDC-123', amount: 1000000n, decimals: 6 },
+      { fee: 2n },
+    ])
+
+    expect(result).toBe(1000002n)
+  })
+
+  it('should expose the second argument as inputs in direct expressions', async () => {
+    const result = await runInVm('results * inputs.multiplier', [4, { multiplier: 3 }])
+
+    expect(result).toBe(12)
+  })
+
+  it('should prefer the second argument over results.inputs', async () => {
+    const result = await runInVm('inputs.value', [{ inputs: { value: 2 } }, { value: 5 }])
+
+    expect(result).toBe(5)
   })
 
   it('should throw error for invalid code', async () => {
     const code = '(results) => invalidFunction()'
     const results = { value: 5 }
 
-    await expect(runInVm(code, results)).rejects.toThrow()
+    await expect(runInVm(code, [results])).rejects.toThrow()
   })
 
   it('should respect timeout', async () => {
     const code = 'while(true) {}' // Infinite loop
     const results = { value: 5 }
 
-    await expect(runInVm(code, results)).rejects.toThrow()
+    await expect(runInVm(code, [results])).rejects.toThrow()
   })
 })
 
@@ -133,7 +160,7 @@ describe('createNodeTransformRunner', () => {
     const code = '(results) => results.value * 2'
     const results = { value: 8 }
 
-    const result = await runner.run(code, results)
+    const result = await runner.run(code, [results])
     expect(result).toBe(16)
   })
 
@@ -141,8 +168,8 @@ describe('createNodeTransformRunner', () => {
     const runner = createNodeTransformRunner()
     const results = { value: 3 }
 
-    const result1 = await runner.run('(results) => results.value + 1', results)
-    const result2 = await runner.run('(results) => results.value * 2', results)
+    const result1 = await runner.run('(results) => results.value + 1', [results])
+    const result2 = await runner.run('(results) => results.value * 2', [results])
 
     expect(result1).toBe(4)
     expect(result2).toBe(6)

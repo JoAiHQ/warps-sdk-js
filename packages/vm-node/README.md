@@ -1,6 +1,6 @@
 # @joai/warps-vm-node
 
-Node.js VM runtime for Warps SDK output transformations. Safely executes transformation code using vm2 in a sandboxed environment.
+Node.js VM runtime for Warps SDK input and output transformations. Safely executes transformation code using vm2 in a sandboxed environment.
 
 ## Installation
 
@@ -42,16 +42,25 @@ const client = new WarpClient(config, { chains: [...] })
 
 The Node.js VM uses vm2 to execute transformation code in an isolated sandbox, preventing access to Node.js globals and ensuring security.
 
+`runInVm` accepts transformation code and an argument array. Function transformations are called with every argument in the array. Output transformations receive one context argument, while input transformations receive the current value and the complete inputs object.
+
+Expression transformations can use the `results`, `out`, and `inputs` globals. `results` is the first argument, `out` is `results?.out`, and `inputs` is the second argument when present or `results?.inputs` otherwise.
+
 ## Example Transformation
 
 ```typescript
+import { runInVm } from '@joai/warps-vm-node'
+
 // Warp output transformation
 const transform = (results) => {
   return {
     value: results.amount * 2,
-    formatted: `$${results.amount.toFixed(2)}`
+    formatted: `$${results.amount.toFixed(2)}`,
   }
 }
+
+await runInVm('(results) => results.amount * 2', [{ amount: 5 }])
+await runInVm('(value, inputs) => value * inputs.multiplier', [5, { multiplier: 2 }])
 ```
 
 ## Security

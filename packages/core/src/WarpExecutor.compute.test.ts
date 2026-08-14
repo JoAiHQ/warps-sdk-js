@@ -9,9 +9,9 @@ jest.mock('./constants', () => ({
 }))
 
 const createTransformRunner = (): TransformRunner => ({
-  run: async (code: string, context: any) => {
+  run: async (code: string, args: any[]) => {
     const fn = eval(code)
-    return typeof fn === 'function' ? fn(context) : fn
+    return typeof fn === 'function' ? fn(...args) : fn
   },
 })
 

@@ -247,8 +247,8 @@ export class WarpFactory {
     // Note: 'scale' modifier means that the value is multiplied by 10^modifier; the modifier can also be the name of another input field
     // Example: 'scale:10' means that the value is multiplied by 10^10
     // Example 2: 'scale:{amount}' means that the value is multiplied by the value of the 'amount' input field
-    // Note: 'transform' modifier allows transforming the value using a transform runner
-    // Example: 'transform:() => inputs.asset.includes("ETH") ? "0x0000000000000000000000000000000000000000" : inputs.asset'
+    // Note: 'transform' modifier receives the current native value and all named inputs
+    // Example: 'transform:(value, inputs) => inputs.asset.includes("ETH") ? "0x0000000000000000000000000000000000000000" : value'
 
     const results: ResolvedInput[] = []
 
@@ -282,8 +282,9 @@ export class WarpFactory {
           )
         }
 
-        const inputsContext = buildInputsContext(inputs, this.serializer, index, resolved)
-        const transformedValue = await transformRunner.run(code, inputsContext)
+        const inputsContext = buildInputsContext(inputs, this.serializer)
+        const value = resolved.value ? this.serializer.stringToNative(resolved.value)[1] : null
+        const transformedValue = await transformRunner.run(code, [value, inputsContext])
 
         if (transformedValue === null || transformedValue === undefined) {
           results.push(resolved)

@@ -320,6 +320,15 @@ describe('buildInputsContext', () => {
     expect(context.daysInactive).toBe('30')
   })
 
+  it('includes unresolved inputs as null', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'Required', type: 'string', source: 'field' }, value: 'string:value' },
+      { input: { name: 'Optional', as: 'optional', type: 'string', source: 'field' }, value: null },
+    ]
+
+    expect(buildInputsContext(inputs, serializer)).toEqual({ Required: 'value', optional: null })
+  })
+
   it('respects currentIndex and includes currentInput when provided', () => {
     const inputs: ResolvedInput[] = [
       { input: { name: 'A', type: 'uint256', source: 'field' }, value: 'uint256:1' },

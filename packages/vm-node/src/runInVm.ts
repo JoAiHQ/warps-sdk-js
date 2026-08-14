@@ -20,17 +20,20 @@ async function getVM2(): Promise<typeof import('vm2')> {
   }
 }
 
-export const runInVm = async (code: string, results: any): Promise<any> => {
+export const runInVm = async (code: string, args: any[]): Promise<any> => {
   try {
     const { VM } = await getVM2()
+    const results = args[0]
+    const out = results?.out
+    const inputs = args.length > 1 ? args[1] : results?.inputs
     const vm = new VM({
       timeout: 2000,
-      sandbox: { results, out: results?.out, inputs: results?.inputs },
+      sandbox: { args, results, out, inputs },
       eval: false,
       wasm: false,
     })
     const isFunctionCode = (code.trim().startsWith('(') && code.includes('=>')) || code.trim().startsWith('function')
-    return vm.run(isFunctionCode ? `(${code})(results)` : `(${code})`)
+    return vm.run(isFunctionCode ? `(${code})(...args)` : `(${code})`)
   } catch (e: any) {
     if (e?.message?.includes('The optional dependency "vm2" is not installed')) {
       throw e
