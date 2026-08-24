@@ -20,6 +20,7 @@ const TypeAliases: Record<string, string> = {
   integer: WarpInputTypes.Uint32,
   int: WarpInputTypes.Uint32,
   number: WarpInputTypes.Uint64,
+  text: WarpInputTypes.String,
 }
 
 export class WarpSerializer {
@@ -212,7 +213,8 @@ export class WarpSerializer {
     }
 
     // UI-only input types that serialize as plain strings
-    if (baseType === 'chain' || baseType === 'nft' || baseType === 'email' || baseType === 'textarea' || baseType === 'file') return [baseType, val]
+    if (baseType === 'chain' || baseType === 'nft' || baseType === 'email' || baseType === 'textarea' || baseType === 'file' || baseType === 'text')
+      return [baseType, val]
 
     throw new Error(`WarpArgSerializer (stringToNative): Unsupported input type: ${baseType}`)
   }
