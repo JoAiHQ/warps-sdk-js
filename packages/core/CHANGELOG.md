@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.0.1
+
+### Patch Changes
+
+- 2193e82: Provide a browser-safe package entry with browser cache strategies and declare the MPP runtime dependency required by browser consumers.
+
 ## 5.0.0
 
 ### Major Changes
