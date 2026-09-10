@@ -6,6 +6,11 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/browser.d.ts",
+        "import": "./dist/browser.mjs",
+        "require": "./dist/browser.js"
+      },
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
@@ -38,6 +43,7 @@
   },
   "dependencies": {
     "mppx": "^0.4.7",
+    "viem": "^2.47.5",
     "ajv": "^8.18.0",
     "protobufjs": "^8.0.0",
     "qr-code-styling": "^1.9.2",

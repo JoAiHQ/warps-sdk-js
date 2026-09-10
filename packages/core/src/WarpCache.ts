@@ -1,8 +1,5 @@
-import { CacheStrategy } from './cache/CacheStrategy'
-import { FileSystemCacheStrategy } from './cache/FileSystemCacheStrategy'
-import { LocalStorageCacheStrategy } from './cache/LocalStorageCacheStrategy'
-import { MemoryCacheStrategy } from './cache/MemoryCacheStrategy'
-import { StaticCacheStrategy } from './cache/StaticCacheStrategy'
+import type { CacheStrategy } from './cache/CacheStrategy'
+import { createCacheStrategy } from './cache/createCacheStrategy'
 import { WarpChainEnv } from './types'
 import { ClientCacheConfig } from './types/cache'
 
@@ -29,20 +26,7 @@ export class WarpCache {
   private strategy: CacheStrategy
 
   constructor(env: WarpChainEnv, config?: ClientCacheConfig) {
-    this.strategy = this.selectStrategy(env, config)
-  }
-
-  private selectStrategy(env: WarpChainEnv, config?: ClientCacheConfig): CacheStrategy {
-    if (config?.adapter) return config.adapter
-    if (config?.type === 'localStorage') return new LocalStorageCacheStrategy(env, config)
-    if (config?.type === 'memory') return new MemoryCacheStrategy(env, config)
-    if (config?.type === 'static') return new StaticCacheStrategy(env, config)
-    if (config?.type === 'filesystem') return new FileSystemCacheStrategy(env, config)
-
-    // Default to localStorage in browser environments
-    if (typeof window !== 'undefined' && window.localStorage) return new LocalStorageCacheStrategy(env, config)
-
-    return new MemoryCacheStrategy(env, config)
+    this.strategy = createCacheStrategy(env, config)
   }
 
   async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
