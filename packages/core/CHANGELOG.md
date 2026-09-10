@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.0.2
+
+### Patch Changes
+
+- a66a7c7: Avoid double-prefixing already typed hidden and query input values during resolution, so prefixes like `string:` no longer leak into HTTP payloads.
+
 ## 5.0.1
 
 ### Patch Changes
