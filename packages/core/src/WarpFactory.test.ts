@@ -363,6 +363,20 @@ describe('WarpFactory', () => {
     expect(result[1].value).toBe('string:100')
   })
 
+  it('getResolvedInputs does not double-prefix already typed hidden defaults', async () => {
+    const config = createMockConfig()
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'collect',
+      label: 'Send',
+      inputs: [{ name: 'Message', as: 'message', type: 'string', source: 'hidden', default: 'string:Hallo Jasmin' } as any],
+    }
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, [], interpolator)
+    expect(result[0].value).toBe('string:Hallo Jasmin')
+  })
+
   it('getResolvedInputs uses input args over query params when provided', async () => {
     const configWithQuery = createMockConfig({
       user: { wallets: { multiversx: 'erd1testwallet' } },

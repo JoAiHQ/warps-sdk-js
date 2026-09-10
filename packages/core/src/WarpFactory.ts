@@ -163,8 +163,7 @@ export class WarpFactory {
     return inputs.map((input, index) => {
       const actionInput = actionInputs[index]
       if (!actionInput) return input
-      if (hasInputPrefix(input)) return input
-      return this.serializer.nativeToString(actionInput.type, input)
+      return this.toTypedInput(actionInput.type, input)
     })
   }
 
@@ -182,13 +181,13 @@ export class WarpFactory {
     const toValueByType = (input: WarpActionInput, index: number) => {
       if (input.source === WarpConstants.Source.UserWallet) {
         const wallet = getWarpWalletAddressFromConfig(this.config, chain)
-        return wallet ? this.serializer.nativeToString('address', wallet) : null
+        return wallet ? this.toTypedInput('address', wallet) : null
       }
 
       if (input.source === 'hidden') {
         if (input.default === undefined) return null
         const defaultValue = interpolator ? interpolator.applyInputs(String(input.default), [], this.serializer, { preserveUnknown: true }) : String(input.default)
-        return this.serializer.nativeToString(input.type, defaultValue)
+        return this.toTypedInput(input.type, defaultValue)
       }
 
       if (preprocessed[index]) return preprocessed[index]
@@ -196,7 +195,7 @@ export class WarpFactory {
       const queryValueFromMeta = queries?.[inputKey]
       const queryValueFromUrl = this.url.searchParams.get(inputKey)
       const queryValue = queryValueFromMeta || queryValueFromUrl
-      return queryValue ? this.serializer.nativeToString(input.type, String(queryValue)) : null
+      return queryValue ? this.toTypedInput(input.type, String(queryValue)) : null
     }
 
     return argInputs.map((input: WarpActionInput, index: number) => {
@@ -209,9 +208,15 @@ export class WarpFactory {
           : undefined
       return {
         input,
-        value: value || (fallbackDefault !== undefined ? this.serializer.nativeToString(input.type, fallbackDefault) : null),
+        value: value || (fallbackDefault !== undefined ? this.toTypedInput(input.type, fallbackDefault) : null),
       }
     })
+  }
+
+  /** Type-prefix a value once — leave already-typed inputs alone. */
+  private toTypedInput(type: WarpActionInput['type'], value: string): string {
+    if (hasInputPrefix(value)) return value
+    return this.serializer.nativeToString(type, value)
   }
 
   /**
