@@ -297,6 +297,43 @@ describe('WarpExecutor', () => {
       expect(handlers.onExecuted).toHaveBeenCalled()
     })
 
+    it('treats empty 204 responses as successful collect output', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        json: async () => {
+          throw new SyntaxError('Unexpected end of JSON input')
+        },
+      })
+
+      const deleteWarp = {
+        ...warp,
+        chain: WarpChainName.Multiversx,
+        messages: { success: 'Update deleted.' },
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Delete update',
+            destination: {
+              url: 'https://api.example.com/v1/updates/abc',
+              method: 'DELETE' as const,
+              headers: {
+                Accept: 'application/json',
+              },
+            },
+            inputs: [],
+          } as WarpCollectAction,
+        ],
+      }
+
+      const result = await executor.execute(deleteWarp, [])
+
+      expect(result.immediateExecutions).toHaveLength(1)
+      expect(result.immediateExecutions[0].status).toBe('success')
+      expect(handlers.onExecuted).toHaveBeenCalled()
+      expect(handlers.onError).not.toHaveBeenCalled()
+    })
+
     it('interpolates input variables in destination URL', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

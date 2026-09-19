@@ -623,7 +623,15 @@ export class WarpExecutor {
       const response = await mppFetch(url, fetchOptions)
       WarpLogger.debug('Collect response status', { status: response.status })
 
-      const content = await response.json()
+      // Empty bodies (e.g. HTTP 204 from DELETE) make response.json() throw.
+      let content: any = {}
+      try {
+        content = await response.json()
+      } catch (error) {
+        if (!response.ok) {
+          throw error
+        }
+      }
       WarpLogger.debug('Collect response content', { content })
       const { values, output } = await extractCollectOutput(
         executable.warp,
