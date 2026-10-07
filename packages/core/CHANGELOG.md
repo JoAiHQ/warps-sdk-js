@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.0.3
+
+### Patch Changes
+
+- df47248: Treat empty HTTP collect responses (e.g. DELETE 204) as success instead of throwing "Unexpected end of JSON input".
+
 ## 5.0.2
 
 ### Patch Changes
