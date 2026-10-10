@@ -190,10 +190,8 @@ export class WarpInterpolator {
     const bag: Record<string, string> = {}
 
     resolvedInputs.forEach((resolvedInput) => {
-      if (!resolvedInput.value) return
       const key = resolvedInput.input.as || resolvedInput.input.name
-      const [, nativeValue] = serializer.stringToNative(resolvedInput.value)
-      bag[key] = String(nativeValue)
+      bag[key] = resolvedInput.value ? String(serializer.stringToNative(resolvedInput.value)[1]) : ''
     })
 
     return bag

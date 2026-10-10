@@ -645,6 +645,12 @@ describe('WarpInterpolator applyInputs', () => {
     const result = interpolator.applyInputs('joai-campaign-send-contact?campaign_id=M9AWqkYP&email={{email}}', [], serializer)
     expect(result).toBe('joai-campaign-send-contact?campaign_id=M9AWqkYP&email=')
   })
+
+  it('includes unresolved inputs as empty in the input bag', () => {
+    const interpolator = new WarpInterpolator(testConfig, createMockAdapter())
+    const resolvedInputs: any[] = [{ input: { name: 'items', type: 'string' }, value: null }]
+    expect(interpolator.buildInputBag(resolvedInputs, serializer)).toEqual({ items: '' })
+  })
 })
 
 describe('WarpInterpolator applyEnvs', () => {

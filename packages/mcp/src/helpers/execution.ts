@@ -1,4 +1,4 @@
-import { getWarpInputAction, Warp, WarpActionInput } from '@joai/warps'
+import { getWarpInputAction, string, Warp, WarpActionInput } from '@joai/warps'
 
 export const convertMcpArgsToWarpInputs = (warp: Warp, args: Record<string, any>): string[] => {
   const { action } = getWarpInputAction(warp)
@@ -10,6 +10,7 @@ export const convertMcpArgsToWarpInputs = (warp: Warp, args: Record<string, any>
 
     if (value === null && input.type === 'bool') return 'false'
     if (value === null || value === undefined) return ''
+    if (value === '') return string(value)
     return String(value)
   })
 }

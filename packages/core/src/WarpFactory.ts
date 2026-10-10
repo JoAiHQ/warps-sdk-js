@@ -163,6 +163,8 @@ export class WarpFactory {
     return inputs.map((input, index) => {
       const actionInput = actionInputs[index]
       if (!actionInput) return input
+      const isContractArg = typeof actionInput.position === 'string' && actionInput.position.startsWith('arg:')
+      if (input === '' && !isContractArg) return input
       return this.toTypedInput(actionInput.type, input)
     })
   }

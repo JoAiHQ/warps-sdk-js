@@ -340,6 +340,41 @@ describe('WarpFactory', () => {
     expect(result[1].value).toBe('address:erd1testwallet')
   })
 
+  it('getResolvedInputs treats empty input args as not provided', async () => {
+    const adapter = createMockAdapter()
+    const factory = new WarpFactory(config, [adapter])
+    const interpolator = new WarpInterpolator(config, adapter, [adapter])
+    const action: WarpAction = {
+      type: 'collect',
+      label: 'Test',
+      destination: { url: 'https://api.example.com', method: 'PUT' },
+      inputs: [
+        { name: 'title', type: 'string', source: 'field' },
+        { name: 'team', type: 'string', source: 'field', default: 'flora' },
+        { name: 'body', type: 'string', source: 'field' },
+      ],
+    }
+    const typed = factory.getStringTypedInputs(action, ['', '', 'string:'])
+    const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, typed, interpolator)
+    expect(result.map((r) => r.value)).toEqual([null, 'string:flora', 'string:'])
+  })
+
+  it('getStringTypedInputs keeps empty contract args in their slot', () => {
+    const factory = new WarpFactory(config, [createMockAdapter()])
+    const action: WarpAction = {
+      type: 'contract',
+      label: 'Test',
+      address: 'erd1contract',
+      func: 'propose',
+      gasLimit: 1000000,
+      inputs: [
+        { name: 'gasLimit', type: 'uint64', position: 'arg:1', source: 'field' },
+        { name: 'data', type: 'string', position: 'arg:2', source: 'field' },
+      ],
+    }
+    expect(factory.getStringTypedInputs(action, ['', 'string:call'])).toEqual(['uint64:', 'string:call'])
+  })
+
   it('getResolvedInputs falls back to query params when no input args provided', async () => {
     const configWithQuery = createMockConfig({
       user: { wallets: { multiversx: 'erd1testwallet' } },

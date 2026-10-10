@@ -329,6 +329,15 @@ describe('convertMcpArgsToWarpInputs', () => {
     expect(result[0]).toBe('default')
   })
 
+  it('keeps an explicit empty string distinct from an omitted input', () => {
+    const warp = createMockWarp([
+      { name: 'title', type: 'string', position: 'payload:title', source: 'field' },
+      { name: 'body', type: 'string', position: 'payload:body', source: 'field' },
+    ])
+
+    expect(convertMcpArgsToWarpInputs(warp, { body: '' })).toEqual(['', 'string:'])
+  })
+
   it('handles empty args object', () => {
     const warp = createMockWarp([
       {

@@ -239,6 +239,16 @@ describe('buildMappedOutput', () => {
     })
   })
 
+  it('omits unresolved inputs but keeps explicit empty and null values', () => {
+    const inputs: ResolvedInput[] = [
+      { input: { name: 'title', type: 'string', source: 'field' }, value: null },
+      { input: { name: 'body', type: 'string', source: 'field' }, value: 'string:' },
+      { input: { name: 'linkUrl', type: 'option', source: 'field' }, value: 'option:' },
+      { input: { name: 'startsAt', type: 'string', source: 'field' }, value: 'string:2026-10-09T14:00:00+02:00' },
+    ]
+    expect(buildMappedOutput(inputs, serializer)).toEqual({ body: '', linkUrl: null, startsAt: '2026-10-09T14:00:00+02:00' })
+  })
+
   it('should handle nested payload structures', () => {
     const inputs: ResolvedInput[] = [
       {

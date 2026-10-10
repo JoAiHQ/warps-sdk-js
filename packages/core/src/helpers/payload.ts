@@ -92,7 +92,7 @@ export function extractResolvedInputValues(inputs: ResolvedInput[]): string[] {
 export function buildMappedOutput(inputs: ResolvedInput[], serializer: WarpSerializer): Record<string, any> {
   let mapped: Record<string, any> = {}
   inputs.forEach((resolvedInput) => {
-    if (resolvedInput.input.position === 'local') return
+    if (resolvedInput.input.position === 'local' || !resolvedInput.value) return
     const fieldName = resolvedInput.input.as || resolvedInput.input.name
     const value = toInputPayloadValue(resolvedInput, serializer)
     if (
