@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.0.4
+
+### Patch Changes
+
+- f477ae2: Keep omitted warp inputs distinct from explicit empty values: omitted inputs are left out of mapped payloads, explicit empty strings are sent as empty, and contract args keep their slot.
+
 ## 5.0.3
 
 ### Patch Changes
