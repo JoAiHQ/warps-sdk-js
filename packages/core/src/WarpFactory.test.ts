@@ -359,6 +359,33 @@ describe('WarpFactory', () => {
     expect(result.map((r) => r.value)).toEqual([null, 'string:flora', 'string:'])
   })
 
+  describe('getStringTypedInputs prefix validation', () => {
+    const collectAction = (inputs: any[]): any => ({ type: 'collect', label: 'Submit', inputs })
+    const anliegen = { name: 'anliegen', type: 'string', source: 'field', options: { mitgliedschaft: { de: 'Mitgliedschaft' } } }
+
+    it('throws when a known prefix does not match the input type', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action = collectAction([{ name: 'age', type: 'uint64', source: 'field' }])
+      expect(() => factory.getStringTypedInputs(action, ['string:12'])).toThrow("Input 'age' expects type 'uint64' but received a value typed as 'string'")
+    })
+
+    it('throws when an options input carries an unknown type prefix', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      expect(() => factory.getStringTypedInputs(collectAction([anliegen]), ['select:mitgliedschaft'])).toThrow("Input 'anliegen' received a value with unknown type 'select'")
+    })
+
+    it('accepts matching prefixes, raw option keys and bool/boolean equivalence', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action = collectAction([anliegen, { name: 'consent', type: 'boolean', source: 'field' }, { name: 'note', type: 'string', source: 'field' }])
+      expect(factory.getStringTypedInputs(action, ['string:mitgliedschaft', 'bool:true', 'https://example.com'])).toEqual([
+        'string:mitgliedschaft',
+        'bool:true',
+        'string:https://example.com',
+      ])
+      expect(factory.getStringTypedInputs(action, ['mitgliedschaft', '', ''])).toEqual(['string:mitgliedschaft', '', ''])
+    })
+  })
+
   it('getStringTypedInputs keeps empty contract args in their slot', () => {
     const factory = new WarpFactory(config, [createMockAdapter()])
     const action: WarpAction = {

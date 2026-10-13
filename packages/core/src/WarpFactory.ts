@@ -26,6 +26,18 @@ import { WarpInterpolator } from './WarpInterpolator'
 import { WarpLogger } from './WarpLogger'
 import { WarpSerializer } from './WarpSerializer'
 
+const InputTypePrefixPattern = /^[a-z][a-z0-9]*(\[\])?$/
+
+const EquivalentInputTypeGroups: string[][] = [
+  ['bool', 'boolean'],
+  ['string', 'textarea', 'email', 'text', 'address', 'hex', 'datetime', 'chain', 'file', 'nft'],
+]
+
+const toBaseInputType = (type: string): string => {
+  const head = type.split(WarpConstants.ArgParamsSeparator)[0]
+  return head.endsWith('[]') ? head.slice(0, -2) : head
+}
+
 export class WarpFactory {
   private url: URL
   private serializer: WarpSerializer
@@ -165,8 +177,31 @@ export class WarpFactory {
       if (!actionInput) return input
       const isContractArg = typeof actionInput.position === 'string' && actionInput.position.startsWith('arg:')
       if (input === '' && !isContractArg) return input
+      this.assertInputPrefixMatches(actionInput, input)
       return this.toTypedInput(actionInput.type, input)
     })
+  }
+
+  private assertInputPrefixMatches(actionInput: WarpActionInput, input: string): void {
+    if (typeof input !== 'string' || !input.includes(WarpConstants.ArgParamsSeparator)) return
+    const [prefix] = splitInput(input)
+    const prefixBase = toBaseInputType(prefix)
+    const expectedBase = toBaseInputType(actionInput.type)
+
+    if (hasInputPrefix(input)) {
+      if (prefixBase === expectedBase || this.isEquivalentInputType(prefixBase, expectedBase)) return
+      throw new Error(`WarpFactory: Input '${actionInput.name}' expects type '${actionInput.type}' but received a value typed as '${prefix}'`)
+    }
+
+    const options = actionInput.options
+    if (!options || Array.isArray(options) || Object.keys(options).length === 0) return
+    if (input in options) return
+    if (!InputTypePrefixPattern.test(prefix)) return
+    throw new Error(`WarpFactory: Input '${actionInput.name}' received a value with unknown type '${prefix}' (expected '${actionInput.type}')`)
+  }
+
+  private isEquivalentInputType(a: string, b: string): boolean {
+    return EquivalentInputTypeGroups.some((group) => group.includes(a) && group.includes(b))
   }
 
   public async getResolvedInputs(
