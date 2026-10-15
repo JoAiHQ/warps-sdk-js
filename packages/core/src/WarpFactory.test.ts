@@ -439,6 +439,88 @@ describe('WarpFactory', () => {
     expect(result[0].value).toBe('string:Hallo Jasmin')
   })
 
+  describe('getResolvedInputs hidden default placeholders', () => {
+    const setup = () => {
+      const config = createMockConfig()
+      const adapter = createMockAdapter()
+      return { factory: new WarpFactory(config, [adapter]), interpolator: new WarpInterpolator(config, adapter, [adapter]) }
+    }
+    const hidden = (as: string, def: string) => ({ name: as, as, type: 'string', source: 'hidden', default: def }) as any
+    const field = (as: string, extras: Record<string, any> = {}) => ({ name: as, as, type: 'string', source: 'field', ...extras }) as any
+    const collect = (inputs: any[]): WarpAction => ({ type: 'collect', label: 'Submit', inputs })
+
+    it('fills hidden defaults from same-step inputs', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([field('date'), hidden('date2', '{{date}}')])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['string:2026-10-15'], interpolator)
+      expect(result[1].value).toBe('string:2026-10-15')
+    })
+
+    it('fills hidden defaults from query values', async () => {
+      const { factory, interpolator } = setup()
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, collect([hidden('date', '{{date}}')]), [], interpolator, {
+        date: '2026-10-15',
+      })
+      expect(result[0].value).toBe('string:2026-10-15')
+    })
+
+    it('prefers same-step input values over query values when names overlap', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([field('date'), hidden('copy', '{{date}}')])
+      const result = await factory.getResolvedInputs(
+        WarpChainName.Multiversx,
+        action,
+        ['string:from-input'],
+        interpolator,
+        { date: 'from-query' }
+      )
+      expect(result[0].value).toBe('string:from-input')
+      expect(result[1].value).toBe('string:from-input')
+    })
+
+    it('resolves an unset placeholder-only hidden default to null instead of literal text', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([hidden('date', '{{date}}'), hidden('pair', '{{a}} {{b}}')])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, [], interpolator)
+      expect(result[0].value).toBeNull()
+      expect(result[1].value).toBeNull()
+    })
+
+    it('resolves a hidden default to null when the referenced same-step input is empty', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([field('date'), hidden('date2', '{{date}}')])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, [''], interpolator)
+      expect(result[1].value).toBeNull()
+    })
+
+    it('fills known parts of mixed text and keeps unknown placeholders for downstream use', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([field('id'), hidden('link', 'item?id={{id}}&email={{email}}')])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['string:42'], interpolator)
+      expect(result[1].value).toBe('string:item?id=42&email={{email}}')
+    })
+
+    it('uses the resolved default as fallback for empty non-hidden inputs and never a literal placeholder', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([
+        field('base'),
+        field('copy', { default: '{{base}}' }),
+        field('missing', { default: '{{unknown}}' }),
+      ])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, ['string:abc', '', ''], interpolator)
+      expect(result[1].value).toBe('string:abc')
+      expect(result[2].value).toBeNull()
+    })
+
+    it('keeps plain literal defaults unchanged', async () => {
+      const { factory, interpolator } = setup()
+      const action = collect([hidden('mode', 'net'), field('qty', { default: '1' })])
+      const result = await factory.getResolvedInputs(WarpChainName.Multiversx, action, [], interpolator)
+      expect(result[0].value).toBe('string:net')
+      expect(result[1].value).toBe('string:1')
+    })
+  })
+
   it('getResolvedInputs uses input args over query params when provided', async () => {
     const configWithQuery = createMockConfig({
       user: { wallets: { multiversx: 'erd1testwallet' } },

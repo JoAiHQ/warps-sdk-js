@@ -1,6 +1,6 @@
 import { WarpChainName } from '../constants'
 import { Warp, WarpAction, WarpActionType, WarpMeta } from '../types'
-import { doesWarpRequireWallet, evaluateWhenCondition, getWarpInputAction, isWarpActionAutoExecute, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
+import { doesWarpRequireWallet, evaluateWhenCondition, getWarpInputAction, isOnlyUnresolvedPlaceholders, isWarpActionAutoExecute, replacePlaceholders, replacePlaceholdersInWhenExpression } from './general'
 
 describe('getWarpInputAction', () => {
   const createMockWarp = (actions: WarpAction[], meta?: Partial<WarpMeta>): Warp => ({
@@ -510,5 +510,18 @@ describe('evaluateWhenCondition', () => {
 
   it('returns true for empty expression', () => {
     expect(evaluateWhenCondition('')).toBe(true)
+  })
+})
+
+describe('isOnlyUnresolvedPlaceholders', () => {
+  it('detects values made only of placeholders', () => {
+    expect(isOnlyUnresolvedPlaceholders('{{date}}')).toBe(true)
+    expect(isOnlyUnresolvedPlaceholders(' {{a}} {{b}} ')).toBe(true)
+  })
+
+  it('rejects resolved, mixed or empty values', () => {
+    expect(isOnlyUnresolvedPlaceholders('2026-10-15')).toBe(false)
+    expect(isOnlyUnresolvedPlaceholders('id={{id}}')).toBe(false)
+    expect(isOnlyUnresolvedPlaceholders('')).toBe(false)
   })
 })

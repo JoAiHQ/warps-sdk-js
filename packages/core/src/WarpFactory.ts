@@ -2,6 +2,7 @@ import { WarpChainName, WarpConstants } from './constants'
 
 const noDestinationTypes = ['collect', 'compute', 'mcp', 'state', 'mount', 'unmount'] as const
 import { findWarpAdapterForChain, getWarpActionByIndex, getWarpInputAction, hasInputPrefix, shiftBigintBy, splitInput } from './helpers'
+import { isOnlyUnresolvedPlaceholders } from './helpers/general'
 import { extractResolvedInputValues, buildInputsContext } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
 import {
@@ -215,16 +216,12 @@ export class WarpFactory {
     const interpolatedArgs = inputArgs.map((arg) => interpolator.applyInputs(arg, [], this.serializer, { preserveUnknown: true }))
     const preprocessed = await Promise.all(interpolatedArgs.map((arg) => this.preprocessInput(chain, arg)))
 
-    const toValueByType = (input: WarpActionInput, index: number) => {
+    const toDirectValue = (input: WarpActionInput, index: number): string | null => {
+      if (input.source === 'hidden') return null
+
       if (input.source === WarpConstants.Source.UserWallet) {
         const wallet = getWarpWalletAddressFromConfig(this.config, chain)
         return wallet ? this.toTypedInput('address', wallet) : null
-      }
-
-      if (input.source === 'hidden') {
-        if (input.default === undefined) return null
-        const defaultValue = interpolator ? interpolator.applyInputs(String(input.default), [], this.serializer, { preserveUnknown: true }) : String(input.default)
-        return this.toTypedInput(input.type, defaultValue)
       }
 
       if (preprocessed[index]) return preprocessed[index]
@@ -235,19 +232,38 @@ export class WarpFactory {
       return queryValue ? this.toTypedInput(input.type, String(queryValue)) : null
     }
 
-    return argInputs.map((input: WarpActionInput, index: number) => {
-      const value = toValueByType(input, index)
-      const fallbackDefault =
-        input.default !== undefined
-          ? interpolator
-            ? interpolator.applyInputs(String(input.default), [], this.serializer, { preserveUnknown: true })
-            : String(input.default)
-          : undefined
-      return {
-        input,
-        value: value || (fallbackDefault !== undefined ? this.toTypedInput(input.type, fallbackDefault) : null),
-      }
+    // Non-hidden values first. Defaults then fill from one bag: queries, then same-step
+    // inputs that have values (inputs last so they win). Mixed text keeps unknown
+    // placeholders (preserveUnknown); a default that is still only unresolved
+    // placeholders becomes null so it is omitted from the payload.
+    const directValues = argInputs.map((input, index) => toDirectValue(input, index))
+    const querySources: ResolvedInput[] = Object.entries(queries ?? {}).flatMap(([key, value]) => {
+      if (value === undefined || value === null || value === '') return []
+      return [
+        {
+          input: { name: key, as: key, type: 'string', source: 'field' } as WarpActionInput,
+          value: this.toTypedInput('string', String(value)),
+        },
+      ]
     })
+    const sameStepSources: ResolvedInput[] = argInputs.flatMap((input, index) => {
+      const value = directValues[index]
+      if (value == null || value === '') return []
+      return [{ input, value }]
+    })
+    const defaultSources = [...querySources, ...sameStepSources]
+
+    const resolveDefault = (input: WarpActionInput): string | null => {
+      if (input.default === undefined) return null
+      const text = interpolator.applyInputs(String(input.default), defaultSources, this.serializer, { preserveUnknown: true })
+      if (!text || isOnlyUnresolvedPlaceholders(text)) return null
+      return this.toTypedInput(input.type, text)
+    }
+
+    return argInputs.map((input, index) => ({
+      input,
+      value: directValues[index] || resolveDefault(input),
+    }))
   }
 
   /** Type-prefix a value once — leave already-typed inputs alone. */

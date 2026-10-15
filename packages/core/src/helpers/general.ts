@@ -79,6 +79,9 @@ export const replacePlaceholders = (message: string, bag: Record<string, any>, p
     return String(value)
   })
 
+/** True when the value consists only of {{placeholders}} (and whitespace), i.e. nothing was resolved. */
+export const isOnlyUnresolvedPlaceholders = (value: string): boolean => /^\s*(\{\{[^}]+\}\}\s*)+$/.test(value)
+
 export const replacePlaceholdersInWhenExpression = (expression: string, bag: Record<string, any>): string => {
   return expression.replace(/\{\{([^}]+)\}\}/g, (match, p1) => {
     const value = bag[p1]

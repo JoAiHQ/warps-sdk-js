@@ -334,6 +334,51 @@ describe('WarpExecutor', () => {
       expect(handlers.onError).not.toHaveBeenCalled()
     })
 
+    it('omits unset optional fields when a later collect posts hidden {{placeholders}}', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'order-1' }),
+      })
+
+      const multiStepWarp = {
+        ...warp,
+        chain: WarpChainName.Multiversx,
+        actions: [
+          {
+            type: 'collect' as const,
+            label: 'Customer',
+            inputs: [
+              { name: 'InvoiceDate', as: 'invoiceDate', type: 'string', source: 'field' as const, position: 'local' as const },
+              { name: 'Notes', as: 'notes', type: 'string', source: 'field' as const, position: 'local' as const, required: false },
+            ],
+          } as WarpCollectAction,
+          {
+            type: 'collect' as const,
+            label: 'Create order',
+            auto: true,
+            destination: {
+              url: 'https://api.example.com/v1/orders',
+              method: 'POST' as const,
+              headers: { 'Content-Type': 'application/json' },
+            },
+            inputs: [
+              { name: 'InvoiceDate', as: 'invoiceDate', type: 'string', source: 'hidden' as const, default: '{{invoiceDate}}' },
+              { name: 'Notes', as: 'notes', type: 'string', source: 'hidden' as const, default: '{{notes}}' },
+            ],
+          } as WarpCollectAction,
+        ],
+      }
+
+      await executor.execute(multiStepWarp, ['string:2026-10-15', ''])
+
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+      const [, init] = mockFetch.mock.calls[0]
+      const body = JSON.parse(init.body as string)
+      expect(body.invoiceDate).toBe('2026-10-15')
+      expect(body).not.toHaveProperty('notes')
+      expect(JSON.stringify(body)).not.toContain('{{')
+    })
+
     it('interpolates input variables in destination URL', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
