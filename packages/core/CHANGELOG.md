@@ -1,5 +1,12 @@
 # @joai/warps
 
+## 5.0.5
+
+### Patch Changes
+
+- 4016b57: Hidden and fallback input defaults resolve from one bag of query values and same-step inputs that have values (inputs win on overlap). A default that is still only unresolved `{{placeholders}}` resolves to null so the field is omitted from the payload.
+- cfd1902: Reject submitted inputs whose type prefix does not match the action input type (e.g. `select:` on a `string` options field) instead of re-wrapping them as `string:select:…`.
+
 ## 5.0.4
 
 ### Patch Changes
