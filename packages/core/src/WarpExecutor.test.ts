@@ -422,7 +422,7 @@ describe('WarpExecutor', () => {
         ],
       }
 
-      const inputs = ['string:123', 'string:micha@vleap.ai', 'string:AT', 'string:10.00']
+      const inputs = ['string:123', 'string:micha@vleap.at', 'string:AT', 'string:10.00']
       const result = await executor.execute(nestedPayloadWarp, inputs)
 
       expect(result).toBeDefined()
@@ -435,7 +435,7 @@ describe('WarpExecutor', () => {
               attributes: {
                 customer: {
                   ref: '123',
-                  email: 'micha@vleap.ai',
+                  email: 'micha@vleap.at',
                   country: 'AT',
                   amount: '10.00',
                 },
@@ -479,7 +479,7 @@ describe('WarpExecutor', () => {
         ],
       }
 
-      const inputs = ['string:123', 'string:micha@vleap.ai']
+      const inputs = ['string:123', 'string:micha@vleap.at']
       const result = await executor.execute(flatPayloadWarp, inputs)
 
       expect(result).toBeDefined()
@@ -489,7 +489,7 @@ describe('WarpExecutor', () => {
           method: 'POST',
           body: JSON.stringify({
             reference: '123',
-            email: 'micha@vleap.ai',
+            email: 'micha@vleap.at',
           }),
         })
       )

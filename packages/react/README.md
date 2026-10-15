@@ -26,4 +26,4 @@ npm install @joai/warps-react
 
 ## Documentation
 
-For detailed React integration examples, visit [docs.vleap.ai](https://docs.vleap.ai).
+For detailed React integration examples, visit [docs.vleap.at](https://docs.vleap.at).
