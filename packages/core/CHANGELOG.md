@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.0.6
+
+### Patch Changes
+
+- 4d2d42e: Treat serializer type aliases as equivalent during input prefix validation and recognition so approval replays that re-serialize `number`/`integer`/`text`/`boolean` fields (as `uint64`/`uint32`/`string`/`bool`) are accepted.
+
 ## 5.0.5
 
 ### Patch Changes
