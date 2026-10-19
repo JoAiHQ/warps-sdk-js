@@ -1,7 +1,7 @@
 import { WarpChainName, WarpConstants } from './constants'
 
 const noDestinationTypes = ['collect', 'compute', 'mcp', 'state', 'mount', 'unmount'] as const
-import { findWarpAdapterForChain, getWarpActionByIndex, getWarpInputAction, hasInputPrefix, shiftBigintBy, splitInput } from './helpers'
+import { findWarpAdapterForChain, getWarpActionByIndex, getWarpInputAction, hasInputPrefix, resolveInputTypeAlias, shiftBigintBy, splitInput } from './helpers'
 import { isOnlyUnresolvedPlaceholders } from './helpers/general'
 import { extractResolvedInputValues, buildInputsContext } from './helpers/payload'
 import { getWarpWalletAddressFromConfig } from './helpers/wallet'
@@ -186,8 +186,9 @@ export class WarpFactory {
   private assertInputPrefixMatches(actionInput: WarpActionInput, input: string): void {
     if (typeof input !== 'string' || !input.includes(WarpConstants.ArgParamsSeparator)) return
     const [prefix] = splitInput(input)
-    const prefixBase = toBaseInputType(prefix)
-    const expectedBase = toBaseInputType(actionInput.type)
+    // Canonicalize both sides so serializer aliases (number→uint64, boolean→bool, …) match.
+    const prefixBase = resolveInputTypeAlias(toBaseInputType(prefix))
+    const expectedBase = resolveInputTypeAlias(toBaseInputType(actionInput.type))
 
     if (hasInputPrefix(input)) {
       if (prefixBase === expectedBase || this.isEquivalentInputType(prefixBase, expectedBase)) return

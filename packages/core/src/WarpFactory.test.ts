@@ -384,6 +384,26 @@ describe('WarpFactory', () => {
       ])
       expect(factory.getStringTypedInputs(action, ['mitgliedschaft', '', ''])).toEqual(['string:mitgliedschaft', '', ''])
     })
+
+    it('accepts serializer aliases (number↔uint64, integer↔uint32, text↔string)', () => {
+      const factory = new WarpFactory(config, [createMockAdapter()])
+      const action = collectAction([
+        { name: 'Price', type: 'number', source: 'field' },
+        { name: 'Count', type: 'integer', source: 'field' },
+        { name: 'Note', type: 'text', source: 'field' },
+      ])
+      // Approval replay re-serializes via nativeToString, which emits canonical prefixes.
+      expect(factory.getStringTypedInputs(action, ['uint64:99', 'uint32:3', 'string:hello'])).toEqual([
+        'uint64:99',
+        'uint32:3',
+        'string:hello',
+      ])
+      expect(factory.getStringTypedInputs(action, ['number:99', 'integer:3', 'text:hello'])).toEqual([
+        'number:99',
+        'integer:3',
+        'text:hello',
+      ])
+    })
   })
 
   it('getStringTypedInputs keeps empty contract args in their slot', () => {

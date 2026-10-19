@@ -1,4 +1,4 @@
-import { hasInputPrefix, splitInput } from './input'
+import { hasInputPrefix, resolveInputTypeAlias, splitInput } from './input'
 
 describe('splitInput', () => {
   it('should split simple type:value pairs', () => {
@@ -31,6 +31,14 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix('address:erd1abc')).toBe(true)
     expect(hasInputPrefix('bool:true')).toBe(true)
     expect(hasInputPrefix('biguint:123456')).toBe(true)
+  })
+
+  it('should return true for serializer type aliases', () => {
+    expect(hasInputPrefix('number:99')).toBe(true)
+    expect(hasInputPrefix('integer:3')).toBe(true)
+    expect(hasInputPrefix('int:3')).toBe(true)
+    expect(hasInputPrefix('boolean:true')).toBe(true)
+    expect(hasInputPrefix('text:hello')).toBe(true)
   })
 
   it('should return true for complex input types', () => {
@@ -76,5 +84,21 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix(true as unknown as string)).toBe(false)
     expect(hasInputPrefix({} as unknown as string)).toBe(false)
     expect(hasInputPrefix([] as unknown as string)).toBe(false)
+  })
+})
+
+describe('resolveInputTypeAlias', () => {
+  it('maps common aliases to canonical WarpInputTypes', () => {
+    expect(resolveInputTypeAlias('boolean')).toBe('bool')
+    expect(resolveInputTypeAlias('integer')).toBe('uint32')
+    expect(resolveInputTypeAlias('int')).toBe('uint32')
+    expect(resolveInputTypeAlias('number')).toBe('uint64')
+    expect(resolveInputTypeAlias('text')).toBe('string')
+  })
+
+  it('leaves canonical and unknown types unchanged', () => {
+    expect(resolveInputTypeAlias('uint64')).toBe('uint64')
+    expect(resolveInputTypeAlias('string')).toBe('string')
+    expect(resolveInputTypeAlias('json')).toBe('json')
   })
 })

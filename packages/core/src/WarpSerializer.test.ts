@@ -521,12 +521,14 @@ describe('WarpSerializer', () => {
       expect(serializer.stringToNative('boolean:true')).toEqual(['bool', true])
       expect(serializer.stringToNative('boolean:false')).toEqual(['bool', false])
       expect(serializer.stringToNative('integer:42')).toEqual(['uint32', 42])
+      expect(serializer.stringToNative('number:99')).toEqual(['uint64', 99n])
       expect(serializer.stringToNative('text:hello')).toEqual(['string', 'hello'])
     })
 
     it('resolves type aliases in nativeToString', () => {
       expect(serializer.nativeToString('boolean' as any, true)).toBe('bool:true')
       expect(serializer.nativeToString('integer' as any, 42)).toBe('uint32:42')
+      expect(serializer.nativeToString('number' as any, 99)).toBe('uint64:99')
       expect(serializer.nativeToString('text' as any, 'hello')).toBe('string:hello')
     })
 

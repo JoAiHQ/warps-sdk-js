@@ -1,4 +1,5 @@
 import { WarpConstants, WarpInputTypes } from './constants'
+import { resolveInputTypeAlias } from './helpers/input'
 import {
   AdapterTypeRegistry,
   BaseWarpActionInputType,
@@ -12,16 +13,7 @@ const tryParseJson = (value: string): any | null => {
   try { return JSON.parse(value) } catch { return null }
 }
 
-/** Maps common alternative type names to their canonical WarpInputTypes equivalents. */
 const arrayOfRe = /^(.+)\[\]$/
-
-const TypeAliases: Record<string, string> = {
-  boolean: WarpInputTypes.Bool,
-  integer: WarpInputTypes.Uint32,
-  int: WarpInputTypes.Uint32,
-  number: WarpInputTypes.Uint64,
-  text: WarpInputTypes.String,
-}
 
 export class WarpSerializer {
   private readonly typeRegistry?: AdapterTypeRegistry
@@ -31,7 +23,7 @@ export class WarpSerializer {
   }
 
   nativeToString(type: WarpActionInputType, value: WarpNativeValue): string {
-    type = (TypeAliases[type] ?? type) as WarpActionInputType
+    type = resolveInputTypeAlias(type) as WarpActionInputType
     if (arrayOfRe.test(type)) {
       const parsed = typeof value === 'string' ? tryParseJson(value) : null
       return type + WarpConstants.ArgParamsSeparator + JSON.stringify(parsed ?? value)
@@ -122,7 +114,7 @@ export class WarpSerializer {
 
   stringToNative(value: string): [WarpActionInputType, WarpNativeValue] {
     const parts = value.split(WarpConstants.ArgParamsSeparator)
-    let baseType = TypeAliases[parts[0]] ?? parts[0]
+    let baseType = resolveInputTypeAlias(parts[0])
     const val = parts.slice(1).join(WarpConstants.ArgParamsSeparator)
 
     if (arrayOfRe.test(baseType)) {
