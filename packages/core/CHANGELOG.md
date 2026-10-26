@@ -1,5 +1,11 @@
 # @joai/warps
 
+## 5.1.0
+
+### Minor Changes
+
+- 7cecd7e: Add a canonical `decimal` warp input type for fractional numeric values.
+
 ## 5.0.6
 
 ### Patch Changes
