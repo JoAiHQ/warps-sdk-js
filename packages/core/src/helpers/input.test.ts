@@ -31,6 +31,7 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix('address:erd1abc')).toBe(true)
     expect(hasInputPrefix('bool:true')).toBe(true)
     expect(hasInputPrefix('biguint:123456')).toBe(true)
+    expect(hasInputPrefix('decimal:4.9')).toBe(true)
   })
 
   it('should return true for serializer type aliases', () => {
@@ -39,6 +40,7 @@ describe('hasInputPrefix', () => {
     expect(hasInputPrefix('int:3')).toBe(true)
     expect(hasInputPrefix('boolean:true')).toBe(true)
     expect(hasInputPrefix('text:hello')).toBe(true)
+    expect(hasInputPrefix('float:4.9')).toBe(true)
   })
 
   it('should return true for complex input types', () => {
@@ -93,6 +95,8 @@ describe('resolveInputTypeAlias', () => {
     expect(resolveInputTypeAlias('integer')).toBe('uint32')
     expect(resolveInputTypeAlias('int')).toBe('uint32')
     expect(resolveInputTypeAlias('number')).toBe('uint64')
+    expect(resolveInputTypeAlias('float')).toBe('decimal')
+    expect(resolveInputTypeAlias('double')).toBe('decimal')
     expect(resolveInputTypeAlias('text')).toBe('string')
   })
 

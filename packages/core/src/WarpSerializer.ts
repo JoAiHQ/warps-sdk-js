@@ -103,6 +103,12 @@ export class WarpSerializer {
       }
     }
 
+    if (type === WarpInputTypes.Decimal) {
+      const num = typeof value === 'number' ? value : Number(value)
+      if (!Number.isFinite(num)) throw new Error(`WarpSerializer (nativeToString): Invalid decimal value: ${String(value)}`)
+      return `${type}${WarpConstants.ArgParamsSeparator}${num}`
+    }
+
     if (type === 'json') {
       const raw = typeof value === 'string' ? value : JSON.stringify(value)
       return type + WarpConstants.ArgParamsSeparator + raw
@@ -165,6 +171,11 @@ export class WarpSerializer {
     } else if (baseType === WarpInputTypes.String) return [baseType, val]
     else if (baseType === WarpInputTypes.Uint8 || baseType === WarpInputTypes.Uint16 || baseType === WarpInputTypes.Uint32)
       return [baseType, Number(val)]
+    else if (baseType === WarpInputTypes.Decimal) {
+      const num = Number(val)
+      if (val === '' || !Number.isFinite(num)) throw new Error(`WarpSerializer (stringToNative): Invalid decimal value: ${val}`)
+      return [baseType, num]
+    }
     else if (
       baseType === WarpInputTypes.Uint64 ||
       baseType === WarpInputTypes.Uint128 ||
@@ -216,7 +227,7 @@ export class WarpSerializer {
       const [type, value] = val.split(WarpConstants.ArgParamsSeparator)
       return [type, value]
     }
-    if (typeof val === 'number') return [WarpInputTypes.Uint32, val]
+    if (typeof val === 'number') return [Number.isInteger(val) ? WarpInputTypes.Uint32 : WarpInputTypes.Decimal, val]
     if (typeof val === 'bigint') return [WarpInputTypes.Uint64, val]
     if (typeof val === 'boolean') return [WarpInputTypes.Bool, val]
     return [typeof val, val]

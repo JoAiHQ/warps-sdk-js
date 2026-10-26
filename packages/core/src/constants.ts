@@ -121,6 +121,7 @@ export const WarpInputTypes = {
   Uint128: 'uint128',
   Uint256: 'uint256',
   Biguint: 'biguint',
+  Decimal: 'decimal',
   Bool: 'bool',
   Address: 'address',
   Asset: 'asset',

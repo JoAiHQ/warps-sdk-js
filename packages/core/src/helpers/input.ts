@@ -7,6 +7,8 @@ const InputTypeAliases: Record<string, string> = {
   integer: WarpInputTypes.Uint32,
   int: WarpInputTypes.Uint32,
   number: WarpInputTypes.Uint64,
+  float: WarpInputTypes.Decimal,
+  double: WarpInputTypes.Decimal,
   text: WarpInputTypes.String,
 }
 

@@ -33,6 +33,16 @@ describe('WarpSerializer', () => {
       expect(serializer.nativeToString('uint8', 255)).toBe('uint8:255')
     })
 
+    it('serializes decimal values', () => {
+      expect(serializer.nativeToString('decimal', 4.9)).toBe('decimal:4.9')
+      expect(serializer.nativeToString('float', 4.9)).toBe('decimal:4.9')
+      expect(serializer.nativeToString('decimal', 20)).toBe('decimal:20')
+    })
+
+    it('serializes decimal struct fields', () => {
+      expect(serializer.nativeToString('struct', { _name: 'Test', price: 4.9 })).toBe('struct(Test):(price:decimal)4.9')
+    })
+
     it('serializes string values', () => {
       expect(serializer.nativeToString('string', 'hello')).toBe('string:hello')
     })
@@ -192,6 +202,20 @@ describe('WarpSerializer', () => {
       const result = serializer.stringToNative('null')
       expect(result[0]).toBe('null')
       expect(result[1]).toBe(null)
+    })
+
+    it('deserializes decimal values', () => {
+      expect(serializer.stringToNative('decimal:4.9')).toEqual(['decimal', 4.9])
+      expect(serializer.stringToNative('decimal:20')).toEqual(['decimal', 20])
+    })
+
+    it('rejects invalid decimal values', () => {
+      expect(() => serializer.stringToNative('decimal:abc')).toThrow()
+      expect(() => serializer.stringToNative('decimal:')).toThrow()
+    })
+
+    it('resolves decimal aliases', () => {
+      expect(serializer.stringToNative('float:4.9')).toEqual(['decimal', 4.9])
     })
 
     it('deserializes option', () => {
