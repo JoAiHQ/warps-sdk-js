@@ -22,6 +22,24 @@ describe('createMcpServerFromWarps', () => {
     mockMcpServerCtor.mockImplementation(() => server)
   })
 
+  it('defaults to modern MCP protocol only', () => {
+    createMcpServerFromWarps({ name: 'test-server' }, [], [], jest.fn())
+
+    expect(mockMcpServerCtor).toHaveBeenCalledWith(
+      { name: 'test-server', version: '1.0.0' },
+      { supportedProtocolVersions: ['2026-07-28'] }
+    )
+  })
+
+  it('allows an explicit modern protocol configuration', () => {
+    createMcpServerFromWarps({ name: 'test-server', supportedProtocolVersions: ['2026-07-28'] }, [], [], jest.fn())
+
+    expect(mockMcpServerCtor).toHaveBeenCalledWith(
+      { name: 'test-server', version: '1.0.0' },
+      { supportedProtocolVersions: ['2026-07-28'] }
+    )
+  })
+
   it('passes MCP app ui permissions through on resources', async () => {
     createMcpServerFromWarps(
       { name: 'test-server' },

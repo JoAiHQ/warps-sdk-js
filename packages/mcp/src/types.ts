@@ -4,6 +4,7 @@ import { z } from 'zod'
 export type WarpMcpServerConfig = {
   name: string
   version?: string
+  supportedProtocolVersions?: string[]
 }
 
 export type JsonSchema = Record<string, unknown>

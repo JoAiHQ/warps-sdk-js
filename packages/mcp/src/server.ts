@@ -71,13 +71,20 @@ const buildToolAnnotations = (warp: Warp) => {
   }
 }
 
+export const MCP_PROTOCOL_VERSION = '2026-07-28'
+
+const DEFAULT_PROTOCOL_VERSIONS = [MCP_PROTOCOL_VERSION]
+
 export const createMcpServerFromWarps = (
   config: WarpMcpServerConfig,
   warps: Warp[],
   capabilities: WarpMcpCapabilities[],
   executor: WarpMcpExecutor
 ): McpServer => {
-  const server = new McpServer({ name: config.name, version: config.version || '1.0.0' })
+  const server = new McpServer(
+    { name: config.name, version: config.version || '1.0.0' },
+    { supportedProtocolVersions: config.supportedProtocolVersions ?? DEFAULT_PROTOCOL_VERSIONS },
+  )
 
   for (let i = 0; i < capabilities.length; i++) {
     const { tool, resource, prompt } = capabilities[i]
