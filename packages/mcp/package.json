@@ -1,6 +1,6 @@
 {
   "name": "@joai/warps-mcp",
-  "version": "12.2.2",
+  "version": "12.3.0",
   "description": "MCP adapter for Warps SDK",
   "type": "module",
   "types": "./dist/index.d.ts",

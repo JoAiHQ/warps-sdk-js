@@ -1,5 +1,11 @@
 # @joai/warps-mcp
 
+## 12.3.0
+
+### Minor Changes
+
+- 698ccc5: Upgrade the MCP SDK to 2.4.0 and default generated servers to the modern 2026-07-28 protocol.
+
 ## 12.2.2
 
 ### Patch Changes
